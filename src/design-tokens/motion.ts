@@ -5,8 +5,14 @@ export const motionFastDuration = 50;
 export const motionMediumDuration = 125;
 export const motionSlowDuration = 250;
 
+// export const motionFastDuration = 1000;
+// export const motionMediumDuration = 125;
+// export const motionSlowDuration = 5000;
+
 export const motionEntryCurve = "ease-in";
 export const motionExitCurve = "ease-out";
+
+export const motionPush = 16;
 
 export const motionFastDurationToken = DesignToken.create<string>(
   "motionFastDuration"
@@ -17,6 +23,9 @@ export const motionMediumDurationToken = DesignToken.create<string>(
 export const motionSlowDurationToken = DesignToken.create<string>(
   "motionSlowDuration"
 ).withDefault(`${motionSlowDuration}ms`);
+export const motionPushToken = DesignToken.create<string>(
+  "motionPush"
+).withDefault(`${motionPush}px`);
 
 export const motionEntryCurveToken =
   DesignToken.create<string>("motionEntryCurve").withDefault(motionEntryCurve);
@@ -29,7 +38,7 @@ type MotionDirection = "entrance" | "exit";
 const directionToSpeed = (d: MotionDirection): number => {
   switch (d) {
     case "entrance":
-      return motionFastDuration;
+      return motionSlowDuration;
     case "exit":
       return motionSlowDuration;
   }

@@ -12,6 +12,7 @@ export function createDialog({ anchor, stretch, hidden }: DialogArgs) {
   if (hidden) dialog.setAttribute("hidden", "true");
   dialog.setAttribute("anchor", anchor);
   dialog.setAttribute("stretch", stretch);
+  dialog.setAttribute("id", "agdialog");
 
   return dialog;
 }

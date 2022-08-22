@@ -1,5 +1,5 @@
 import { css } from "@microsoft/fast-element";
-import { surfaceMix } from "../Surface/surface.styles";
+import { panelMix } from "../Panel/panel.styles";
 
 export const modalStyles = css`
   :host([hidden]) {
@@ -9,8 +9,12 @@ export const modalStyles = css`
   :host([hidden]) .overlay {
     opacity: 0;
   }
+
   :host([hidden]) .control {
     opacity: 0;
+  }
+  :host([anchor="center"]) .control {
+    transform: scale(0.9);
   }
 
   :host([anchor="left"]) .positioning-region {
@@ -82,6 +86,6 @@ export const modalStyles = css`
     width: var(--default-width);
     height: var(--default-height);
     z-index: 1;
-    ${surfaceMix}
+    ${panelMix}
   }
 `;
