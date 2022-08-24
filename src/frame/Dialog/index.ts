@@ -5,7 +5,6 @@ import {
   animateEntry,
   animateExit,
   motionPush,
-  motionPushToken,
 } from "../../design-tokens/motion";
 
 export type ContentAnchor = "left" | "right" | "top" | "bottom" | "center";

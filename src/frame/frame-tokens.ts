@@ -15,20 +15,23 @@ export const gridType = DesignToken.create<string>("grid-type").withDefault(
 );
 
 // Palette
-export const background =
-  DesignToken.create<string>("background").withDefault("#695150");
+export const backdrop =
+  DesignToken.create<string>("backdrop").withDefault("#695150");
 
-export const backgroundLight =
-  DesignToken.create<string>("backgroundLight").withDefault("#966A6A");
+export const backdropLight =
+  DesignToken.create<string>("backdropLight").withDefault("#966A6A");
 
-export const onBackground =
-  DesignToken.create<string>("onBackground").withDefault("#E8C9C8");
+export const onBackdrop =
+  DesignToken.create<string>("onBackdrop").withDefault("#E8C9C8");
 
-export const onBackgroundAlt =
-  DesignToken.create<string>("onBackgroundAlt").withDefault("#F3EEE6");
+export const onBackdropAlt =
+  DesignToken.create<string>("onBackdropAlt").withDefault("#F3EEE6");
 
-export const backGroundTextElevation = DesignToken.create<string>(
-  "backgroundTextElevation"
+export const backdropKeyline =
+  DesignToken.create<string>("backdropKeyline").withDefault("#B59897");
+
+export const backdropTextElevation = DesignToken.create<string>(
+  "backdropTextElevation"
 ).withDefault("0 1px 2px rgba(0,0,0,0.2)");
 
 export const surface =
