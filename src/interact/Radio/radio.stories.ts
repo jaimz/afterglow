@@ -1,45 +1,41 @@
-import { css } from "@microsoft/fast-element";
-import { display } from "@microsoft/fast-foundation";
+import { agRadio } from ".";
 
-import { frame, interact, designGrid, typography } from "../../design-tokens";
+export default {
+  title: "Interact/Radio",
+  component: agRadio,
+  argTypes: {
+    checked: {
+      control: { type: "boolean" },
+    },
+    disabled: {
+      control: { type: "boolean" },
+    },
+  },
+};
 
-export const radioStyles = css`
-  ${display("inline-flex")} :host {
-    --diameter: calc(${designGrid.gridX} * 3px);
-    align-items: center;
-    outline: none;
-    user-select: none;
-    gap: calc(${designGrid.gridX} * 2px);
-  }
-
-  .control {
-    position: relative;
-    width: var(--diameter);
-    height: var(--diameter);
-
-    box-sizing: border-box;
-    border-radius: 50%;
-    border: 1px solid ${interact.ctrlBorder};
-  }
-
-  .label {
-    font-family: ${typography.bodyFontStack};
-    color: currentColor;
-    cursor: pointer;
-  }
-
-  .label__hidden {
-    display: none;
-    visibility: hidden;
-  }
-
-  .control,
-  .checked-indicator {
-    flex-shrink: 0;
-  }
-
-  .checked-indicator {
-    opacity: 0;
-    pointer-events: none;
-  }
+interface TemplateArgs {
+  checked: boolean;
+  disabled: boolean;
+  label: string;
+}
+const Template = ({ checked, disabled, label }: TemplateArgs) => `
+  <ag-radio
+    ${checked ? "checked" : ""}
+    ${disabled ? "disabled" : ""}>
+    ${label}
+  </ag-radio>
 `;
+
+export const Radio: any = Template.bind({});
+Radio.args = {
+  label: "Label",
+  checked: false,
+  disabled: false,
+};
+Radio.parameters = {
+  docs: {
+    source: {
+      code: "<ag-radio>Label</ag-radio>",
+    },
+  },
+};
