@@ -13,13 +13,18 @@ export const radioStyles = css`
   }
 
   .control {
-    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
     width: var(--diameter);
     height: var(--diameter);
 
     box-sizing: border-box;
     border-radius: 50%;
     border: 1px solid ${interact.ctrlBorder};
+
+    color: ${interact.ctrlTextDesat};
   }
 
   .label {
@@ -41,5 +46,38 @@ export const radioStyles = css`
   .checked-indicator {
     opacity: 0;
     pointer-events: none;
+    display: inline-block;
+    background: currentColor;
+    width: calc(var(--diameter) - 10px);
+    height: calc(var(--diameter) - 10px);
+    border-radius: 50%;
+  }
+
+  :host(.checked) .checked-indicator {
+    opacity: 1;
+  }
+
+  :host([variant="backdrop"]) .control {
+    color: ${frame.onBackdrop};
+    border-color: ${frame.onBackdrop};
+  }
+
+  :host([variant="backdrop"]) .label {
+    color: ${frame.onBackdrop};
+  }
+
+  :host(.disabled) .label,
+  :host(.readonly) .label,
+  :host(.disabled) .control,
+  :host(.readonly) .control {
+    cursor: not-allowed;
+  }
+
+  :host(.disabled) {
+    opacity: ${interact.disabledOpacity};
+  }
+
+  :host(:focus-visible) .control {
+    box-shadow: 0 2px 4px ${interact.ctrlBorder};
   }
 `;

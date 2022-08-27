@@ -3,6 +3,10 @@ import { DesignToken } from "@microsoft/fast-foundation";
 export const ctrlText =
   DesignToken.create<string>("ctrlText").withDefault("#007693");
 
+// Slightly desaturated version of control text - use at your discretion
+export const ctrlTextDesat =
+  DesignToken.create<string>("ctrlTestDesat").withDefault("#5e8c97");
+
 const CtrlFillHi = "#ffffff";
 const CtrlFillLo = "#f0f0ed";
 const CtrlFillDark = "#e6e6e6";

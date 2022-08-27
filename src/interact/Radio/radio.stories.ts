@@ -1,38 +1,40 @@
-import { agRadio } from ".";
+import { RadioArgs, createRadio } from "./fixtures/createRadio";
 
 export default {
   title: "Interact/Radio",
-  component: agRadio,
   argTypes: {
-    checked: {
-      control: { type: "boolean" },
-    },
-    disabled: {
-      control: { type: "boolean" },
+    label: { control: "text" },
+    isChecked: { control: "boolean" },
+    isDisabled: { control: "boolean" },
+  },
+};
+
+const Template = ({ ...args }: RadioArgs) => {
+  return createRadio({ ...args });
+};
+
+export const Default: any = Template.bind({});
+Default.args = {
+  label: "Label",
+  isChecked: false,
+  isDisabled: false,
+};
+Default.parameters = {
+  docs: {
+    source: {
+      code: "<ag-radio>Label</ag-radio>",
     },
   },
 };
 
-interface TemplateArgs {
-  checked: boolean;
-  disabled: boolean;
-  label: string;
-}
-const Template = ({ checked, disabled, label }: TemplateArgs) => `
-  <ag-radio
-    ${checked ? "checked" : ""}
-    ${disabled ? "disabled" : ""}>
-    ${label}
-  </ag-radio>
-`;
-
-export const Radio: any = Template.bind({});
-Radio.args = {
+export const Backdrop: any = Template.bind({});
+Backdrop.args = {
+  variant: "backdrop",
   label: "Label",
-  checked: false,
-  disabled: false,
+  isChecked: false,
+  isDisabled: false,
 };
-Radio.parameters = {
+Backdrop.parameters = {
   docs: {
     source: {
       code: "<ag-radio>Label</ag-radio>",

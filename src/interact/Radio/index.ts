@@ -12,6 +12,10 @@ export class AGRadio extends Radio {
   // @ts-ignore
   @attr public variant: Variant;
 
+  constructor() {
+    super();
+  }
+
   public connectedCallback() {
     super.connectedCallback();
 
@@ -22,13 +26,11 @@ export class AGRadio extends Radio {
   }
 }
 
-export const agRadio = Radio.compose<RadioOptions>({
+export const agRadio = AGRadio.compose<RadioOptions>({
   baseName: "radio",
   template,
   styles,
   checkedIndicator: `
-    <svg width="14" height="14" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="7" cy="7" r="7" />
-    </svg>
+    <div part="checked-indicator" class="checked-indicator"></div>
   `,
 });
