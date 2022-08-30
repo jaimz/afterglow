@@ -4,12 +4,14 @@ import { agDialog } from "./frame/Dialog";
 import { agCheckbox } from "./interact/Checkbox";
 import { agRadio } from "./interact/Radio";
 import { agRadioGroup } from "./interact/RadioGroup";
+import { agSwitch } from "./interact/Switch";
 
 export { agButton };
 export { agDialog };
 export { agCheckbox };
 export { agRadio };
 export { agRadioGroup };
+export { agSwitch };
 
 export const allComponents = {
   agButton,
@@ -17,6 +19,7 @@ export const allComponents = {
   agCheckbox,
   agRadio,
   agRadioGroup,
+  agSwitch,
   register(container?: Container, ...rest: any[]) {
     if (!container) {
       return;

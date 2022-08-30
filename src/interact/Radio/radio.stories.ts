@@ -37,7 +37,7 @@ Backdrop.args = {
 Backdrop.parameters = {
   docs: {
     source: {
-      code: "<ag-radio>Label</ag-radio>",
+      code: '<ag-radio variant="backdrop">Label</ag-radio>',
     },
   },
 };

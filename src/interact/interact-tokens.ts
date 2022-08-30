@@ -7,6 +7,12 @@ export const ctrlText =
 export const ctrlTextDesat =
   DesignToken.create<string>("ctrlTestDesat").withDefault("#5e8c97");
 
+// Desaturated ctrlText for control hint or subtitle text
+export const ctrlHint =
+  DesignToken.create<string>("ctrlHint").withDefault("#6EA3B0");
+export const ctrlHint50 =
+  DesignToken.create<string>("ctrlHint50").withDefault("#6EA3B088");
+
 const CtrlFillHi = "#ffffff";
 const CtrlFillLo = "#f0f0ed";
 const CtrlFillDark = "#e6e6e6";
