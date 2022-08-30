@@ -11,6 +11,9 @@ import {
 export const switchStyles = css`
   ${display("inline-flex")} :host {
     --indicator-radius: 20px;
+    --switch-width: calc(
+      calc(${designGrid.gridX} * 4 + ${designGrid.gridType}) * 1px
+    );
     align-items: center;
     outline: none;
     user-select: none;
@@ -21,7 +24,8 @@ export const switchStyles = css`
     position: relative;
     outline: none;
     box-sizing: border-box;
-    width: calc(${designGrid.gridX} * 5px);
+    width: var(--switch-width);
+    cursor: pointer;
   }
 
   .switch::before {
@@ -72,10 +76,46 @@ export const switchStyles = css`
     background: ${frame.backdropKeyline};
   }
 
+  :host([variant="backdrop"]) .label {
+    color: ${frame.onBackdrop};
+  }
+
   .label {
+    position: relative;
+    top: -2px;
+
     color: currentColor;
     font-family: ${typography.bodyFontStack};
     flex-grow: 1;
     cursor: pointer;
+  }
+
+  :host(.disabled) .switch,
+  :host(.disabled) .label {
+    opacity: ${interact.disabledOpacity};
+    cursor: not-allowed;
+  }
+
+  .unchecked-message {
+    ${typography.captionText};
+    display: block;
+  }
+
+  :host([variant="backdrop"]) .unchecked-message,
+  :host([variant="backdrop"]) .checked-message {
+    color: ${frame.onBackdrop};
+  }
+
+  .checked-message {
+    ${typography.captionText};
+    display: none;
+  }
+
+  :host(.checked) .unchecked-message {
+    display: none;
+  }
+
+  :host(.checked) .checked-message {
+    display: block;
   }
 `;

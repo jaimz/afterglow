@@ -16,9 +16,15 @@ export function createSwitch({
   const swtch = new AGSwitch();
 
   swtch.setAttribute("variant", variant);
-  label && (swtch.textContent = label);
+  // label && (swtch.textContent = label);
   isChecked && swtch.setAttribute("checked", isChecked);
   isDisabled && swtch.setAttribute("disabled", "");
+
+  swtch.innerHTML = `
+    <span slot="checked-message">On</span>
+    <span slot="unchecked-message">Off</span>
+    ${label}
+  `;
 
   return swtch;
 }

@@ -1,3 +1,5 @@
+// noinspection HtmlUnknownAttribute
+
 import {
   Radio,
   RadioOptions,
