@@ -31,37 +31,33 @@ export function opacify(color: string, alphaAdjust: number) {
       if (isNaN(g)) throw TypeError(`${groups.g} is not a valid green value`);
       if (isNaN(b)) throw TypeError(`${groups.b} is not a valid blue value`);
       if (isNaN(alpha)) throw TypeError(`${aStr} is not a valid alpha value`);
-    } else if (color.startsWith("#")) {
-      const colorHex = color.substring(1);
-      if (colorHex.length < 6) {
-        throw new TypeError(
-          `Hex numbers must have a t least six digits: ${color}`
-        );
-      }
-
-      r = parseInt(colorHex.substring(0, 2), 16);
-      g = parseInt(colorHex.substring(2, 4), 16);
-      b = parseInt(colorHex.substring(4, 6), 16);
-      if (colorHex.length > 6)
-        alpha = 255 / parseInt(colorHex.substring(6, 8), 16);
-
-      if (isNaN(r))
-        throw TypeError(`${colorHex.substring(0, 2)} is not a valid red value`);
-      if (isNaN(g))
-        throw TypeError(
-          `${colorHex.substring(2, 4)} is not a valid green value`
-        );
-      if (isNaN(b))
-        throw TypeError(
-          `${colorHex.substring(4, 6)} is not a valid blue value`
-        );
-      if (isNaN(alpha))
-        throw TypeError(
-          `${colorHex.substring(6, 8)} is not a valid alpha value`
-        );
     } else {
-      throw new TypeError(`Could not parse rgba color: ${color}`);
+      throw new TypeError("Could not capture anything from rgb color");
     }
+  } else if (color.startsWith("#")) {
+    const colorHex = color.substring(1);
+    if (colorHex.length < 6) {
+      throw new TypeError(
+        `Hex numbers must have at least six digits: ${color}`
+      );
+    }
+
+    r = parseInt(colorHex.substring(0, 2), 16);
+    g = parseInt(colorHex.substring(2, 4), 16);
+    b = parseInt(colorHex.substring(4, 6), 16);
+    if (colorHex.length > 6)
+      alpha = 255 / parseInt(colorHex.substring(6, 8), 16);
+
+    if (isNaN(r))
+      throw TypeError(`${colorHex.substring(0, 2)} is not a valid red value`);
+    if (isNaN(g))
+      throw TypeError(`${colorHex.substring(2, 4)} is not a valid green value`);
+    if (isNaN(b))
+      throw TypeError(`${colorHex.substring(4, 6)} is not a valid blue value`);
+    if (isNaN(alpha))
+      throw TypeError(`${colorHex.substring(6, 8)} is not a valid alpha value`);
+  } else {
+    throw new TypeError(`Could not parse rgba color: ${color}`);
   }
 
   return `rgba(${r}, ${g}, ${b}, ${alpha * alphaAdjust})`;

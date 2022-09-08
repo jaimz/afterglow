@@ -1,6 +1,6 @@
-import * as VSCodeComponents from "../src/main";
+import * as AGDesignSystem from "../src/main";
 
-VSCodeComponents;
+AGDesignSystem;
 
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },

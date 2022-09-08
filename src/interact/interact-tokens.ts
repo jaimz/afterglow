@@ -5,7 +5,9 @@ export const ctrlText =
 
 // Slightly desaturated version of control text - use at your discretion
 export const ctrlTextDesat =
-  DesignToken.create<string>("ctrlTestDesat").withDefault("#5e8c97");
+  DesignToken.create<string>("ctrlTextDesat").withDefault("#5e8c97");
+export const ctrlTextDesat40 =
+  DesignToken.create<string>("ctrlTextDesat40").withDefault("#5e8c97");
 
 // Desaturated ctrlText for control hint or subtitle text
 export const ctrlHint =
@@ -51,6 +53,14 @@ export const ctrlFillSolidHi =
 
 export const ctrlFillSolidLo =
   DesignToken.create<string>("ctrl-fill-solid-lo").withDefault("#004c5e");
+
+export const ctrlFillSolidDesaturate = DesignToken.create<string>(
+  "ctrlFillSolidDesaturate"
+).withDefault("#5E8C97");
+
+export const ctrlFillSolidDesaturate40 = DesignToken.create<string>(
+  "ctrlFillSolidDesaturate40"
+).withDefault("rgba(94,140,151,0.4)");
 
 export const ctrlBorder = DesignToken.create<string>("ctrl-border").withDefault(
   "rgba(110, 163, 176, 0.6)"
