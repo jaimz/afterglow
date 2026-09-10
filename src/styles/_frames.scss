@@ -1,0 +1,52 @@
+@use "tokens" as t;
+
+.ag-appframe {
+  display: block;
+  min-height: 100%;
+}
+
+@mixin background {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    ellipse 90% 80% at top,
+    #{t.$backdropLight},
+    #{t.$backdrop}
+  );
+  color: #{t.$onBackdrop};
+  text-shadow: #{t.$backdropTextElevation};
+}
+.ag-background {
+  display: block;
+  @include background;
+}
+
+@mixin surface {
+  background: #{t.$surface};
+  color: #{t.$onSurface};
+  box-shadow: #{t.$elevationShadow};
+}
+.ag-surface {
+  display: block;
+  @include surface;
+}
+
+@mixin panel {
+  background: #{t.$panel};
+  color: #{t.$onPanel};
+  box-shadow: #{t.$elevationShadow};
+}
+.ag-panel {
+  display: block;
+  @include panel;
+}
+
+@mixin paper {
+  background: #{t.$paper};
+  color: #{t.$onPaper};
+  box-shadow: #{t.$elevationShadow};
+}
+.ag-paper {
+  display: block;
+  @include paper;
+}

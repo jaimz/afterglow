@@ -19,13 +19,6 @@ Default.args = {
   isChecked: false,
   isDisabled: false,
 };
-Default.parameters = {
-  docs: {
-    source: {
-      code: "<ag-radio>Label</ag-radio>",
-    },
-  },
-};
 
 export const Backdrop: any = Template.bind({});
 Backdrop.args = {
@@ -33,11 +26,4 @@ Backdrop.args = {
   label: "Label",
   isChecked: false,
   isDisabled: false,
-};
-Backdrop.parameters = {
-  docs: {
-    source: {
-      code: '<ag-radio variant="backdrop">Label</ag-radio>',
-    },
-  },
 };

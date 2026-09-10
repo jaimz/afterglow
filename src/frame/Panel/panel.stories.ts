@@ -1,21 +1,7 @@
-import { Panel } from "./index";
-
-export default {
-  title: "Frame/Panel",
-};
-
-export const Default = () => {
-  let s = new Panel();
-  s.style.position = "absolute";
-  s.style.width = "300px";
-  s.style.height = "500px";
-
-  return s;
-};
+import { element } from "../../stories/fixtures";
+export default { title: "Frame/Panel" };
+export const Default = () =>
+  element('<div class="ag-panel" style="width:300px;height:500px;"></div>');
 Default.parameters = {
-  docs: {
-    source: {
-      code: "<ag-panel />",
-    },
-  },
+  docs: { source: { code: '<div class="ag-panel">Content</div>' } },
 };

@@ -1,39 +1,51 @@
 import { expect } from "@esm-bundle/chai";
-import { sendKeys } from "@web/test-runner-commands";
-import { LitElement } from "lit";
-import { registerAfterglow } from "../src/main.ts";
+import { sendKeys, sendMouse } from "@web/test-runner-commands";
+import { enhanceControls, enhanceDialog, enhanceSlider } from "../src/main.ts";
+import { checkableMarkup, sliderMarkup } from "../src/stories/fixtures.ts";
 
 let root;
-async function settle() {
-  for (let pass = 0; pass < 4; pass++) {
-    await Promise.all(
-      Array.from(root.querySelectorAll("*")).map(
-        (element) => element.updateComplete
-      )
-    );
-  }
-}
-async function fixture(markup) {
+let cleanups;
+const settle = () =>
+  new Promise((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve))
+  );
+const use = (controller) => {
+  cleanups.push(() => controller.destroy());
+  return controller;
+};
+const fixture = (markup) => {
   root.innerHTML = markup;
-  await settle();
   return root.firstElementChild;
-}
+};
+before(async () => {
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "/afterglow.css";
+  const loaded = new Promise((resolve, reject) => {
+    link.onload = resolve;
+    link.onerror = reject;
+  });
+  document.head.append(link);
+  await loaded;
+});
 beforeEach(() => {
   root = document.createElement("div");
+  root.className = "ag-body";
   document.body.append(root);
+  cleanups = [];
 });
-afterEach(() => root.remove());
+afterEach(() => {
+  cleanups.reverse().forEach((cleanup) => cleanup());
+  root.remove();
+});
 
-it("registers every component as a Lit element and permits repeated registration", () => {
-  registerAfterglow();
-  registerAfterglow();
+it("leaves the custom element registry empty and uses native element interfaces", () => {
   for (const name of [
     "appframe",
     "background",
     "surface",
     "panel",
     "paper",
-    "dialog",
     "button",
     "checkbox",
     "radio",
@@ -41,17 +53,22 @@ it("registers every component as a Lit element and permits repeated registration
     "switch",
     "slider",
     "slider-label",
-  ]) {
-    expect(document.createElement(`ag-${name}`)).to.be.instanceOf(LitElement);
-  }
+    "dialog",
+  ])
+    expect(customElements.get(`ag-${name}`)).to.equal(undefined);
+  fixture(
+    `<form><button class="ag-button" type="submit">Save</button>${checkableMarkup(
+      "checkbox"
+    )}</form>`
+  );
+  expect(root.querySelector("button")).to.be.instanceOf(HTMLButtonElement);
+  expect(root.querySelector("input")).to.be.instanceOf(HTMLInputElement);
+  expect(root.querySelector("input").shadowRoot).to.equal(null);
 });
 
-it("projects frame content and supports inherited, scoped theme overrides", async () => {
-  const panel = await fixture(
-    "<ag-panel><span>Panel content</span><ag-button>Action</ag-button></ag-panel>"
-  );
-  expect(panel.shadowRoot.querySelector("slot").assignedNodes()).to.have.length(
-    2
+it("preserves frame colours, hidden semantics and inherited scoped theme overrides", () => {
+  const panel = fixture(
+    '<section class="ag-panel"><button class="ag-button" type="button">Action</button></section>'
   );
   expect(getComputedStyle(panel).backgroundColor).to.equal(
     "rgb(249, 249, 246)"
@@ -59,418 +76,532 @@ it("projects frame content and supports inherited, scoped theme overrides", asyn
   panel.style.setProperty("--panel", "rgb(20, 30, 40)");
   panel.style.setProperty("--ctrlText", "rgb(10, 20, 30)");
   expect(getComputedStyle(panel).backgroundColor).to.equal("rgb(20, 30, 40)");
-  expect(getComputedStyle(panel.querySelector("ag-button")).color).to.equal(
+  expect(getComputedStyle(panel.firstElementChild).color).to.equal(
     "rgb(10, 20, 30)"
   );
+  panel.hidden = true;
+  expect(getComputedStyle(panel).display).to.equal("none");
 });
-
-it("updates button attributes and blocks disabled activation", async () => {
-  const button = await fixture(
-    '<ag-button aria-label="Save"><span slot="start">+</span>Save</ag-button>'
+it("keeps dependent typography tokens responsive to local theme changes", () => {
+  fixture(
+    '<div class="ag-caption">Caption</div><h1 class="ag-h1">Heading</h1>'
   );
-  let clicks = 0;
-  button.addEventListener("click", () => clicks++);
-  button.click();
-  expect(clicks).to.equal(1);
-  button.disabled = true;
-  button.variant = "primary";
-  button.dangerous = true;
-  await settle();
-  expect(button.control.disabled).to.equal(true);
-  expect(button.getAttribute("variant")).to.equal("primary");
-  expect(button.hasAttribute("dangerous")).to.equal(true);
-  button.click();
-  expect(clicks).to.equal(1);
-  button.removeAttribute("disabled");
-  button.setAttribute("aria-label", "Save changes");
-  await settle();
-  expect(button.control.getAttribute("aria-label")).to.equal("Save changes");
-  button.focus();
-  await sendKeys({ press: "Enter" });
-  expect(clicks).to.equal(2);
+  const caption = root.querySelector(".ag-caption");
+  const before = parseFloat(getComputedStyle(caption).fontSize);
+  root.style.setProperty("--body-text-size", "32px");
+  expect(parseFloat(getComputedStyle(caption).fontSize)).to.be.closeTo(
+    before * 2,
+    0.01
+  );
+  expect(
+    parseFloat(getComputedStyle(root.querySelector("h1")).fontSize)
+  ).to.be.closeTo(32 * 1.2 ** 5, 0.02);
 });
-
-it("submits with button name/value and honours prevented clicks", async () => {
-  const form = await fixture(
-    '<form><ag-button type="submit" name="action" value="save">Save</ag-button></form>'
+it("preserves native button activation, disabled state and the actual submitter", async () => {
+  const form = fixture(
+    '<form><button class="ag-button" type="submit" name="action" value="save">Save</button></form>'
   );
-  const button = form.querySelector("ag-button");
-  let submitted = 0;
+  const button = form.querySelector("button");
+  let submissions = 0;
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    submitted++;
+    submissions++;
+    expect(event.submitter === button).to.equal(true);
     expect(new FormData(form, event.submitter).get("action")).to.equal("save");
   });
+  button.focus();
+  await sendKeys({ press: "Enter" });
+  expect(submissions).to.equal(1);
+  button.disabled = true;
   button.click();
-  await settle();
-  expect(submitted).to.equal(1);
+  expect(submissions).to.equal(1);
+  button.disabled = false;
   button.addEventListener("click", (event) => event.preventDefault());
   button.click();
-  await settle();
-  expect(submitted).to.equal(1);
-  expect(form.querySelector("button")).to.equal(null);
+  expect(submissions).to.equal(1);
 });
-
-it("associates a button with an external form", async () => {
-  await fixture(
-    '<form id="external"></form><ag-button type="submit" form="external">Save</ag-button>'
+it("honours external forms and per-button validation overrides without a proxy", () => {
+  fixture(
+    '<form id="external"><input name="required" required></form><button class="ag-button" type="submit" form="external" formnovalidate formaction="/save">Save</button>'
   );
   const form = root.querySelector("form");
-  let submitted = false;
+  const button = root.querySelector("button");
+  let submissions = 0;
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    submitted = true;
+    submissions++;
+    expect(event.submitter.formAction).to.equal(location.origin + "/save");
   });
-  root.querySelector("ag-button").click();
-  await settle();
-  expect(submitted).to.equal(true);
+  button.click();
+  expect(submissions).to.equal(1);
 });
-
-it("integrates checked state, validation and reset with native forms", async () => {
-  const form = await fixture(
-    '<form><ag-checkbox name="accept" value="yes" checked required>Accept</ag-checkbox><ag-button type="reset">Reset</ag-button></form>'
+it("submits, validates and resets checkbox state without enhancements", () => {
+  const form = fixture(
+    `<form>${checkableMarkup("checkbox", {
+      name: "accept",
+      value: "yes",
+      isChecked: true,
+    })}<button type="reset" class="ag-button">Reset</button></form>`
   );
-  const checkbox = form.querySelector("ag-checkbox");
-  expect(checkbox.checked).to.equal(true);
+  const input = form.querySelector("input");
+  input.required = true;
   expect(new FormData(form).get("accept")).to.equal("yes");
-  expect(checkbox.checkValidity()).to.equal(true);
-  checkbox.click();
-  await settle();
+  input.click();
+  expect(input.checkValidity()).to.equal(false);
   expect(new FormData(form).has("accept")).to.equal(false);
-  expect(checkbox.checkValidity()).to.equal(false);
-  form.querySelector("ag-button").click();
-  await settle();
-  expect(checkbox.checked).to.equal(true);
-  expect(new FormData(form).get("accept")).to.equal("yes");
+  form.querySelector("button").click();
+  expect(input.checked).to.equal(true);
+  expect(input.checkValidity()).to.equal(true);
 });
-
-it("uses boolean attribute presence, and distinguishes default checked from current state", async () => {
-  const checkbox = await fixture(
-    '<ag-checkbox checked="false">Option</ag-checkbox>'
-  );
-  expect(checkbox.checked).to.equal(true);
-  checkbox.checked = false;
-  checkbox.removeAttribute("checked");
-  checkbox.setAttribute("checked", "");
-  await settle();
-  expect(checkbox.checked).to.equal(false);
-  checkbox.formResetCallback();
-  await settle();
-  expect(checkbox.checked).to.equal(true);
-});
-
-it("supports mixed checkboxes and keyboard switching with one event per change", async () => {
-  const checkbox = await fixture("<ag-checkbox>Option</ag-checkbox>");
-  checkbox.indeterminate = true;
-  await settle();
-  expect(checkbox.control.indeterminate).to.equal(true);
-  let changes = 0;
-  let inputs = 0;
-  root.addEventListener("change", () => changes++);
-  root.addEventListener("input", () => inputs++);
-  checkbox.focus();
-  await sendKeys({ press: "Space" });
-  await settle();
-  expect(checkbox.checked).to.equal(true);
-  expect(checkbox.indeterminate).to.equal(false);
-  expect(changes).to.equal(1);
-  expect(inputs).to.equal(1);
-});
-
-it("keeps read-only toggles unchanged and renders switch slots", async () => {
-  const control = await fixture(
-    '<ag-switch readonly>Notifications<span slot="checked-message">On</span><span slot="unchecked-message">Off</span></ag-switch>'
-  );
-  control.click();
-  await settle();
-  expect(control.checked).to.equal(false);
-  control.readOnly = false;
-  await settle();
-  control.click();
-  await settle();
-  expect(control.checked).to.equal(true);
-  expect(control.control.getAttribute("role")).to.equal("switch");
+it("keeps native mixed state and delivers one input and change event on Space", async () => {
+  fixture(checkableMarkup("checkbox"));
+  const input = root.querySelector("input");
+  input.indeterminate = true;
   expect(
-    getComputedStyle(control.shadowRoot.querySelector(".checked-message"))
-      .display
-  ).to.equal("block");
+    getComputedStyle(root.querySelector(".ag-check__mixed")).opacity
+  ).to.equal("1");
+  let inputs = 0,
+    changes = 0;
+  root.addEventListener("input", () => inputs++);
+  root.addEventListener("change", () => changes++);
+  input.focus();
+  await sendKeys({ press: "Space" });
+  expect(input.checked).to.equal(true);
+  expect(input.indeterminate).to.equal(false);
+  expect(inputs).to.equal(1);
+  expect(changes).to.equal(1);
 });
-
-it("inherits disabled fieldset state without changing the control's own disabled attribute", async () => {
-  const form = await fixture(
-    '<form><fieldset disabled><ag-checkbox checked name="option">Option</ag-checkbox></fieldset></form>'
+it("uses native external labels, defaultChecked and boolean presence semantics", () => {
+  fixture(
+    '<label for="terms">Accept terms</label><input class="ag-check__input" id="terms" type="checkbox" checked="false">'
   );
-  const checkbox = form.querySelector("ag-checkbox");
-  expect(checkbox.control.disabled).to.equal(true);
-  expect(checkbox.disabled).to.equal(false);
+  const input = root.querySelector("input");
+  expect(input.checked).to.equal(true);
+  expect(input.labels).to.have.length(1);
+  root.querySelector("label").click();
+  expect(input.checked).to.equal(false);
+  input.removeAttribute("checked");
+  input.setAttribute("checked", "");
+  expect(input.checked).to.equal(false);
+  expect(input.defaultChecked).to.equal(true);
+});
+it("inherits disabled fieldsets, preserves the legend exception and updates after reparenting", () => {
+  const form = fixture(
+    `<form><fieldset disabled><legend>${checkableMarkup("checkbox", {
+      name: "legend",
+      isChecked: true,
+    })}</legend>${checkableMarkup("checkbox", {
+      name: "option",
+      isChecked: true,
+    })}</fieldset></form>`
+  );
+  const input = form.querySelector("input[name=option]");
+  expect(input.disabled).to.equal(false);
+  expect(input.matches(":disabled")).to.equal(true);
   expect(new FormData(form).has("option")).to.equal(false);
-  form.querySelector("fieldset").disabled = false;
-  await settle();
-  expect(checkbox.control.disabled).to.equal(false);
+  expect(new FormData(form).has("legend")).to.equal(true);
+  form.append(input);
+  expect(input.matches(":disabled")).to.equal(false);
   expect(new FormData(form).get("option")).to.equal("on");
 });
-
-it("activates from external labels and gives the inner input their accessible name", async () => {
-  await fixture(
-    '<label for="terms">Accept terms</label><ag-checkbox id="terms"></ag-checkbox>'
+it("switches visual messages and submits the checked state without JavaScript", async () => {
+  const form = fixture(
+    `<form>${checkableMarkup("switch", {
+      name: "notifications",
+      label: "Notifications",
+    })}</form>`
   );
-  const checkbox = root.querySelector("ag-checkbox");
-  expect(checkbox.control.getAttribute("aria-label")).to.equal("Accept terms");
-  root.querySelector("label").click();
-  await settle();
-  expect(checkbox.checked).to.equal(true);
+  const input = form.querySelector("input");
+  input.focus();
+  await sendKeys({ press: "Space" });
+  expect(input.checked).to.equal(true);
+  expect(input.getAttribute("role")).to.equal("switch");
+  expect(
+    getComputedStyle(root.querySelector(".ag-switch__on")).display
+  ).to.equal("block");
+  expect(
+    getComputedStyle(root.querySelector(".ag-switch__off")).display
+  ).to.equal("none");
+  expect(new FormData(form).get("notifications")).to.equal("on");
 });
-
-it("coordinates radio selection, keyboard focus, disabled options and form value", async () => {
-  const form = await fixture(
-    '<form><ag-radio-group name="choice" value="a"><label slot="label">Choice</label><ag-radio value="a">A</ag-radio><ag-radio value="b" disabled>B</ag-radio><ag-radio value="c">C</ag-radio></ag-radio-group></form>'
+it("protects read-only checkboxes from label and keyboard activation while retaining submission", async () => {
+  const form = fixture(
+    `<form>${checkableMarkup("checkbox", {
+      name: "option",
+      isChecked: true,
+      isReadOnly: true,
+    })}</form>`
   );
-  const group = form.querySelector("ag-radio-group");
-  const [a, b, c] = group.radios;
-  expect(a.checked).to.equal(true);
-  expect(new FormData(form).get("choice")).to.equal("a");
-  let changes = 0;
-  group.addEventListener("change", () => changes++);
-  a.focus();
-  await sendKeys({ press: "ArrowRight" });
+  const input = form.querySelector("input");
+  const controls = use(enhanceControls(form));
+  form.querySelector("label").click();
+  input.focus();
+  await sendKeys({ press: "Space" });
+  expect(input.checked).to.equal(true);
+  expect(new FormData(form).get("option")).to.equal("on");
+  input.removeAttribute("data-readonly");
+  controls.update();
+  input.click();
+  expect(input.checked).to.equal(false);
+});
+it("exempts read-only required fields and restores validation and ARIA on cleanup", async () => {
+  fixture(checkableMarkup("checkbox", { isReadOnly: true }));
+  const input = root.querySelector("input");
+  input.required = true;
+  const controls = use(enhanceControls(root));
+  expect(input.required).to.equal(false);
+  expect(input.checkValidity()).to.equal(true);
+  input.removeAttribute("data-readonly");
   await settle();
-  expect(c.checked).to.equal(true);
+  expect(input.required).to.equal(true);
+  expect(input.checkValidity()).to.equal(false);
+  input.dataset.readonly = "";
+  await settle();
+  controls.destroy();
+  expect(input.required).to.equal(true);
+  expect(input.hasAttribute("aria-readonly")).to.equal(false);
+});
+const radioForm = () =>
+  fixture(
+    `<form><fieldset class="ag-radio-group"><legend>Choice</legend><div class="ag-radio-group__options">${[
+      "a",
+      "b",
+      "c",
+    ]
+      .map((value) =>
+        checkableMarkup("radio", {
+          name: "choice",
+          value,
+          label: value,
+          isChecked: value === "a",
+          isDisabled: value === "b",
+        })
+      )
+      .join("")}</div></fieldset></form>`
+  );
+it("uses native grouping, validation, exclusive selection and reset", () => {
+  const form = radioForm();
+  const [a, , c] = form.querySelectorAll("input");
+  a.required = true;
+  c.click();
   expect(a.checked).to.equal(false);
-  expect(b.checked).to.equal(false);
-  expect(group.value).to.equal("c");
-  expect(changes).to.equal(1);
+  expect(c.checked).to.equal(true);
+  expect(a.checkValidity()).to.equal(true);
   expect(new FormData(form).getAll("choice")).to.deep.equal(["c"]);
-  expect(c.control.tabIndex).to.equal(0);
-  expect(a.control.tabIndex).to.equal(-1);
-  group.value = "a";
-  await settle();
+  form.reset();
   expect(a.checked).to.equal(true);
   expect(c.checked).to.equal(false);
-  form.reset();
-  await settle();
-  expect(group.value).to.equal("a");
 });
-
-it("enforces exclusive selection for standalone radios in the same form", async () => {
-  const form = await fixture(
-    '<form><ag-radio name="choice" value="a">A</ag-radio><ag-radio name="choice" value="b">B</ag-radio></form>'
-  );
-  const [a, b] = form.querySelectorAll("ag-radio");
-  a.click();
-  await settle();
-  b.click();
-  await settle();
-  expect(a.checked).to.equal(false);
-  expect(b.checked).to.equal(true);
-  expect(new FormData(form).getAll("choice")).to.deep.equal(["b"]);
-});
-
-it("renders slider marks reactively and positions labels relative to nonzero minimum", async () => {
-  const slider = await fixture(
-    '<ag-slider min="20" max="40" step="5" value="30" marks><ag-slider-label position="30">Middle</ag-slider-label></ag-slider>'
-  );
-  expect(slider.shadowRoot.querySelectorAll(".track > .mark")).to.have.length(
-    5
-  );
-  expect(
-    slider.shadowRoot.querySelector(".thumb-container").style.insetInlineStart
-  ).to.equal("50%");
-  const label = slider.querySelector("ag-slider-label");
-  expect(
-    label.shadowRoot.querySelector(".root").style.insetInlineStart
-  ).to.equal("50%");
-  slider.step = 10;
-  slider.orientation = "vertical";
-  await settle();
-  expect(slider.shadowRoot.querySelectorAll(".track > .mark")).to.have.length(
-    3
-  );
-  expect(label.shadowRoot.querySelector(".root").style.top).to.equal("50%");
-  slider.remove();
-  root.append(slider);
-  await settle();
-  expect(slider.shadowRoot.querySelectorAll(".track > .mark")).to.have.length(
-    3
-  );
-  slider.marks = false;
-  await settle();
-  expect(slider.shadowRoot.querySelectorAll(".track > .mark")).to.have.length(
-    0
-  );
-});
-
-it("updates slider values using the keyboard and honours readonly, bounds and reset", async () => {
-  const form = await fixture(
-    '<form><ag-slider aria-label="Volume" name="volume" min="0" max="100" step="10" value="20"></ag-slider></form>'
-  );
-  const slider = form.querySelector("ag-slider");
-  slider.focus();
+it("preserves Home/End, skips disabled radios and emits one native change", async () => {
+  radioForm();
+  use(enhanceControls(root));
+  const [a, , c] = root.querySelectorAll("input");
+  let changes = 0;
+  root.addEventListener("change", () => changes++);
+  a.focus();
+  await sendKeys({ press: "End" });
+  expect(c.checked).to.equal(true);
+  expect(document.activeElement === c).to.equal(true);
+  expect(changes).to.equal(1);
+  await sendKeys({ press: "Home" });
+  expect(a.checked).to.equal(true);
   await sendKeys({ press: "ArrowRight" });
+  expect(c.checked).to.equal(true);
+});
+it("keeps read-only group navigation focusable without changing its value", async () => {
+  radioForm();
+  root.querySelector("fieldset").dataset.readonly = "";
+  use(enhanceControls(root));
+  const [a, , c] = root.querySelectorAll("input");
+  a.focus();
+  await sendKeys({ press: "End" });
+  expect(document.activeElement === c).to.equal(true);
+  expect(a.checked).to.equal(true);
+  expect(c.checked).to.equal(false);
+});
+it("handles right-to-left radio-group navigation", async () => {
+  radioForm();
+  root.dir = "rtl";
+  use(enhanceControls(root));
+  const [a, , c] = root.querySelectorAll("input");
+  a.focus();
+  await sendKeys({ press: "ArrowLeft" });
+  expect(c.checked).to.equal(true);
+});
+it("works as a native range before enhancement and leaves programmatic changes event-free", async () => {
+  const slider = fixture(sliderMarkup({ value: 20 }));
+  const input = slider.querySelector("input");
+  input.focus();
+  await sendKeys({ press: "ArrowRight" });
+  expect(input.value).to.equal("30");
+  let events = 0;
+  input.addEventListener("input", () => events++);
+  const controller = use(enhanceSlider(slider));
+  controller.setValue(70);
+  expect(input.value).to.equal("70");
+  expect(events).to.equal(0);
+});
+it("updates slider fill, labels and marks with nonzero bounds and changing orientation", async () => {
+  const slider = fixture(
+    sliderMarkup({
+      min: 20,
+      max: 40,
+      step: 5,
+      value: 30,
+      withLabels: true,
+      withMarks: true,
+    })
+  );
+  const controller = use(enhanceSlider(slider));
+  expect(slider.style.getPropertyValue("--ag-slider-progress")).to.equal("50%");
+  expect(slider.querySelectorAll(".ag-slider__marks > span")).to.have.length(5);
+  const labels = slider.querySelectorAll(".ag-slider__label");
+  expect(labels[1].style.getPropertyValue("--ag-slider-position")).to.equal(
+    "25%"
+  );
+  controller.input.step = "10";
+  slider.dataset.orientation = "vertical";
   await settle();
-  expect(slider.value).to.equal("30");
+  expect(slider.querySelectorAll(".ag-slider__marks > span")).to.have.length(3);
+  expect(controller.input.getAttribute("aria-orientation")).to.equal(
+    "vertical"
+  );
+  slider.removeAttribute("data-marks");
+  await settle();
+  expect(slider.querySelectorAll(".ag-slider__marks > span")).to.have.length(0);
+});
+it("keeps slider reset, dynamic values, stepping and accessible formatting synchronised", async () => {
+  const form = fixture(`<form>${sliderMarkup({ value: 20, step: 10 })}</form>`);
+  const slider = form.querySelector(".ag-slider");
+  const controller = use(
+    enhanceSlider(slider, { formatValue: (value) => `${value} percent` })
+  );
+  controller.input.focus();
+  await sendKeys({ press: "ArrowRight" });
+  expect(controller.input.getAttribute("aria-valuetext")).to.equal(
+    "30 percent"
+  );
   expect(new FormData(form).get("volume")).to.equal("30");
-  slider.readOnly = true;
-  await settle();
-  await sendKeys({ press: "ArrowRight" });
-  expect(slider.value).to.equal("30");
-  slider.value = "500";
-  await settle();
-  expect(slider.value).to.equal("100");
   form.reset();
   await settle();
-  expect(slider.value).to.equal("20");
-});
-
-it("handles zero slider ranges and invalid steps without unbounded markup", async () => {
-  const slider = await fixture(
-    '<ag-slider min="10" max="10" step="0" marks></ag-slider>'
+  expect(slider.style.getPropertyValue("--ag-slider-progress")).to.equal("20%");
+  controller.input.max = "95";
+  controller.setValue(95);
+  expect(controller.input.value).to.equal("90");
+  expect(controller.input.getAttribute("aria-valuetext")).to.equal(
+    "90 percent"
   );
-  expect(slider.value).to.equal("10");
-  expect(
-    slider.shadowRoot.querySelector(".thumb-container").style.insetInlineStart
-  ).to.equal("0%");
-  slider.max = 100;
-  slider.step = 0.000001;
+});
+it("bounds generated ticks, supports step any and avoids invalid zero-span styles", async () => {
+  const slider = fixture(
+    sliderMarkup({ min: 10, max: 10, step: 0, withMarks: true })
+  );
+  const controller = use(enhanceSlider(slider));
+  expect(slider.style.getPropertyValue("--ag-slider-progress")).to.equal("0%");
+  controller.input.max = "100";
+  controller.input.step = ".000001";
   await settle();
-  expect(slider.shadowRoot.querySelectorAll(".mark").length).to.be.at.most(
-    1001
-  );
+  expect(
+    slider.querySelectorAll(".ag-slider__marks > span").length
+  ).to.be.at.most(1001);
+  controller.input.step = "any";
+  await settle();
+  expect(slider.querySelectorAll(".ag-slider__marks > span")).to.have.length(0);
 });
-
-it("opens a native modal dialog, requests dismissal on Escape, and restores focus on hide", async () => {
-  await fixture(
-    '<button id="opener">Open</button><ag-dialog hidden aria-label="Settings"><ag-button>Close</ag-button></ag-dialog>'
+it("protects a read-only range from pointer and keyboard changes without blocking Tab", async () => {
+  const slider = fixture(sliderMarkup({ value: 20, isReadOnly: true }));
+  const controller = use(enhanceSlider(slider));
+  use(enhanceControls(root));
+  const input = controller.input;
+  input.focus();
+  await sendKeys({ press: "ArrowRight" });
+  expect(input.value).to.equal("20");
+  const rect = input.getBoundingClientRect();
+  await sendMouse({
+    type: "click",
+    position: [
+      Math.round(rect.right - 12),
+      Math.round(rect.top + rect.height / 2),
+    ],
+  });
+  expect(input.value).to.equal("20");
+  // Safari's default macOS Tab order skips buttons; text inputs are always stops.
+  const next = document.createElement("input");
+  next.type = "text";
+  root.append(next);
+  input.focus();
+  await sendKeys({ press: "Tab" });
+  expect(document.activeElement === next).to.equal(true);
+});
+it("supports vertical native range input and RTL filled-track direction", async () => {
+  const slider = fixture(sliderMarkup({ value: 20, orientation: "vertical" }));
+  const controller = use(enhanceSlider(slider));
+  controller.input.focus();
+  await sendKeys({ press: "ArrowDown" });
+  expect(controller.input.value).to.equal("30");
+  slider.dataset.orientation = "horizontal";
+  slider.dir = "rtl";
+  await settle();
+  controller.input.focus();
+  await sendKeys({ press: "ArrowLeft" });
+  expect(controller.input.value).to.equal("40");
+  const track = slider
+    .querySelector(".ag-slider__track")
+    .getBoundingClientRect();
+  const fill = slider.querySelector(".ag-slider__fill").getBoundingClientRect();
+  expect(fill.right).to.be.closeTo(track.right, 1);
+});
+it("keeps optional custom thumb content aligned to native range progress", () => {
+  const slider = fixture(sliderMarkup({ value: 50 }));
+  const thumb = document.createElement("span");
+  thumb.className = "ag-slider__thumb";
+  thumb.textContent = "◆";
+  slider.querySelector(".ag-slider__control").append(thumb);
+  const controller = use(enhanceSlider(slider));
+  controller.setValue(100);
+  const track = slider
+      .querySelector(".ag-slider__track")
+      .getBoundingClientRect(),
+    bounds = thumb.getBoundingClientRect();
+  expect(bounds.left + bounds.width / 2).to.be.closeTo(track.right, 1);
+});
+it("enhances idempotently and stops observing a destroyed slider", async () => {
+  const slider = fixture(sliderMarkup());
+  const controller = use(enhanceSlider(slider));
+  expect(enhanceSlider(slider)).to.equal(controller);
+  controller.destroy();
+  controller.input.value = "80";
+  controller.input.dispatchEvent(new Event("input"));
+  await settle();
+  expect(slider.style.getPropertyValue("--ag-slider-progress")).to.equal("50%");
+  expect(slider.hasAttribute("data-enhanced")).to.equal(false);
+});
+const dialogFixture = () => {
+  fixture(
+    '<button type="button" id="opener">Open</button><dialog class="ag-dialog" aria-labelledby="dialog-title"><h2 id="dialog-title">Settings</h2><button type="button">First</button><button type="button">Last</button></dialog>'
   );
-  const dialog = root.querySelector("ag-dialog");
+  return root.querySelector("dialog");
+};
+it("provides modal behaviour with native HTML before enhancement", async () => {
+  const dialog = dialogFixture();
+  dialog.showModal();
+  expect(dialog.matches(":modal")).to.equal(true);
+  await sendKeys({ press: "Escape" });
+  expect(dialog.open).to.equal(false);
+});
+it("opens declaratively using commandfor when the browser supports invoker commands", async function () {
+  if (!("commandForElement" in HTMLButtonElement.prototype)) this.skip();
+  const dialog = dialogFixture();
+  dialog.id = "declarative-dialog";
+  const opener = root.querySelector("#opener");
+  opener.setAttribute("commandfor", dialog.id);
+  opener.setAttribute("command", "show-modal");
+  opener.click();
+  expect(dialog.open).to.equal(true);
+  dialog.close();
+});
+it("preserves dismissal requests, modal state through exit, and focus restoration", async () => {
+  const dialog = dialogFixture();
+  const controller = use(enhanceDialog(dialog));
   const opener = root.querySelector("#opener");
   opener.focus();
+  let dismissals = 0,
+    closes = 0;
+  dialog.addEventListener("dismiss", () => dismissals++);
+  dialog.addEventListener("close", () => closes++);
+  await controller.show();
+  await sendKeys({ press: "Escape" });
+  expect(dismissals).to.equal(1);
+  expect(dialog.open).to.equal(true);
+  const hiding = controller.hide("saved");
+  expect(dialog.matches(":modal")).to.equal(true);
+  await hiding;
+  await settle();
+  expect(dialog.open).to.equal(false);
+  expect(dialog.returnValue).to.equal("saved");
+  expect(document.activeElement === opener).to.equal(true);
+  expect(closes).to.equal(1);
+});
+it("requests dismissal from backdrop clicks without treating interior clicks as outside", async () => {
+  const dialog = dialogFixture();
+  const controller = use(enhanceDialog(dialog));
   let dismissed = 0;
-  let closed = 0;
   dialog.addEventListener("dismiss", () => dismissed++);
-  dialog.addEventListener("close", () => closed++);
-  await dialog.show();
-  expect(dialog.shadowRoot.querySelector("dialog").matches(":modal")).to.equal(
+  await controller.show();
+  await settle();
+  dialog.querySelector("h2").click();
+  expect(dismissed).to.equal(0);
+  await sendMouse({ type: "click", position: [2, 2] });
+  expect(dismissed).to.equal(1);
+});
+it("keeps the dialog open when showing interrupts an exit and permits later closure", async () => {
+  const dialog = dialogFixture();
+  const controller = use(enhanceDialog(dialog));
+  await controller.show();
+  const hiding = controller.hide();
+  await controller.show();
+  await hiding;
+  expect(dialog.open).to.equal(true);
+  expect(dialog.hasAttribute("data-closing")).to.equal(false);
+  await controller.hide();
+  expect(dialog.open).to.equal(false);
+});
+it("supports non-modal focus containment and an explicit opt-out", async () => {
+  const dialog = dialogFixture();
+  const controller = use(enhanceDialog(dialog));
+  await controller.show({ modal: false });
+  expect(dialog.matches(":modal")).to.equal(false);
+  root.querySelector("#opener").focus();
+  expect(dialog.contains(document.activeElement)).to.equal(true);
+  const [first, last] = dialog.querySelectorAll("button");
+  last.focus();
+  await sendKeys({ press: "Tab" });
+  expect(document.activeElement === first).to.equal(true);
+  await controller.show({ modal: false, trapFocus: false });
+  root.querySelector("#opener").focus();
+  expect(document.activeElement === root.querySelector("#opener")).to.equal(
     true
   );
-  await sendKeys({ press: "Escape" });
-  expect(dismissed).to.equal(1);
-  expect(dialog.hidden).to.equal(false);
-  await dialog.hide();
-  await new Promise((resolve) => requestAnimationFrame(resolve));
-  expect(dialog.hidden).to.equal(true);
-  expect(dialog.shadowRoot.querySelector("dialog").open).to.equal(false);
-  expect(document.activeElement).to.equal(opener);
-  expect(closed).to.equal(1);
 });
-
-it("keeps a dialog open when show interrupts its exit animation", async () => {
-  const dialog = await fixture(
-    "<ag-dialog hidden><button>Content</button></ag-dialog>"
-  );
-  await dialog.show();
-  const hiding = dialog.hide();
-  await dialog.show();
-  await hiding;
-  expect(dialog.hidden).to.equal(false);
-  expect(dialog.shadowRoot.querySelector("dialog").open).to.equal(true);
+it("preserves native custom validity until the application clears it", () => {
+  fixture(checkableMarkup("checkbox"));
+  const input = root.querySelector("input");
+  input.setCustomValidity("Unavailable");
+  input.checked = true;
+  expect(input.checkValidity()).to.equal(false);
+  expect(input.validationMessage).to.equal("Unavailable");
+  input.setCustomValidity("");
+  expect(input.checkValidity()).to.equal(true);
 });
-
-it("honours initially checked radios and updates a required group when cleared", async () => {
-  const form = await fixture(
-    '<form><ag-radio-group name="choice" required><ag-radio value="a" checked>A</ag-radio><ag-radio value="b">B</ag-radio></ag-radio-group></form>'
+it("clears mixed state on enhanced form reset and honours a cancelled reset", async () => {
+  const form = fixture(
+    `<form>${checkableMarkup("checkbox", { isChecked: true })}</form>`
   );
-  const group = form.querySelector("ag-radio-group");
-  expect(group.value).to.equal("a");
-  expect(group.checkValidity()).to.equal(true);
-  group.radios[0].checked = false;
+  use(enhanceControls(form));
+  const input = form.querySelector("input");
+  input.indeterminate = true;
+  form.reset();
   await settle();
-  expect(group.value).to.equal("");
-  expect(group.checkValidity()).to.equal(false);
-  expect(new FormData(form).has("choice")).to.equal(false);
-});
-
-it("keeps a single selection even when radio values are identical", async () => {
-  const group = await fixture(
-    "<ag-radio-group><ag-radio>A</ag-radio><ag-radio>B</ag-radio></ag-radio-group>"
-  );
-  group.radios[1].click();
+  expect(input.indeterminate).to.equal(false);
+  input.indeterminate = true;
+  form.addEventListener("reset", (event) => event.preventDefault());
+  form.reset();
   await settle();
-  expect(group.radios.map((radio) => radio.checked)).to.deep.equal([
-    false,
-    true,
-  ]);
+  expect(input.indeterminate).to.equal(true);
 });
-
-it("releases a radio from group-disabled state when moved out of the group", async () => {
-  const group = await fixture(
-    '<ag-radio-group disabled><ag-radio value="a">A</ag-radio></ag-radio-group>'
-  );
-  const radio = group.radios[0];
-  expect(radio.control.disabled).to.equal(true);
-  root.append(radio);
-  await settle();
-  expect(radio.control.disabled).to.equal(false);
-  radio.click();
-  await settle();
-  expect(radio.checked).to.equal(true);
+it("can enhance an already non-modal dialog and change it to a modal", async () => {
+  const dialog = dialogFixture();
+  dialog.show();
+  const controller = use(enhanceDialog(dialog));
+  await controller.show();
+  expect(dialog.matches(":modal")).to.equal(true);
+  await controller.hide();
 });
-
-it("supports non-modal dialogs with optional focus containment", async () => {
-  await fixture(
-    '<button id="outside">Outside</button><ag-dialog hidden><ag-button>Inside</ag-button></ag-dialog>'
-  );
-  const dialog = root.querySelector("ag-dialog");
-  dialog.modal = false;
-  await dialog.show();
-  expect(dialog.shadowRoot.querySelector("dialog").matches(":modal")).to.equal(
-    false
-  );
-  root.querySelector("#outside").focus();
-  expect(document.activeElement).to.equal(dialog.querySelector("ag-button"));
-  dialog.trapFocus = false;
-  await settle();
-  root.querySelector("#outside").focus();
-  expect(document.activeElement).to.equal(root.querySelector("#outside"));
-});
-
-it("keeps slider state aligned with native range stepping at an uneven maximum", async () => {
-  const slider = await fixture(
-    '<ag-slider min="0" max="95" step="10" value="95"></ag-slider>'
-  );
-  expect(slider.value).to.equal(slider.control.value);
-  expect(Number(slider.value) % 10).to.equal(0);
-});
-
-it("preserves custom validity through updates until it is cleared", async () => {
-  const checkbox = await fixture("<ag-checkbox>Option</ag-checkbox>");
-  checkbox.setCustomValidity("This option is unavailable.");
-  checkbox.checked = true;
-  await settle();
-  expect(checkbox.checkValidity()).to.equal(false);
-  expect(checkbox.validationMessage).to.equal("This option is unavailable.");
-  checkbox.setCustomValidity("");
-  expect(checkbox.checkValidity()).to.equal(true);
-});
-
-it("aligns a right-to-left slider's graphics with its native input", async () => {
-  const slider = await fixture(
-    '<ag-slider dir="rtl" min="0" max="100" value="0" marks><ag-slider-label position="0">Minimum</ag-slider-label></ag-slider>'
-  );
-  const track = slider.shadowRoot
-    .querySelector(".track")
-    .getBoundingClientRect();
-  const thumb = slider.shadowRoot
-    .querySelector(".thumb-container")
-    .getBoundingClientRect();
-  expect(Math.abs(thumb.left + thumb.width / 2 - track.right)).to.be.lessThan(
-    1
-  );
-  slider.focus();
-  await sendKeys({ press: "ArrowLeft" });
-  await settle();
-  expect(slider.value).to.equal("1");
-  expect(
-    slider.shadowRoot.querySelector(".thumb-container").getBoundingClientRect()
-      .left
-  ).to.be.lessThan(thumb.left);
+it("supports enhancement cleanup followed by a new controller", () => {
+  const slider = fixture(sliderMarkup());
+  const first = enhanceSlider(slider);
+  first.destroy();
+  const second = use(enhanceSlider(slider));
+  first.destroy();
+  expect(enhanceSlider(slider) === second).to.equal(true);
 });

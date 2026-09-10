@@ -1,35 +1,30 @@
-import { Button, Variant } from "../index";
-
-export type ButtonArgs = {
-  label: string;
-  variant: Variant;
-  isDangerous: boolean;
-  isDisabled: boolean;
-  isAutoFocused: boolean;
-  ariaLabel: string;
-  onClick: any;
-};
-
+export interface ButtonArgs {
+  label?: string;
+  variant?: string;
+  isDangerous?: boolean;
+  isDisabled?: boolean;
+  isAutoFocused?: boolean;
+  ariaLabel?: string;
+  onClick?: EventListener;
+}
 export function createButton({
-  label,
-  variant,
+  label = "Button Text",
+  variant = "default",
   onClick,
   isDisabled,
   isAutoFocused,
   isDangerous,
   ariaLabel,
 }: ButtonArgs) {
-  const button = new Button();
-
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "ag-button";
   button.textContent = label;
-  if (ariaLabel) button.ariaLabel = ariaLabel;
-  button.setAttribute("variant", variant);
-
-  if (isDisabled) button.setAttribute("disabled", "");
-  if (isAutoFocused) button.setAttribute("autofocus", "");
-  if (isDangerous) button.setAttribute("dangerous", "true");
-
-  button.addEventListener("click", onClick);
-
+  button.dataset.variant = variant;
+  button.disabled = !!isDisabled;
+  button.autofocus = !!isAutoFocused;
+  if (isDangerous) button.dataset.dangerous = "";
+  if (ariaLabel) button.setAttribute("aria-label", ariaLabel);
+  if (onClick) button.addEventListener("click", onClick);
   return button;
 }

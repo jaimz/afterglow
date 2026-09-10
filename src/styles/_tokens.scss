@@ -1,0 +1,206 @@
+// CSS variables stay public and inherit at the point of use, including derived type sizes.
+$gridType: var(--gridType, 4);
+$gridX: var(--gridX, 8);
+$gridY: var(--gridY, 8);
+$body2TextSize: var(
+  --body2-text-size,
+  calc(var(--body-text-size, 16px) / var(--text-scale, 1.2))
+);
+$bodyFontStack: var(
+  --body-font-stack,
+  "Lato",
+  -apple-system,
+  BlinkMacSystemFont,
+  "Segoe UI",
+  sans-serif
+);
+$bodyTextSize: var(--body-text-size, 16px);
+$captionTextSize: var(
+  --caption-text-size,
+  calc(
+    var(
+        --body2-text-size,
+        calc(var(--body-text-size, 16px) / var(--text-scale, 1.2))
+      ) / var(--text-scale, 1.2)
+  )
+);
+$h1TextSize: var(
+  --h1-text-size,
+  calc(
+    var(
+        --h2-text-size,
+        calc(
+          var(
+              --h3-text-size,
+              calc(
+                var(
+                    --h4-text-size,
+                    calc(
+                      var(
+                          --h5-text-size,
+                          calc(
+                            var(--body-text-size, 16px) * var(--text-scale, 1.2)
+                          )
+                        ) * var(--text-scale, 1.2)
+                    )
+                  ) * var(--text-scale, 1.2)
+              )
+            ) * var(--text-scale, 1.2)
+        )
+      ) * var(--text-scale, 1.2)
+  )
+);
+$h2TextSize: var(
+  --h2-text-size,
+  calc(
+    var(
+        --h3-text-size,
+        calc(
+          var(
+              --h4-text-size,
+              calc(
+                var(
+                    --h5-text-size,
+                    calc(var(--body-text-size, 16px) * var(--text-scale, 1.2))
+                  ) * var(--text-scale, 1.2)
+              )
+            ) * var(--text-scale, 1.2)
+        )
+      ) * var(--text-scale, 1.2)
+  )
+);
+$h3TextSize: var(
+  --h3-text-size,
+  calc(
+    var(
+        --h4-text-size,
+        calc(
+          var(
+              --h5-text-size,
+              calc(var(--body-text-size, 16px) * var(--text-scale, 1.2))
+            ) * var(--text-scale, 1.2)
+        )
+      ) * var(--text-scale, 1.2)
+  )
+);
+$h4TextSize: var(
+  --h4-text-size,
+  calc(
+    var(
+        --h5-text-size,
+        calc(var(--body-text-size, 16px) * var(--text-scale, 1.2))
+      ) * var(--text-scale, 1.2)
+  )
+);
+$h5TextSize: var(
+  --h5-text-size,
+  calc(var(--body-text-size, 16px) * var(--text-scale, 1.2))
+);
+$lineHeight: var(--line-height, 1.5);
+$maxLineWidth: var(--max-line-width, 72ch);
+$smallCaptionTextSize: var(
+  --small-caption-text-size,
+  calc(
+    var(
+        --caption-text-size,
+        calc(
+          var(
+              --body2-text-size,
+              calc(var(--body-text-size, 16px) / var(--text-scale, 1.2))
+            ) / var(--text-scale, 1.2)
+        )
+      ) / var(--text-scale, 1.2)
+  )
+);
+$textScale: var(--text-scale, 1.2);
+$titleFontStack: var(
+  --title-font-stack,
+  "Lato",
+  -apple-system,
+  BlinkMacSystemFont,
+  "Segoe UI",
+  sans-serif
+);
+$typeScale: var(--type-scale, 1.2);
+$backdrop: var(--backdrop, #695150);
+$backdropKeyline: var(--backdropKeyline, #b59897);
+$backdropLight: var(--backdropLight, #966a6a);
+$backdropTextElevation: var(
+  --backdropTextElevation,
+  0 1px 2px rgba(0, 0, 0, 0.2)
+);
+$elevationShadow: var(--elevationShadow, 0 1px 4px rgba(0, 0, 0, 0.2));
+$frame-gridType: var(--grid-type, 4px);
+$frame-gridX: var(--grid-x, 8px);
+$frame-gridY: var(--grid-y, 8px);
+$modalScrimFill: var(--modalScrimFill, #4653614c);
+$modalScrimFilter: var(--modalScrimFilter, blur(8px));
+$onBackdrop: var(--onBackdrop, #e8c9c8);
+$onBackdropAlt: var(--onBackdropAlt, #f3eee6);
+$onPanel: var(--onPanel, #53534a);
+$onPanelAlt: var(--onPanelAlt, #64788c);
+$onPaper: var(--onPaper, #53534a);
+$onPaperAlt: var(--onPaperAlt, #64788c);
+$onSurface: var(--onSurface, #53534a);
+$onSurfaceAlt: var(--onSurfaceAlt, #64788c);
+$panel: var(--panel, #f9f9f6);
+$paper: var(--paper, #ffffff);
+$surface: var(--surface, #e5e5e3);
+$ctrlBorder: var(--ctrl-border, rgba(110, 163, 176, 0.6));
+$ctrlFill: var(
+  --ctrl-fill,
+  radial-gradient(
+    102.33% 168.95% at 50% 0%,
+    #ffffff 0%,
+    #ffffff 37.77%,
+    #e6e6e6 100%
+  )
+);
+$ctrlFillActive: var(
+  --ctrl-fill-active,
+  radial-gradient(
+    272.33% 168.95% at 50% 0%,
+    #e6e6e6 0%,
+    #ffffff 90.96%,
+    #f0f0ed 100%
+  )
+);
+$ctrlFillDark: var(--ctrl-fill-dark, #e6e6e6);
+$ctrlFillHi: var(--ctrl-fill-hi, #ffffff);
+$ctrlFillHover: var(
+  --ctrl-fill-hover,
+  radial-gradient(
+    272.33% 168.95% at 50% 0%,
+    #ffffff 0%,
+    #ffffff 40.96%,
+    #e6e6e6 100%
+  )
+);
+$ctrlFillLo: var(--ctrl-fill-lo, #f0f0ed);
+$ctrlFillSolid: var(--ctrl-fill-solid, #007693);
+$ctrlFillSolidDesaturate: var(--ctrlFillSolidDesaturate, #5e8c97);
+$ctrlFillSolidDesaturate40: var(
+  --ctrlFillSolidDesaturate40,
+  rgba(94, 140, 151, 0.4)
+);
+$ctrlFillSolidHi: var(--ctrl-fill-solid-hi, #149cbd);
+$ctrlFillSolidLo: var(--ctrl-fill-solid-lo, #004c5e);
+$ctrlHint: var(--ctrlHint, #6ea3b0);
+$ctrlHint50: var(--ctrlHint50, #6ea3b088);
+$ctrlText: var(--ctrlText, #007693);
+$ctrlTextDesat: var(--ctrlTextDesat, #5e8c97);
+$ctrlTextDesat40: var(--ctrlTextDesat40, #5e8c97);
+$disabledOpacity: var(--disabled-opacity, 0.5);
+$onCtrlFillSolid: var(--on-ctrl-fill-solid, #f3eee6);
+$caution: var(--caution, #ecbb5b);
+$error: var(--error, #cf3558);
+$onCaution: var(--on-caution, #f3eee6);
+$onError: var(--on-error, #f3eee6);
+$onSuccess: var(--on-success, #f3eee6);
+$success: var(--success, #52a96a);
+$motionFastDuration: var(--motionFastDuration, 50ms);
+$motionMediumDuration: var(--motionMediumDuration, 125ms);
+$motionSlowDuration: var(--motionSlowDuration, 250ms);
+$motionEntryCurve: var(--motionEntryCurve, ease-in);
+$motionExitCurve: var(--motionExitCurve, ease-out);
+$motionPush: var(--motionPush, 16px);

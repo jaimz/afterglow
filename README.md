@@ -1,6 +1,12 @@
 # Afterglow
 
-A personal design system implemented as Web Components with [Lit](https://lit.dev), based on the **Afterglow** page in the **Mobile** Figma file.
+A native HTML and SCSS design system based on the **Afterglow** page in the **Mobile** Figma file. Buttons and form controls are real HTML elements. There is no custom-element registration, Shadow DOM, Lit or FAST runtime.
+
+Use HTML and CSS first. Add the optional TypeScript helpers only for dynamic slider decorations, the animated dialog lifecycle, read-only controls or extra radio-group shortcuts. Future components should follow the same rule: a native element that can be styled appropriately does not need a web component.
+
+## Using Afterglow
+
+See [Usage.md](Usage.md) for HTML recipes, CSS classes and variants, theming, optional JavaScript helpers, framework integration and the usage documentation expected for future Web Components.
 
 ## Development
 
@@ -13,83 +19,50 @@ bun run build
 bun run build-storybook
 ```
 
-Storybook is the component workbench. **Afterglow / Overview** demonstrates the components together, including a preferences form and modal dialog. The Vite entry point registers the library; it is not a separate application.
+Storybook uses its HTML renderer. **Afterglow / Overview** demonstrates a working preferences form and animated dialog. **Afterglow / Native HTML / CSS Only** has no Afterglow behaviour helpers; selection and reset still work. **States** covers mixed, disabled, backdrop, read-only and vertical controls. The Vite development page also demonstrates a form without JavaScript.
 
-## Components
+The build produces independent assets:
 
-- **Design tokens:** colours, typography, spacing, elevation, and motion.
-- **Frame:** `ag-background`, `ag-surface`, `ag-panel`, `ag-paper`, `ag-dialog`, and the `ag-appframe` layout shell.
-- **Interact:** `ag-button`, `ag-checkbox`, `ag-radio`, `ag-radio-group`, `ag-switch`, `ag-slider`, and `ag-slider-label`.
-- **Indicate:** error, caution, and success colour tokens; display components are still to come.
-- **Utils:** registration and DOM helpers.
+- `dist/afterglow.css`: the complete stylesheet.
+- `dist/afterglow.mjs`: optional ES module helpers, with TypeScript declarations in `dist/`.
+- `src/styles/afterglow.scss`: Sass entry point; individual modules expose tokens and frame/typography mixins.
 
-Import `src/main.ts` to register all elements, or import an individual component module to register just that component and its dependencies. Classes are also exported for TypeScript consumers. Registration is safe to repeat; `registerAfterglow()` provides an explicit all-components entry point.
+The package exports these as `ag/css`, `ag` and `ag/scss`. You can also copy the compiled CSS into a project without adopting Sass or a JavaScript framework.
 
-```ts
-import "./src/main";
+The build also includes the HTML-only example as `dist/index.html`. Run `bun run build` followed by `bun run preview`, then open [http://127.0.0.1:4173](http://127.0.0.1:4173). Preview uses a fixed loopback address and port to avoid conflicts with macOS AirPlay on port 5000; it reports an error if port 4173 is already occupied.
 
-const button = document.createElement("ag-button");
-button.variant = "primary";
-button.textContent = "Save";
-document.body.append(button);
-await button.updateComplete;
-```
+## Migration from custom elements
 
-The original `provideAGDesignSystem().register(allComponents)` bootstrap remains available as a compatibility wrapper. Component factories are now registration functions, rather than FAST composition factories. Prefixes and templates are owned by Afterglow; there is no FAST dependency-injection container.
+| Previous API                                 | Native replacement                                                            |
+| -------------------------------------------- | ----------------------------------------------------------------------------- |
+| `ag-background`, `ag-surface`, etc.          | Semantic container with the corresponding `.ag-*` class                       |
+| `ag-button`                                  | `<button class="ag-button" type="button">` (or submit/reset explicitly)       |
+| `ag-checkbox`, `ag-radio`, `ag-switch`       | Native labelled input recipe                                                  |
+| `ag-radio-group`                             | Fieldset/legend and same-named radios                                         |
+| `ag-slider`, `ag-slider-label`               | Native range with track/label markup; `enhanceSlider`                         |
+| `ag-dialog.show()` / `.hide()`               | `enhanceDialog(dialog).show()` / `.hide()`                                    |
+| `variant`, `dangerous`, `orientation`        | Corresponding `data-*` attributes on recipe containers                        |
+| `readonly` on a checkable/range              | `data-readonly` plus `enhanceControls`                                        |
+| Slots and `::part()`                         | Ordinary children and documented `.ag-*__*` classes                           |
+| `updateComplete`                             | Native state is synchronous; call `slider.update()` after direct value writes |
+| `provideAGDesignSystem`, component factories | Removed; import CSS and optional helpers                                      |
+| Lit token exports                            | SCSS token variables/mixins and the same public CSS properties                |
 
-## Themes and styling
+This is an intentional markup/API migration. Existing custom tags no longer render controls. `input` and `change` originate from the actual inputs and bubble to group/form listeners; they are not re-emitted from wrapper elements. Keep behaviour tests on outcomes, rather than Shadow DOM structure or framework lifecycle promises.
 
-Tokens are CSS custom-property references with built-in defaults. Components work without installing a global stylesheet, and variables inherit through shadow DOM. Override variables on the document, a containing element, or an individual component:
-
-```css
-.preferences {
-  --ctrlText: #006779;
-  --ctrl-fill-solid: #006779;
-  --panel: #fffdf6;
-}
-```
-
-The existing token names are retained, including the distinction between unitless grid tokens (`--gridX`, `--gridY`, `--gridType`) and length-valued tokens (`--grid-x`, `--grid-y`, `--grid-type`). TypeScript token exports are Lit `CSSResult` values for use in stylesheets; FAST's token `setValueFor`/`getValueFor` APIs are replaced by standard CSS variables. Typography uses reusable `bodyText`, `captionText`, and `headerText(level)` styles.
-
-Slots and CSS parts remain the customization points. For example, buttons expose `start`, default-content, and `end` slots; switches expose `checked-message` and `unchecked-message`; sliders support labelled positions with `ag-slider-label`.
-
-## State, forms, and dialogs
-
-Controls use native buttons/inputs inside shadow DOM, with `ElementInternals` for outer-form participation. This requires browsers with form-associated custom elements and native `<dialog>` support.
-
-- Boolean attributes use HTML presence semantics: remove `disabled` or `checked` to make the attribute false. `disabled="false"` still means disabled.
-- `checked` attributes and `defaultChecked` set the reset state; the `checked` property controls the current state. Checkbox `indeterminate` is a property.
-- User interaction emits bubbling `input` and `change` events. Setting properties does not itself emit user-interaction events.
-- `name`, `value`, `required`, `disabled`, `readonly`, form reset, and disabled fieldsets are supported. Radio groups submit one selected value under the group's `name`; use distinct radio values.
-- Buttons default to `type="button"`. Submit buttons honour validation, `name`/`value`, and form overrides. Their submit event uses a temporary native button as `event.submitter`.
-- Lit renders asynchronously. Await `updateComplete` before inspecting rendered content after a property change.
-- Checkbox `solid` is the filled variant; `filled` is accepted as an alias.
-
-Dialogs preserve `anchor`, `stretch`, `hidden`, `show()`, `hide()`, and the `dismiss`, `cancel`, and `close` events. As before, dismissal requests do not automatically hide the component:
-
-```ts
-const dialog = document.querySelector("ag-dialog")!;
-dialog.addEventListener("dismiss", () => dialog.hide());
-await dialog.show();
-```
-
-`show()` and `hide()` now return promises; `hide()` resolves after the exit animation and rendered closure. Modal dialogs use the browser's top layer, focus containment, and inert background. `modal = false` uses a non-modal dialog; its optional `trapFocus` behaviour defaults to true. Reduced-motion preferences disable dialog animation.
-
-## Browser tests
-
-The browser regression suite covers registration, theme inheritance, native keyboard activation, events, form values and reset, disabled fieldsets, radio coordination, slider updates, and dialog lifecycle/focus.
-
-Install the Playwright-managed Chromium browser once, then run the suite:
+## Browser verification
 
 ```sh
-bunx playwright install chromium
+bunx playwright install chromium firefox webkit
 bun run test
+bun run test:browsers
 ```
 
-Alternatively, use an installed Google Chrome:
+To use installed Google Chrome for the Chromium slot:
 
 ```sh
 WTR_BROWSER_CHANNEL=chrome bun run test
+WTR_BROWSER_CHANNEL=chrome bun run test:browsers
 ```
 
-`bun run test:watch` runs the same tests in watch mode. Browser tests use Web Test Runner with esbuild to compile the TypeScript components directly. The suite is currently configured for Chromium; Firefox and Safari still need a separate compatibility pass.
+Web Test Runner compiles SCSS in memory and tests native forms, labels, keyboard input, theme inheritance, read-only states, range bounds/marks/RTL/vertical behaviour and dialog lifecycle across Chromium, Firefox and WebKit. WebKit is the automated engine check; it does not replace testing Safari/iOS with real touch and assistive technology. The compiled library and Storybook builds are separate checks.

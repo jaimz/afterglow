@@ -1,21 +1,7 @@
-import { Paper } from "./index";
-
-export default {
-  title: "Frame/Paper",
-};
-
-export const Default = () => {
-  let p = new Paper();
-  p.style.position = "absolute";
-  p.style.width = "300px";
-  p.style.height = "500px";
-
-  return p;
-};
+import { element } from "../../stories/fixtures";
+export default { title: "Frame/Paper" };
+export const Default = () =>
+  element('<div class="ag-paper" style="width:300px;height:500px;"></div>');
 Default.parameters = {
-  docs: {
-    source: {
-      code: "<ag-paper />",
-    },
-  },
+  docs: { source: { code: '<div class="ag-paper">Content</div>' } },
 };

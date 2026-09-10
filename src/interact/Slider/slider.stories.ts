@@ -22,38 +22,17 @@ export const Default: any = Template.bind({});
 Default.args = {
   isDisabled: false,
 };
-Default.parameters = {
-  docs: {
-    source: {
-      code: `<ag-slider></ag-slider>`,
-    },
-  },
-};
 
 export const Marks: any = Template.bind({});
 Marks.args = {
   isDisabled: false,
   withLabels: true,
 };
-Marks.parameters = {
-  docs: {
-    source: {
-      code: `<ag-slider></ag-slider>`,
-    },
-  },
-};
 
 export const Backdrop: any = Template.bind({});
 Backdrop.args = {
   variant: "backdrop",
   isDisabled: false,
-};
-Backdrop.parameters = {
-  docs: {
-    source: {
-      code: '<ag-slider variant="backdrop"></ag-slider>',
-    },
-  },
 };
 
 export const BackdropMarks: any = Template.bind({});

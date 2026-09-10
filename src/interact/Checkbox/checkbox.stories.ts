@@ -37,13 +37,6 @@ Default.args = {
   indicatorIcon: false,
   onChange: action("checkbox-onchange"),
 };
-Default.parameters = {
-  docs: {
-    source: {
-      code: `<ag-checkbox>Label</ag-checkbox>`,
-    },
-  },
-};
 
 export const Solid: any = Template.bind({});
 Solid.args = {

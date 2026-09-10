@@ -7,12 +7,14 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && tsc -p tsconfig.build.json && sass --no-source-map src/styles/afterglow.scss dist/afterglow.css",
     "preview": "vite preview",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "test": "web-test-runner --config web-test-runner.config.mjs",
-    "test:watch": "web-test-runner --config web-test-runner.config.mjs --watch"
+    "test:watch": "web-test-runner --config web-test-runner.config.mjs --watch",
+    "build:css": "sass --no-source-map src/styles/afterglow.scss dist/afterglow.css",
+    "test:browsers": "WTR_BROWSERS=chromium,firefox,webkit web-test-runner --config web-test-runner.config.mjs"
   },
   "devDependencies": {
     "@babel/core": "^7.18.2",
@@ -22,18 +24,34 @@
     "@storybook/addon-links": "^6.5.7",
     "@storybook/builder-vite": "^0.2.2",
     "@storybook/builder-webpack4": "^6.5.7",
+    "@storybook/html": "6.5.10",
     "@storybook/manager-webpack4": "^6.5.7",
-    "@storybook/web-components": "^6.5.7",
     "@web/dev-server-esbuild": "^2.0.0",
     "@web/test-runner": "^1.0.0",
     "@web/test-runner-commands": "^1.0.1",
     "@web/test-runner-playwright": "^1.0.0",
     "babel-loader": "^8.2.5",
+    "sass": "^1.104.0",
     "typescript": "^5.9.3",
-    "vite": "^3.0.8"
-  },
-  "dependencies": {
-    "lit": "^3.3.3",
+    "vite": "^3.0.8",
     "prettier": "^2.6.2"
-  }
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/main.d.ts",
+      "import": "./dist/afterglow.mjs"
+    },
+    "./css": "./dist/afterglow.css",
+    "./scss": "./src/styles/afterglow.scss",
+    "./scss/*": "./src/styles/*"
+  },
+  "files": [
+    "dist",
+    "src/styles",
+    "Usage.md"
+  ],
+  "sideEffects": [
+    "**/*.css",
+    "**/*.scss"
+  ]
 }

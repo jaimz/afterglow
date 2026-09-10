@@ -1,22 +1,7 @@
-import { Background } from "./index";
-
-export default {
-  title: "Frame/Background",
-};
-
-export const Default = () => {
-  let b = new Background();
-  b.style.position = "absolute";
-  b.style.top = "0px";
-  b.style.left = "0px";
-
-  return b;
-};
-Default.args = {};
+import { element } from "../../stories/fixtures";
+export default { title: "Frame/Background" };
+export const Default = () =>
+  element('<div class="ag-background" style="width:100%;height:100vh;"></div>');
 Default.parameters = {
-  docs: {
-    source: {
-      code: "<ag-background />",
-    },
-  },
+  docs: { source: { code: '<div class="ag-background">Content</div>' } },
 };

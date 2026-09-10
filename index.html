@@ -2,12 +2,45 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
+    <link rel="stylesheet" href="/src/styles/afterglow.scss" />
+    <title>Afterglow</title>
   </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
+  <body class="ag-body ag-surface">
+    <main
+      class="ag-panel"
+      style="max-width: 640px; margin: 48px auto; padding: 32px"
+    >
+      <h1 class="ag-h1">Afterglow</h1>
+      <p>
+        Native HTML, styled with SCSS. Explore the complete system in Storybook.
+      </p>
+      <form>
+        <label class="ag-checkbox"
+          ><input class="ag-check__input" type="checkbox" name="updates" /><span
+            class="ag-check__control"
+            aria-hidden="true"
+            ><svg
+              class="ag-check__tick"
+              width="14"
+              height="10"
+              viewBox="0 0 14 10"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                d="M13 1L4.75 9L1 5.36364"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              /></svg></span
+          ><span class="ag-check__label">Receive updates</span></label
+        >
+        <p><button type="reset" class="ag-button">Reset</button></p>
+      </form>
+      <a href="http://localhost:6006" class="ag-button" data-variant="primary"
+        >Open Storybook</a
+      >
+    </main>
   </body>
 </html>

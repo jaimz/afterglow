@@ -1,21 +1,7 @@
-import { Surface } from "./index";
-
-export default {
-  title: "Frame/Surface",
-};
-
-export const Default = () => {
-  let s = new Surface();
-  s.style.position = "absolute";
-  s.style.width = "300px";
-  s.style.height = "500px";
-
-  return s;
-};
+import { element } from "../../stories/fixtures";
+export default { title: "Frame/Surface" };
+export const Default = () =>
+  element('<div class="ag-surface" style="width:300px;height:500px;"></div>');
 Default.parameters = {
-  docs: {
-    source: {
-      code: "<ag-surface />",
-    },
-  },
+  docs: { source: { code: '<div class="ag-surface">Content</div>' } },
 };

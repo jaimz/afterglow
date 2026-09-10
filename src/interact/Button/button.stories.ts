@@ -9,7 +9,7 @@ export default {
     variant: {
       control: {
         type: "select",
-        options: ["default", "flat", "primary", "outline", "fab"],
+        options: ["default", "flat", "primary", "outline"],
       },
     },
     isDisabled: { control: "boolean" },
@@ -33,25 +33,11 @@ Default.args = {
   variant: "default",
   onClick: action("clicked"),
 } as ButtonArgs;
-Default.parameters = {
-  docs: {
-    source: {
-      code: "<ag-button>ButtonText</ag-button>",
-    },
-  },
-};
 
 export const Primary: any = Template.bind({});
 Primary.args = {
   ...Default.args,
   variant: "primary",
-};
-Primary.parameters = {
-  docs: {
-    source: {
-      code: '<ag-button variant="primary">Button Text</ag-button>',
-    },
-  },
 };
 
 export const Outline: any = Template.bind({});
@@ -59,23 +45,9 @@ Outline.args = {
   ...Default.args,
   variant: "outline",
 };
-Outline.parameters = {
-  docs: {
-    source: {
-      code: '<ag-button variant="outline">Button Text</ag-button>',
-    },
-  },
-};
 
 export const Flat: any = Template.bind({});
 Flat.args = {
   ...Default.args,
   variant: "flat",
-};
-Flat.parameters = {
-  docs: {
-    source: {
-      code: '<ag-button variant="flat">Button Text</ag-button>',
-    },
-  },
 };
