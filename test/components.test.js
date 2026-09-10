@@ -17,6 +17,16 @@ const fixture = (markup) => {
   root.innerHTML = markup;
   return root.firstElementChild;
 };
+// Firefox rounds some computed font sizes. Compare token calculations with the
+// browser's rendering of the equivalent literal size, not unrounded JS numbers.
+const renderedFontSize = (pixels) => {
+  const reference = document.createElement("span");
+  reference.style.fontSize = `${pixels}px`;
+  root.append(reference);
+  const size = parseFloat(getComputedStyle(reference).fontSize);
+  reference.remove();
+  return size;
+};
 before(async () => {
   const link = document.createElement("link");
   link.rel = "stylesheet";
@@ -82,7 +92,51 @@ it("preserves frame colours, hidden semantics and inherited scoped theme overrid
   panel.hidden = true;
   expect(getComputedStyle(panel).display).to.equal("none");
 });
+it("makes default tokens available to consumer CSS without fallbacks", () => {
+  const sample = fixture(
+    `<div style="background:var(--panel);color:var(--ctrlText);font-size:var(--h1-text-size);padding:calc(var(--gridX) * 1px)">Consumer content</div>`
+  );
+  const styles = getComputedStyle(sample);
+  expect(styles.backgroundColor).to.equal("rgb(249, 249, 246)");
+  expect(styles.color).to.equal("rgb(0, 118, 147)");
+  expect(styles.paddingTop).to.equal("8px");
+  expect(parseFloat(styles.fontSize)).to.be.closeTo(16 * 1.2 ** 5, 0.02);
+  const defaults = getComputedStyle(document.documentElement);
+  expect(defaults.getPropertyValue("--panel").trim()).to.equal("#f9f9f6");
+  expect(defaults.getPropertyValue("--motionSlowDuration").trim()).to.equal(
+    "250ms"
+  );
+});
+it("allows root overrides and restores default values when removed", () => {
+  const html = document.documentElement;
+  const original = html.getAttribute("style");
+  const sample = fixture(
+    '<div style="background:var(--panel);font-size:var(--h1-text-size)">Consumer heading</div>'
+  );
+  try {
+    html.style.setProperty("--panel", "rgb(12, 34, 56)");
+    html.style.setProperty("--body-text-size", "20px");
+    html.style.setProperty("--text-scale", "1.5");
+    expect(getComputedStyle(sample).backgroundColor).to.equal(
+      "rgb(12, 34, 56)"
+    );
+    expect(parseFloat(getComputedStyle(sample).fontSize)).to.equal(
+      renderedFontSize(20 * 1.5 ** 5)
+    );
+  } finally {
+    if (original === null) html.removeAttribute("style");
+    else html.setAttribute("style", original);
+  }
+  expect(getComputedStyle(sample).backgroundColor).to.equal(
+    "rgb(249, 249, 246)"
+  );
+  expect(parseFloat(getComputedStyle(sample).fontSize)).to.be.closeTo(
+    16 * 1.2 ** 5,
+    0.02
+  );
+});
 it("keeps dependent typography tokens responsive to local theme changes", () => {
+  root.classList.add("ag-theme");
   fixture(
     '<div class="ag-caption">Caption</div><h1 class="ag-h1">Heading</h1>'
   );
@@ -96,6 +150,25 @@ it("keeps dependent typography tokens responsive to local theme changes", () => 
   expect(
     parseFloat(getComputedStyle(root.querySelector("h1")).fontSize)
   ).to.be.closeTo(32 * 1.2 ** 5, 0.02);
+});
+it("recalculates nested themes while inheriting base tokens and explicit type overrides", () => {
+  fixture(`<section class="ag-theme" style="--body-text-size:20px;--text-scale:1.5;--panel:rgb(20,30,40);--h5-text-size:36px">
+    <div><h1 class="ag-h1" id="outer-heading">Outer</h1><span class="ag-caption" id="outer-caption">Caption</span></div>
+    <section class="ag-theme" style="--text-scale:1.25">
+      <div class="ag-body"><h1 class="ag-h1" id="inner-heading">Inner</h1><span class="ag-caption" id="inner-caption">Caption</span></div>
+      <div id="consumer" style="background:var(--panel);font-size:var(--body2-text-size)">Consumer content</div>
+    </section>
+  </section>`);
+  const size = (id) =>
+    parseFloat(getComputedStyle(root.querySelector(id)).fontSize);
+  expect(size("#outer-heading")).to.equal(renderedFontSize(36 * 1.5 ** 4));
+  expect(size("#outer-caption")).to.equal(renderedFontSize(20 / 1.5 ** 2));
+  expect(size("#inner-heading")).to.equal(renderedFontSize(20 * 1.25 ** 5));
+  expect(size("#inner-caption")).to.equal(renderedFontSize(20 / 1.25 ** 2));
+  expect(size("#consumer")).to.equal(renderedFontSize(20 / 1.25));
+  expect(
+    getComputedStyle(root.querySelector("#consumer")).backgroundColor
+  ).to.equal("rgb(20, 30, 40)");
 });
 it("preserves native button activation, disabled state and the actual submitter", async () => {
   const form = fixture(

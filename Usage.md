@@ -455,7 +455,24 @@ The helper sets `aria-readonly` and temporarily suspends `required` on read-only
 
 ## Themes and SCSS
 
-Override public CSS custom properties on `:root` for an application theme or on an ancestor for a local theme:
+The stylesheet declares all 70 public design tokens on `:root`, including colours, typography, spacing and motion. These defaults come from the maps in [`src/styles/_tokens.scss`](src/styles/_tokens.scss). Component styles reference the declared variables, and your own CSS can use them without repeating fallback values:
+
+```css
+.summary {
+  background: var(--panel);
+  color: var(--onPanel);
+  font-size: var(--h3-text-size);
+}
+```
+
+Override public CSS custom properties on `:root` for an application theme or on an ancestor for a local theme. When changing typography inputs locally, add `ag-theme` to that ancestor so the derived type sizes recalculate there:
+
+```html
+<section class="ag-theme ag-panel ag-body preferences">
+  <h2 class="ag-h2">Preferences</h2>
+  <p class="ag-caption">This caption uses the local type scale.</p>
+</section>
+```
 
 ```css
 .preferences {
@@ -469,7 +486,11 @@ Override public CSS custom properties on `:root` for an application theme or on 
 }
 ```
 
-Use the exact token spelling: some names are camelCase and others are hyphenated. See [`src/styles/_tokens.scss`](src/styles/_tokens.scss) for the full names and fallbacks. Derived typography follows the custom properties at the point of use. Grid tokens `--gridX`, `--gridY` and `--gridType` are unitless; `--grid-x`, `--grid-y` and `--grid-type` represent lengths.
+Use the exact token spelling: some names are camelCase and others are hyphenated. Grid tokens `--gridX`, `--gridY` and `--gridType` are unitless; `--grid-x`, `--grid-y` and `--grid-type` represent lengths.
+
+`ag-theme` recalculates the eight derived type tokens: heading sizes 1–5, body2, caption and small caption. It inherits base tokens, such as colours, body size and scale, from the surrounding theme. Nested `ag-theme` containers can override just the inputs they need. Explicit derived overrides, such as `--h5-text-size: 24px`, belong on that same theme container and inherit through its descendants. A nested theme starts a fresh calculation of derived sizes.
+
+This boundary is necessary because CSS resolves variable references where a custom property is declared, before inheritance. Changing `--body-text-size` on an arbitrary descendant changes body text there, but does not recalculate an inherited heading or caption token; add `ag-theme` at that point. Colour overrides do not need the class, and root overrides recalculate the root's derived tokens automatically. See the [CSS variable inheritance rules](https://www.w3.org/TR/css-variables-1/#cycles).
 
 Load Afterglow before application overrides and keep resets from overriding recipe descendants unintentionally. Styles apply through ordinary CSS; there is no Shadow DOM boundary or global reset. Preserve visible keyboard focus and accessible colour contrast when theming. Afterglow includes forced-colour rules and reduced-motion handling.
 
@@ -480,8 +501,15 @@ Use the compiled stylesheet for the HTML recipes. If you are composing your own 
 ```scss
 @use "pkg:ag/scss/frames" as frames;
 @use "pkg:ag/scss/typography" as type;
+@use "pkg:ag/scss/tokens" as tokens;
 
 .preferences {
+  @include tokens.theme(
+    (
+      "body-text-size": 18px,
+      "text-scale": 1.25,
+    )
+  );
   @include frames.panel;
   @include type.body;
   padding: 2rem;
@@ -490,7 +518,9 @@ Use the compiled stylesheet for the HTML recipes. If you are composing your own 
 
 These package imports use Dart Sass's [Node package importer](https://sass-lang.com/documentation/cli/dart-sass/#pkg-importernode). The full stylesheet is available as `pkg:ag/scss` when compiling Sass instead of importing the compiled CSS; include it once.
 
-Frame mixins are `background`, `surface`, `panel` and `paper`; typography mixins are `body` and `caption`. Their modules also emit the corresponding utility classes. Importing only these modules does not include button, checkable, slider or dialog styles. Use the full entry point when using those recipes.
+`tokens.theme()` is the Sass equivalent of an `ag-theme` boundary: it emits the derived expressions and then any supplied overrides. Map keys use the CSS token name without `--`; unknown names produce a Sass error. With this mixin, the example needs only `class="preferences"` to establish its local theme. You can also use `tokens.theme()` with no arguments and declare overrides in the same rule yourself.
+
+Frame mixins are `background`, `surface`, `panel` and `paper`; typography mixins are `body` and `caption`. Their modules emit the default token theme once per Sass compilation, along with the corresponding utility classes. Importing only these modules does not include button, checkable, slider or dialog styles. Use the full entry point when using those recipes.
 
 ## Using a UI framework
 

@@ -27,7 +27,7 @@ The build produces independent assets:
 - `dist/afterglow.mjs`: optional ES module helpers, with TypeScript declarations in `dist/`.
 - `src/styles/afterglow.scss`: Sass entry point; individual modules expose tokens and frame/typography mixins.
 
-The package exports these as `ag/css`, `ag` and `ag/scss`. You can also copy the compiled CSS into a project without adopting Sass or a JavaScript framework.
+The package exports these as `ag/css`, `ag` and `ag/scss`. The stylesheet includes default CSS token declarations; use `ag-theme` or the Sass `tokens.theme()` mixin for a local typography theme. See [the theming guide](Usage.md#themes-and-scss). You can also copy the compiled CSS into a project without adopting Sass or a JavaScript framework.
 
 The build also includes the HTML-only example as `dist/index.html`. Run `bun run build` followed by `bun run preview`, then open [http://127.0.0.1:4173](http://127.0.0.1:4173). Preview uses a fixed loopback address and port to avoid conflicts with macOS AirPlay on port 5000; it reports an error if port 4173 is already occupied.
 
