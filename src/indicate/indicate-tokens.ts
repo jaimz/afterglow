@@ -1,15 +1,10 @@
-import { DesignToken } from "@microsoft/fast-foundation";
+import { token } from "../design-tokens/token";
 
-export const error = DesignToken.create<string>("error").withDefault("#cf3558");
-export const onError =
-  DesignToken.create<string>("on-error").withDefault("#f3eee6");
+export const error = token("error", "#cf3558");
+export const onError = token("on-error", "#f3eee6");
 
-export const caution =
-  DesignToken.create<string>("caution").withDefault("#ecbb5b");
-export const onCaution =
-  DesignToken.create<string>("on-caution").withDefault("#f3eee6");
+export const caution = token("caution", "#ecbb5b");
+export const onCaution = token("on-caution", "#f3eee6");
 
-export const success =
-  DesignToken.create<string>("success").withDefault("#52a96a");
-export const onSuccess =
-  DesignToken.create<string>("on-success").withDefault("#f3eee6");
+export const success = token("success", "#52a96a");
+export const onSuccess = token("on-success", "#f3eee6");

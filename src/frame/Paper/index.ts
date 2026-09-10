@@ -1,8 +1,19 @@
-import { FASTElement, customElement } from "@microsoft/fast-element";
-import { paperStyles as styles } from "./paper.styles";
+import { LitElement, html } from "lit";
+import { paperStyles } from "./paper.styles";
+import { registerElement } from "../../utils/register";
 
-@customElement({
-  name: "ag-paper",
-  styles,
-})
-export class Paper extends FASTElement {}
+export class Paper extends LitElement {
+  static styles = paperStyles;
+  protected render() {
+    return html`<slot></slot>`;
+  }
+}
+
+export const agPaper = () => registerElement("ag-paper", Paper);
+agPaper();
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "ag-paper": Paper;
+  }
+}

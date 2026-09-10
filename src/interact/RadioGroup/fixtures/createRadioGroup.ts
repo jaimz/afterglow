@@ -6,7 +6,7 @@ export type RadioGroupArgs = {
   orientation: string;
   childCount: number;
   isDisabled: boolean;
-  isReadonly: boolean;
+  isReadOnly: boolean;
 };
 
 function createRadioGroupWithChildren(childCount: number) {
@@ -15,6 +15,7 @@ function createRadioGroupWithChildren(childCount: number) {
   for (let i = 0; i < childCount; ++i) {
     const radio = new AGRadio();
     radio.textContent = "Radio Label";
+    radio.value = `option-${i + 1}`;
     group.appendChild(radio);
   }
 
@@ -26,7 +27,7 @@ export function createRadioGroup({
   orientation,
   childCount,
   isDisabled,
-  isReadonly,
+  isReadOnly,
 }: RadioGroupArgs) {
   const group = createRadioGroupWithChildren(childCount);
 
@@ -39,7 +40,7 @@ export function createRadioGroup({
 
   orientation && group.setAttribute("orientation", orientation.toLowerCase());
   isDisabled && group.setAttribute("disabled", "");
-  isReadonly && group.setAttribute("readonly", "");
+  isReadOnly && group.setAttribute("readonly", "");
 
   return group;
 }

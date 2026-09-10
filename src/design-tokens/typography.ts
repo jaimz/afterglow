@@ -1,5 +1,5 @@
-import { CSSDirective, cssPartial } from "@microsoft/fast-element";
-import { DesignToken } from "@microsoft/fast-foundation";
+import { css } from "lit";
+import { token } from "./token";
 
 const defaultFontStack =
   '"Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
@@ -11,85 +11,77 @@ const baseFontSize = "16px";
 const scaleNormal = 1.2;
 // const scaleSlow = 1.125;
 
-export const typeScale =
-  DesignToken.create<number>("type-scale").withDefault(scaleNormal);
+export const typeScale = token("type-scale", scaleNormal);
 
-export const bodyFontStack =
-  DesignToken.create<string>("body-font-stack").withDefault(defaultFontStack);
+export const bodyFontStack = token("body-font-stack", defaultFontStack);
 
-export const titleFontStack =
-  DesignToken.create<string>("title-font-stack").withDefault(defaultFontStack);
+export const titleFontStack = token("title-font-stack", defaultFontStack);
 
-export const lineHeight =
-  DesignToken.create<number>("line-height").withDefault(1.5);
+export const lineHeight = token("line-height", 1.5);
 
-export const bodyTextSize =
-  DesignToken.create<string>("body-text-size").withDefault(baseFontSize);
+export const bodyTextSize = token("body-text-size", baseFontSize);
 
-export const textScale =
-  DesignToken.create<number>("text-scale").withDefault(scaleNormal);
+export const textScale = token("text-scale", scaleNormal);
 
-export const h5TextSize = DesignToken.create<string>(
-  "h5-text-size"
-).withDefault("calc(var(--body-text-size) * var(--text-scale))");
+export const h5TextSize = token(
+  "h5-text-size",
+  css`calc(${bodyTextSize} * ${textScale})`
+);
 
-export const h4TextSize = DesignToken.create<string>(
-  "h4-text-size"
-).withDefault("calc(var(--h5-text-size) * var(--text-scale))");
+export const h4TextSize = token(
+  "h4-text-size",
+  css`calc(${h5TextSize} * ${textScale})`
+);
 
-export const h3TextSize = DesignToken.create<string>(
-  "h3-text-size"
-).withDefault("calc(var(--h4-text-size) * var(--text-scale))");
+export const h3TextSize = token(
+  "h3-text-size",
+  css`calc(${h4TextSize} * ${textScale})`
+);
 
-export const h2TextSize = DesignToken.create<string>(
-  "h2-text-size"
-).withDefault("calc(var(--h3-text-size) * var(--text-scale))");
+export const h2TextSize = token(
+  "h2-text-size",
+  css`calc(${h3TextSize} * ${textScale})`
+);
 
-export const h1TextSize = DesignToken.create<string>(
-  "h1-text-size"
-).withDefault("calc(var(--h2-text-size) * var(--text-scale))");
+export const h1TextSize = token(
+  "h1-text-size",
+  css`calc(${h2TextSize} * ${textScale})`
+);
 
-export const body2TextSize = DesignToken.create<string>(
-  "body2-text-size"
-).withDefault("calc(var(--body-text-size) / var(--text-scale))");
+export const body2TextSize = token(
+  "body2-text-size",
+  css`calc(${bodyTextSize} / ${textScale})`
+);
 
-export const captionTextSize = DesignToken.create<string>(
-  "caption-text-size"
-).withDefault("calc(var(--body2-text-size) / var(--text-scale))");
+export const captionTextSize = token(
+  "caption-text-size",
+  css`calc(${body2TextSize} / ${textScale})`
+);
 
-export const smallCaptionTextSize = DesignToken.create<string>(
-  "small=caption-text-size"
-).withDefault("calc(var(--caption-text-size) / var(--text-scale))");
+export const smallCaptionTextSize = token(
+  "small-caption-text-size",
+  css`calc(${captionTextSize} / ${textScale})`
+);
 
-export const maxLineWidth =
-  DesignToken.create<string>("max-line-width").withDefault("72ch");
+export const maxLineWidth = token("max-line-width", "72ch");
 
-export const bodyText = cssPartial`
-  font-family: ${defaultFontStack};
+export const bodyText = css`
+  font-family: ${bodyFontStack};
   font-size: ${bodyTextSize};
   line-height: ${lineHeight};
 `;
 
-export const captionText = cssPartial`
-  font-family: ${defaultFontStack};
+export const captionText = css`
+  font-family: ${bodyFontStack};
   font-size: ${captionTextSize};
   line-height: ${lineHeight};
 `;
 
-export class HeaderText extends CSSDirective {
-  private readonly _level: number;
-
-  constructor(level: number) {
-    super();
-    this._level = level;
-  }
-
-  createCSS() {
-    const level = Math.max(Math.max(this._level, 5), 1);
-
-    return `
-      font-family: ${titleFontStack};
-      font-size: var(--h${level}-text-size);
-    `;
-  }
+/** Reusable heading styles; level 1 is the largest heading. */
+export function headerText(level: number) {
+  const sizes = [h1TextSize, h2TextSize, h3TextSize, h4TextSize, h5TextSize];
+  return css`
+    font-family: ${titleFontStack};
+    font-size: ${sizes[Math.max(0, Math.min(4, Math.trunc(level) - 1))]};
+  `;
 }

@@ -1,4 +1,5 @@
-import { allComponents } from "./custom-element";
-import { provideAGDesignSystem } from "./ag-design-system";
+import { registerAfterglow } from "./custom-element";
 
-export const AGDesignSystem = provideAGDesignSystem().register(allComponents);
+registerAfterglow();
+export { registerAfterglow };
+export { provideAGDesignSystem } from "./ag-design-system";

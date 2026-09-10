@@ -1,10 +1,13 @@
-import { css } from "@microsoft/fast-element";
-import { display } from "@microsoft/fast-foundation";
+import { css } from "lit";
 
 import { frame, interact, designGrid, typography } from "../../design-tokens";
 
 export const radioStyles = css`
-  ${display("inline-flex")} :host {
+  :host([hidden]) {
+    display: none;
+  }
+  :host {
+    display: inline-flex;
     --diameter: calc(${designGrid.gridX} * 3px);
     align-items: center;
     outline: none;

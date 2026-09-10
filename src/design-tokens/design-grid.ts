@@ -1,7 +1,5 @@
-import { DesignToken } from "@microsoft/fast-foundation";
+import { token } from "./token";
 
-const { create } = DesignToken;
-
-export const gridX = create<number>("gridX").withDefault(8);
-export const gridY = create<number>("gridY").withDefault(8);
-export const gridType = create<number>("gridType").withDefault(4);
+export const gridX = token("gridX", 8);
+export const gridY = token("gridY", 8);
+export const gridType = token("gridType", 4);

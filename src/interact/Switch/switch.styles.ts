@@ -1,5 +1,4 @@
-import { css } from "@microsoft/fast-element";
-import { display } from "@microsoft/fast-foundation";
+import { css } from "lit";
 import {
   designGrid,
   motion,
@@ -9,7 +8,11 @@ import {
 } from "../../design-tokens";
 
 export const switchStyles = css`
-  ${display("inline-flex")} :host {
+  :host([hidden]) {
+    display: none;
+  }
+  :host {
+    display: inline-flex;
     --indicator-radius: 20px;
     --switch-width: calc(
       calc(${designGrid.gridX} * 4 + ${designGrid.gridType}) * 1px
@@ -42,6 +45,7 @@ export const switchStyles = css`
 
   .indicator {
     position: relative;
+    left: 0;
     width: var(--indicator-radius);
     height: var(--indicator-radius);
     border-radius: 50%;
@@ -58,7 +62,7 @@ export const switchStyles = css`
   }
 
   :host([variant="backdrop"]) .switch::before {
-    // height: calc(${designGrid.gridY} - 2 * 1px);
+    /* Track outline on backdrop surfaces. */
     border: 1px solid ${frame.backdropKeyline};
     background: none;
   }
@@ -117,5 +121,10 @@ export const switchStyles = css`
 
   :host(.checked) .checked-message {
     display: block;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .indicator {
+      transition: none;
+    }
   }
 `;

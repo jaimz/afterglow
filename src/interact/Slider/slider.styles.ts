@@ -1,19 +1,21 @@
-import { css } from "@microsoft/fast-element";
-import { DesignToken, display } from "@microsoft/fast-foundation";
+import { css } from "lit";
 import { designGrid, interact, frame } from "../../design-tokens";
-import { opacify } from "../../utils/colours";
+import { token } from "../../design-tokens/token";
 
-const backdropTrack = DesignToken.create<string>("backdrop-track");
-backdropTrack.withDefault((element) => {
-  const original = frame.onBackdrop.getValueFor(element);
-  return opacify(original, 0.4);
-});
+const backdropTrack = token(
+  "backdrop-track",
+  css`color-mix(in srgb, ${frame.onBackdrop} 40%, transparent)`
+);
 
 export const sliderStyles = css`
-  ${display("inline-grid")} :host {
+  :host([hidden]) {
+    display: none;
+  }
+  :host {
+    display: inline-grid;
     --thumb-diameter: 20px;
     --track-width: calc(calc(${designGrid.gridType} - 1) * 1px);
-    --track-corner-radius: calc(var(--track-width) / 2 * 1px);
+    --track-corner-radius: calc(var(--track-width) / 2);
     align-items: center;
     width: 100%;
     user-select: none;
@@ -49,7 +51,7 @@ export const sliderStyles = css`
 
   :host(.vertical) .positioning-region {
     height: 100%;
-    grid-template-columns: calc(var(--thumb-diameter) * 1px) 1fr;
+    grid-template-columns: var(--thumb-diameter) 1fr;
   }
 
   .thumb {

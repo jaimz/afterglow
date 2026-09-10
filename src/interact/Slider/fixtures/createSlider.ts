@@ -40,11 +40,11 @@ export function createSlider({
   if (withLabels) {
     slider.innerHTML = `
       <ag-slider-label position="${min}">${min}</ag-slider-label>
-      <ag-slider-label position="${(max - min) / 4}">${
-      (max - min) / 4
+      <ag-slider-label position="${min + (max - min) / 4}">${
+      min + (max - min) / 4
     }</ag-slider-label>
-      <ag-slider-label position="${(max - min) * 0.75}">${
-      (max - min) * 0.75
+      <ag-slider-label position="${min + (max - min) * 0.75}">${
+      min + (max - min) * 0.75
     }</ag-slider-label>    
       <ag-slider-label position="${max}">${max}</ag-slider-label>
     `;

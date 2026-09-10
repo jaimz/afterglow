@@ -1,5 +1,5 @@
-import { DesignToken } from "@microsoft/fast-foundation";
-import { CSSDirective } from "@microsoft/fast-element";
+import { token } from "./token";
+import { css, unsafeCSS } from "lit";
 
 export const motionFastDuration = 50;
 export const motionMediumDuration = 125;
@@ -14,24 +14,26 @@ export const motionExitCurve = "ease-out";
 
 export const motionPush = 16;
 
-export const motionFastDurationToken = DesignToken.create<string>(
-  "motionFastDuration"
-).withDefault(`${motionFastDuration}ms`);
-export const motionMediumDurationToken = DesignToken.create<string>(
-  "motionMediumDuration"
-).withDefault(`${motionMediumDuration}ms`);
-export const motionSlowDurationToken = DesignToken.create<string>(
-  "motionSlowDuration"
-).withDefault(`${motionSlowDuration}ms`);
-export const motionPushToken = DesignToken.create<string>(
-  "motionPush"
-).withDefault(`${motionPush}px`);
+export const motionFastDurationToken = token(
+  "motionFastDuration",
+  `${motionFastDuration}ms`
+);
+export const motionMediumDurationToken = token(
+  "motionMediumDuration",
+  `${motionMediumDuration}ms`
+);
+export const motionSlowDurationToken = token(
+  "motionSlowDuration",
+  `${motionSlowDuration}ms`
+);
+export const motionPushToken = token("motionPush", `${motionPush}px`);
 
-export const motionEntryCurveToken =
-  DesignToken.create<string>("motionEntryCurve").withDefault(motionEntryCurve);
+export const motionEntryCurveToken = token(
+  "motionEntryCurve",
+  motionEntryCurve
+);
 
-export const motionExitCurveToken =
-  DesignToken.create<string>("motionExitCurve").withDefault(motionExitCurve);
+export const motionExitCurveToken = token("motionExitCurve", motionExitCurve);
 
 type MotionDirection = "entrance" | "exit";
 
@@ -53,28 +55,20 @@ const directionToCurve = (d: MotionDirection) => {
   }
 };
 
-export class Motion extends CSSDirective {
-  private readonly _properties: string | string[];
-  private readonly _direction: MotionDirection;
-
-  constructor(
-    properties: string | string[],
-    direction: MotionDirection = "entrance"
-  ) {
-    super();
-    this._properties = properties;
-    this._direction = direction;
-  }
-
-  createCSS() {
-    const props = Array.isArray(this._properties)
-      ? this._properties.join(" ")
-      : this._properties;
-    const speed = directionToSpeed(this._direction);
-    const curve = directionToCurve(this._direction);
-
-    return `t${props} ${speed} ${curve}`;
-  }
+/** A transition value suitable for interpolation in a Lit stylesheet. */
+export function motionTransition(
+  properties: string | string[],
+  direction: MotionDirection = "entrance"
+) {
+  const curve =
+    direction === "entrance" ? motionEntryCurveToken : motionExitCurveToken;
+  return css`
+    ${unsafeCSS(
+      (Array.isArray(properties) ? properties : [properties])
+        .map((p) => `${p} ${motionSlowDurationToken} ${curve}`)
+        .join(", ")
+    )}
+  `;
 }
 
 export const animateEntry = (el: Element, keyframes: Keyframe[]) => {
@@ -91,7 +85,9 @@ const animateTransition = (
   direction: MotionDirection
 ) => {
   return el.animate(keyframes, {
-    duration: directionToSpeed(direction),
+    duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? 0
+      : directionToSpeed(direction),
     easing: directionToCurve(direction),
     iterations: 1,
     fill: "forwards",

@@ -1,4 +1,4 @@
-import { css, cssPartial } from "@microsoft/fast-element";
+import { css } from "lit";
 import {
   backdrop,
   backdropLight,
@@ -6,7 +6,7 @@ import {
   backdropTextElevation,
 } from "../frame-tokens";
 
-export const backgroundMix = cssPartial`
+export const backgroundMix = css`
   width: 100%;
   height: 100%;
   background: radial-gradient(
@@ -19,7 +19,11 @@ export const backgroundMix = cssPartial`
 `;
 
 export const backgroundStyles = css`
+  :host([hidden]) {
+    display: none;
+  }
   :host {
+    display: block;
     ${backgroundMix}
   }
 `;

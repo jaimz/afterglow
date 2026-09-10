@@ -1,13 +1,26 @@
-import {
-  FASTElement,
-  customElement,
-  attr,
-  html,
-} from "@microsoft/fast-element";
+import { LitElement, css, html } from "lit";
+import { property } from "lit/decorators.js";
+import { registerElement } from "../../utils/register";
 
-const template = html<AppFrame>`<body></body> `;
-
-@customElement({ name: "ag-appframe", template })
-export class AppFrame extends FASTElement {
-  @attr pageTitle?: string;
+export class AppFrame extends LitElement {
+  static styles = css`
+    :host {
+      display: block;
+      min-height: 100%;
+    }
+    :host([hidden]) {
+      display: none;
+    }
+  `;
+  @property() pageTitle = "";
+  protected render() {
+    return html`<slot></slot>`;
+  }
+}
+export const agAppFrame = () => registerElement("ag-appframe", AppFrame);
+agAppFrame();
+declare global {
+  interface HTMLElementTagNameMap {
+    "ag-appframe": AppFrame;
+  }
 }

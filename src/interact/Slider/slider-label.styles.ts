@@ -1,9 +1,12 @@
-import { css } from "@microsoft/fast-element";
-import { display } from "@microsoft/fast-foundation";
+import { css } from "lit";
 import { designGrid, typography } from "../../design-tokens";
 
 export const sliderLabelStyles = css`
-  ${display("block")} :host {
+  :host([hidden]) {
+    display: none;
+  }
+  :host {
+    display: block;
     ${typography.captionText};
   }
   .root {
@@ -54,7 +57,7 @@ export const sliderLabelStyles = css`
   :host(.vertical) .container {
     grid-template-columns: auto auto;
     grid-template-rows: 0;
-    min-width: calc(var(--thumb-diameter) * 1px);
-    height: calc(var(--thumb-diameter) * 1px);
+    min-width: var(--thumb-diameter);
+    height: var(--thumb-diameter);
   }
 `;

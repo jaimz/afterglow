@@ -1,11 +1,14 @@
-import { css } from "@microsoft/fast-element";
-import { display } from "@microsoft/fast-foundation";
+import { css } from "lit";
 
 import { typography, frame, indicate, interact } from "../../design-tokens";
 import { ctrlFillLo } from "../interact-tokens";
 
 const BaseButtonStyles = css`
-  ${display("inline-flex")} :host {
+  :host([hidden]) {
+    display: none;
+  }
+  :host {
+    display: inline-flex;
     outline: none;
     font-family: ${typography.bodyFontStack};
     line-height: ${typography.lineHeight};
@@ -137,7 +140,7 @@ const OutlineButtonStyles = css`
   }
 `;
 
-export const buttonStyles = () => css`
+export const buttonStyles = css`
   ${BaseButtonStyles}
   ${FlatButtonStyles}
   ${PrimaryButtonStyles}

@@ -3,7 +3,7 @@ import { AGSwitch, Variant } from "..";
 export type SwitchArgs = {
   variant: Variant;
   label: string;
-  isChecked: string;
+  isChecked: boolean;
   isDisabled: boolean;
 };
 
@@ -17,7 +17,7 @@ export function createSwitch({
 
   swtch.setAttribute("variant", variant);
   // label && (swtch.textContent = label);
-  isChecked && swtch.setAttribute("checked", isChecked);
+  isChecked && swtch.setAttribute("checked", "");
   isDisabled && swtch.setAttribute("disabled", "");
 
   swtch.innerHTML = `

@@ -5,7 +5,7 @@ export type ButtonArgs = {
   variant: Variant;
   isDangerous: boolean;
   isDisabled: boolean;
-  isAutoFocussed: boolean;
+  isAutoFocused: boolean;
   ariaLabel: string;
   onClick: any;
 };
@@ -15,16 +15,18 @@ export function createButton({
   variant,
   onClick,
   isDisabled,
-  isAutoFocussed,
+  isAutoFocused,
   isDangerous,
+  ariaLabel,
 }: ButtonArgs) {
   const button = new Button();
 
   button.textContent = label;
+  if (ariaLabel) button.ariaLabel = ariaLabel;
   button.setAttribute("variant", variant);
 
   if (isDisabled) button.setAttribute("disabled", "");
-  if (isAutoFocussed) button.setAttribute("autofocus", "");
+  if (isAutoFocused) button.setAttribute("autofocus", "");
   if (isDangerous) button.setAttribute("dangerous", "true");
 
   button.addEventListener("click", onClick);

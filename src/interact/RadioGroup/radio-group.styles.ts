@@ -1,10 +1,13 @@
-import { css } from "@microsoft/fast-element";
-import { display } from "@microsoft/fast-foundation";
+import { css } from "lit";
 
 import { frame, typography, designGrid } from "../../design-tokens";
 
 export const radioGroupStyles = css`
-  ${display("flex")} :host {
+  :host([hidden]) {
+    display: none;
+  }
+  :host {
+    display: flex;
     align-items: flex-start;
     flex-direction: column;
   }

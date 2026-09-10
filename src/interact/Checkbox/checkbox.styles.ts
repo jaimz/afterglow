@@ -1,10 +1,13 @@
-import { css } from "@microsoft/fast-element";
-import { display } from "@microsoft/fast-foundation";
+import { css } from "lit";
 
 import { frame, interact, designGrid, typography } from "../../design-tokens";
 
 export const checkboxStyles = css`
-  ${display("inline-flex")} :host {
+  :host([hidden]) {
+    display: none;
+  }
+  :host {
+    display: inline-flex;
     align-items: center;
     outline: none;
     user-select: none;
@@ -54,13 +57,13 @@ export const checkboxStyles = css`
     opacity: 0;
   }
 
-  :host([variant="solid"]) .checked-indicator,
-  :host([variant="solid"]) .indeterminate-indicator {
+  :host(:is([variant="solid"], [variant="filled"])) .checked-indicator,
+  :host(:is([variant="solid"], [variant="filled"])) .indeterminate-indicator {
     color: ${interact.onCtrlFillSolid};
   }
 
-  :host([varant="backdrop"]) .checked-indicator,
-  :host([varant="backdrop"]) .indeterminate-indicator {
+  :host([variant="backdrop"]) .checked-indicator,
+  :host([variant="backdrop"]) .indeterminate-indicator {
     color: ${frame.backdrop};
   }
 
@@ -73,7 +76,7 @@ export const checkboxStyles = css`
     color: ${frame.onBackdrop};
   }
 
-  :host(.checked[variant="solid"]) .control {
+  :host(.checked:is([variant="solid"], [variant="filled"])) .control {
     border: 1px solid ${interact.ctrlFillSolid};
     background: ${interact.ctrlFillSolid};
   }

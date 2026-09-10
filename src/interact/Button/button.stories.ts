@@ -9,12 +9,12 @@ export default {
     variant: {
       control: {
         type: "select",
-        options: ["Default", "Flat", "Primary", "Outline", "FAB"],
+        options: ["default", "flat", "primary", "outline", "fab"],
       },
     },
     isDisabled: { control: "boolean" },
     isAutoFocused: { control: "boolean" },
-    ariaLabel: { control: 'text" ' },
+    ariaLabel: { control: "text" },
     isDangerous: { control: "boolean" },
     onClick: {
       action: "clicked",

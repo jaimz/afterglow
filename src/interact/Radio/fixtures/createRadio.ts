@@ -3,7 +3,7 @@ import { AGRadio, Variant } from "..";
 export type RadioArgs = {
   variant: Variant;
   label: string;
-  isChecked: string;
+  isChecked: boolean;
   isDisabled: boolean;
   isAutoFocused: boolean;
   isReadOnly: boolean;
@@ -27,7 +27,7 @@ export function createRadio({
   label && (radio.textContent = label);
   isChecked && radio.setAttribute("checked", isChecked.toString());
   isDisabled && radio.setAttribute("disabled", "");
-  isAutoFocused && radio.setAttribute("autofocused", "");
+  isAutoFocused && radio.setAttribute("autofocus", "");
   isReadOnly && radio.setAttribute("readonly", "");
   hasValue && radio.setAttribute("value", "v");
 

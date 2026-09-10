@@ -3,7 +3,7 @@ import { AGCheckbox, Variant } from "../index";
 export type CheckboxArgs = {
   variant: Variant;
   label: string;
-  isChecked: string;
+  isChecked: boolean;
   isIndeterminate: boolean;
   isDisabled: boolean;
   isAutoFocused: boolean;
@@ -30,7 +30,7 @@ export function createCheckbox({
   isChecked && checkbox.setAttribute("checked", isChecked.toString());
   isIndeterminate && (checkbox.indeterminate = isIndeterminate);
   isDisabled && checkbox.setAttribute("disabled", "");
-  isAutoFocused && checkbox.setAttribute("autofocused", "");
+  isAutoFocused && checkbox.setAttribute("autofocus", "");
   isReadOnly && checkbox.setAttribute("readonly", "");
   hasValue && checkbox.setAttribute("value", "v");
 

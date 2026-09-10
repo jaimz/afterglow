@@ -12,7 +12,7 @@ export default {
     },
     childCount: { control: "number" },
     isDisabled: { control: "boolean" },
-    isreadonly: { control: "boolean" },
+    isReadOnly: { control: "boolean" },
   },
 };
 

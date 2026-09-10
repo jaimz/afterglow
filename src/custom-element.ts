@@ -1,5 +1,4 @@
 import { agButton } from "./interact/Button";
-import { Container } from "@microsoft/fast-foundation";
 import { agDialog } from "./frame/Dialog";
 import { agCheckbox } from "./interact/Checkbox";
 import { agRadio } from "./interact/Radio";
@@ -7,17 +6,13 @@ import { agRadioGroup } from "./interact/RadioGroup";
 import { agSwitch } from "./interact/Switch";
 import { agSlider } from "./interact/Slider";
 import { agSliderLabel } from "./interact/Slider/slider-label";
+import { agBackground } from "./frame/Background";
+import { agSurface } from "./frame/Surface";
+import { agPanel } from "./frame/Panel";
+import { agPaper } from "./frame/Paper";
+import { agAppFrame } from "./frame/AppFrame";
 
-export { agButton };
-export { agDialog };
-export { agCheckbox };
-export { agRadio };
-export { agRadioGroup };
-export { agSwitch };
-export { agSlider };
-export { agSliderLabel };
-
-export const allComponents = {
+export {
   agButton,
   agDialog,
   agCheckbox,
@@ -26,15 +21,29 @@ export const allComponents = {
   agSwitch,
   agSlider,
   agSliderLabel,
-  register(container?: Container, ...rest: any[]) {
-    if (!container) {
-      return;
-    }
-
-    for (const key in this) {
-      if (key === "register") continue;
-
-      (this as any)[key]().register(container, ...rest);
-    }
-  },
+  agBackground,
+  agSurface,
+  agPanel,
+  agPaper,
+  agAppFrame,
 };
+
+const registrations = [
+  agButton,
+  agDialog,
+  agCheckbox,
+  agRadio,
+  agRadioGroup,
+  agSwitch,
+  agSlider,
+  agSliderLabel,
+  agBackground,
+  agSurface,
+  agPanel,
+  agPaper,
+  agAppFrame,
+];
+export function registerAfterglow(): void {
+  registrations.forEach((register) => register());
+}
+export const allComponents = { register: registerAfterglow };
