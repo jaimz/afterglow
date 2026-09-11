@@ -95,6 +95,12 @@ $defaults: (
   "motionEntryCurve": ease-in,
   "motionExitCurve": ease-out,
   "motionPush": 16px,
+  "notification-message-min-width": 160px,
+  "notification-message-max-width": 320px,
+  "notification-offset": 16px,
+  "notification-gap": 12px,
+  "notification-padding-block": 18px,
+  "notification-padding-inline": 16px,
 );
 
 // These expressions must be declared again at each local theme boundary so
@@ -215,3 +221,9 @@ $motionSlowDuration: token("motionSlowDuration");
 $motionEntryCurve: token("motionEntryCurve");
 $motionExitCurve: token("motionExitCurve");
 $motionPush: token("motionPush");
+$notificationMessageMinWidth: token("notification-message-min-width");
+$notificationMessageMaxWidth: token("notification-message-max-width");
+$notificationOffset: token("notification-offset");
+$notificationGap: token("notification-gap");
+$notificationPaddingBlock: token("notification-padding-block");
+$notificationPaddingInline: token("notification-padding-inline");

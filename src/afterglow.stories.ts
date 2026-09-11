@@ -1,4 +1,10 @@
-import { enhanceControls, enhanceDialog, enhanceSlider } from "./main";
+import {
+  enhanceControls,
+  enhanceDialog,
+  enhanceNotification,
+  enhanceSlider,
+} from "./main";
+import { notificationMarkup } from "./indicate/Notification/fixtures/createNotification";
 import {
   checkableMarkup,
   element,
@@ -110,6 +116,7 @@ export const Overview = () => {
       </section>
     </div>
     <dialog class="ag-dialog" aria-labelledby="overview-dialog-title"><div class="dialog-content"><h2 id="overview-dialog-title">A moment of focus</h2><p>Afterglow's dialog keeps the surrounding page out of the way.</p><button type="button" class="ag-button" id="close-dialog" data-variant="primary">Close dialog</button></div></dialog>
+    ${notificationMarkup("overview-saved", "success", "Preferences saved.")}
   </main>`);
   page
     .querySelectorAll<HTMLElement>(".ag-slider")
@@ -123,11 +130,17 @@ export const Overview = () => {
     void controller.hide();
   dialog.addEventListener("dismiss", () => void controller.hide());
   const form = page.querySelector("form")!;
+  const notification = track(
+    enhanceNotification(page.querySelector<HTMLElement>("#overview-saved")!, {
+      timeout: 5000,
+    })
+  );
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     page.querySelector("output")!.textContent = `Saved: ${JSON.stringify(
       Object.fromEntries(new FormData(form))
     )}`;
+    void notification.show();
   });
   return page;
 };

@@ -7,13 +7,13 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && tsc -p tsconfig.build.json && sass --no-source-map src/styles/afterglow.scss dist/afterglow.css",
+    "build": "tsc && vite build && tsc -p tsconfig.build.json && node scripts/build-styles.mjs",
     "preview": "vite preview",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "test": "web-test-runner --config web-test-runner.config.mjs",
     "test:watch": "web-test-runner --config web-test-runner.config.mjs --watch",
-    "build:css": "sass --no-source-map src/styles/afterglow.scss dist/afterglow.css",
+    "build:css": "node scripts/build-styles.mjs",
     "test:browsers": "WTR_BROWSERS=chromium,firefox,webkit web-test-runner --config web-test-runner.config.mjs"
   },
   "devDependencies": {

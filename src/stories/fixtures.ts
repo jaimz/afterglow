@@ -11,7 +11,9 @@ export function track<T extends { destroy(): void }>(controller: T): T {
 export function element(markup: string): HTMLElement {
   const template = document.createElement("template");
   template.innerHTML = markup.trim();
-  return template.content.firstElementChild as HTMLElement;
+  // Template content has an inert ownerDocument until adopted. Helpers may be
+  // initialized before Storybook mounts the returned element.
+  return document.adoptNode(template.content.firstElementChild as HTMLElement);
 }
 export function escapeHTML(value: string | number) {
   return String(value).replace(

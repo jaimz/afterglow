@@ -1,6 +1,7 @@
 import { esbuildPlugin } from "@web/dev-server-esbuild";
 import { playwrightLauncher } from "@web/test-runner-playwright";
 import { compile } from "sass";
+import { readFileSync } from "node:fs";
 const css = compile("src/styles/afterglow.scss").css;
 const products = (process.env.WTR_BROWSERS || "chromium").split(",");
 export default {
@@ -14,6 +15,15 @@ export default {
       serve(context) {
         if (context.path === "/afterglow.css")
           return { body: css, type: "css" };
+        if (
+          /^\/assets\/notification\/(info|alert|success|caution|close)\.svg$/.test(
+            context.path
+          )
+        )
+          return {
+            body: readFileSync(`src/styles${context.path}`),
+            type: "image/svg+xml",
+          };
       },
     },
   ],

@@ -6,8 +6,9 @@
 @use "checkable";
 @use "slider";
 @use "dialog";
+@use "notification";
 
 // Explicit component display rules must never override HTML's hidden attribute.
-:is(.ag-appframe, .ag-background, .ag-surface, .ag-panel, .ag-paper, .ag-button, .ag-checkbox, .ag-radio, .ag-switch, .ag-radio-group, .ag-slider, .ag-dialog)[hidden] {
+:is(.ag-appframe, .ag-background, .ag-surface, .ag-panel, .ag-paper, .ag-button, .ag-checkbox, .ag-radio, .ag-switch, .ag-radio-group, .ag-slider, .ag-dialog, .ag-notification)[hidden] {
   display: none !important;
 }

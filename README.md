@@ -2,7 +2,7 @@
 
 A native HTML and SCSS design system based on the **Afterglow** page in the **Mobile** Figma file. Buttons and form controls are real HTML elements. There is no custom-element registration, Shadow DOM, Lit or FAST runtime.
 
-Use HTML and CSS first. Add the optional TypeScript helpers only for dynamic slider decorations, the animated dialog lifecycle, read-only controls or extra radio-group shortcuts. Future components should follow the same rule: a native element that can be styled appropriately does not need a web component.
+Use HTML and CSS first. Add the optional TypeScript helpers for dynamic slider decorations, animated dialogs, notification timing and announcements, read-only controls or extra radio-group shortcuts. Future components should follow the same rule: a native element that can be styled appropriately does not need a web component.
 
 ## Using Afterglow
 
@@ -24,6 +24,7 @@ Storybook uses its HTML renderer. **Afterglow / Overview** demonstrates a workin
 The build produces independent assets:
 
 - `dist/afterglow.css`: the complete stylesheet.
+- `dist/assets/`: exported Notification icons referenced by the stylesheet; keep this folder beside the CSS when serving it directly.
 - `dist/afterglow.mjs`: optional ES module helpers, with TypeScript declarations in `dist/`.
 - `src/styles/afterglow.scss`: Sass entry point; individual modules expose tokens and frame/typography mixins.
 

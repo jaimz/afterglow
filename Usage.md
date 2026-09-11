@@ -12,6 +12,7 @@ This guide describes the current consumer API. New components and changes to exi
 - [Radios and radio groups](#radios-and-radio-groups)
 - [Switches](#switches)
 - [Sliders](#sliders)
+- [Notifications](#notifications)
 - [Dialogs](#dialogs)
 - [Forms and optional control behaviour](#forms-and-optional-control-behaviour)
 - [Themes and SCSS](#themes-and-scss)
@@ -21,7 +22,7 @@ This guide describes the current consumer API. New components and changes to exi
 
 ## How to use the API
 
-Load Afterglow's compiled stylesheet once, before your application's overrides. The examples below assume it is already loaded. With a bundler, the stylesheet import is `import "ag/css"`; a plain HTML page can link to a served copy of `afterglow.css`.
+Load Afterglow's compiled stylesheet once, before your application's overrides. The examples below assume it is already loaded. With a bundler, the stylesheet import is `import "ag/css"`; a plain HTML page can link to a served copy of `afterglow.css`. When serving compiled files directly, keep the accompanying `dist/assets/` folder beside the CSS file so Notification icons resolve. Bundlers process these relative asset URLs when importing the stylesheet.
 
 Then use native HTML with Afterglow's classes:
 
@@ -49,13 +50,14 @@ When a recipe needs a helper, import it from `ag` and initialise it after the ma
 
 ## Choose the behaviour you need
 
-| Part of the system              | HTML and CSS provide                                                                     | Optional JavaScript provides                                                                                |
-| ------------------------------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Frames and typography           | Backgrounds, colour, depth and type styles                                               | Nothing required                                                                                            |
-| Buttons                         | Appearance, focus, activation and native form actions                                    | Your application's action handlers                                                                          |
-| Checkboxes, radios and switches | Selection, labels, keyboard activation, disabled states and form participation           | `enhanceControls` adds read-only behaviour, extra radio shortcuts and mixed-state reset handling            |
-| Sliders                         | A styled native range input with native values and interaction                           | `enhanceSlider` synchronises the custom fill, marks and label positions, and normalises vertical/RTL arrows |
-| Dialogs                         | A styled native dialog, modal behaviour and HTML invoker commands in supporting browsers | `enhanceDialog` adds animated closing, dismissal requests and optional non-modal focus containment          |
+| Part of the system              | HTML and CSS provide                                                                     | Optional JavaScript provides                                                                                 |
+| ------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Frames and typography           | Backgrounds, colour, depth and type styles                                               | Nothing required                                                                                             |
+| Buttons                         | Appearance, focus, activation and native form actions                                    | Your application's action handlers                                                                           |
+| Checkboxes, radios and switches | Selection, labels, keyboard activation, disabled states and form participation           | `enhanceControls` adds read-only behaviour, extra radio shortcuts and mixed-state reset handling             |
+| Sliders                         | A styled native range input with native values and interaction                           | `enhanceSlider` synchronises the custom fill, marks and label positions, and normalises vertical/RTL arrows  |
+| Notifications                   | Four visual variants, native popover visibility, six positions and a close button        | `enhanceNotification` adds optional timeouts, placement within a view, stacking, animation and announcements |
+| Dialogs                         | A styled native dialog, modal behaviour and HTML invoker commands in supporting browsers | `enhanceDialog` adds animated closing, dismissal requests and optional non-modal focus containment           |
 
 All Storybook examples use this same native implementation. **Overview** combines controls with helpers. **Native HTML / CSS Only** demonstrates controls without Afterglow helpers; **States** includes enhanced behaviours; **Declarative Dialog** demonstrates HTML invoker commands. Storybook itself uses JavaScript to render these examples.
 
@@ -323,6 +325,119 @@ slider.destroy();
 
 `setValue()` does not dispatch `input` or `change` events. Notify application state explicitly when changing a value programmatically. Attribute changes to bounds, step and label positions are observed, and the helper follows native input/change events and form reset.
 
+## Notifications
+
+Notifications follow the [Figma Notification design](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=149-43): an icon, message and close button. They use native HTML and `popover="manual"`, with an optional helper for timing and announcements. There is no custom element to register.
+
+This complete HTML example can be opened and dismissed without an Afterglow helper:
+
+```html
+<button
+  type="button"
+  class="ag-button"
+  popovertarget="saved-notification"
+  popovertargetaction="show"
+>
+  Show notification
+</button>
+<div
+  id="saved-notification"
+  class="ag-notification"
+  data-variant="success"
+  data-position="bottom-right"
+  popover="manual"
+>
+  <span class="ag-notification__icon" aria-hidden="true"></span>
+  <p class="ag-notification__message">Your changes have been saved.</p>
+  <button
+    type="button"
+    class="ag-notification__close"
+    aria-label="Dismiss notification"
+    popovertarget="saved-notification"
+    popovertargetaction="hide"
+  ></button>
+</div>
+```
+
+Keep the native close button and message element. The icon is decorative: CSS uses the original Figma SVGs as masks so their colours follow the theme. The close button has a larger hit area than its visible glyph. Omit `popover` only for an inline notification managed by your application.
+
+The notification sizes itself around its contents: the message has a minimum width of `160px` and a maximum of `320px`, with icons, gaps and padding added around it. Longer text wraps at the maximum. In a narrow view, a popover's message can shrink below the minimum to keep the close button visible.
+
+| `data-variant`                     | Appearance                                        |
+| ---------------------------------- | ------------------------------------------------- |
+| `default` (also used when omitted) | Slate background with information icon            |
+| `alert`                            | Red background with alert icon                    |
+| `success`                          | Green background with check icon                  |
+| `caution`                          | Yellow background with caution icon and dark text |
+
+Info (`default`) and error (red `alert`) icons are `20 × 20px`; the success icon is `16 × 11px`, and the warning (yellow `caution`) icon is `20 × 17px`.
+
+`data-position` accepts `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center` or `bottom-right`. The default is `top-right`. Left and right mean physical corners, including in RTL layouts. Native manual popovers remain open through outside clicks and Escape; their close buttons still work. See [manual popover behaviour](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API/Using#using_manual_popover_state).
+
+### Timed or manual dismissal
+
+Add the helper for automatic dismissal, animation, screen-reader announcements and stacking:
+
+```ts
+import { enhanceNotification } from "ag";
+
+const element = document.querySelector<HTMLElement>("#saved-notification")!;
+const notification = enhanceNotification(element, {
+  position: "bottom-right",
+  timeout: 5000,
+});
+
+// Call after saving, or from another application event:
+await notification.show();
+
+// Overrides apply to this opening. Zero keeps it open until dismissed.
+await notification.show({ timeout: 0, position: "top-center" });
+
+// Programmatic dismissal:
+await notification.hide();
+
+// When the owning view is removed:
+notification.destroy();
+```
+
+`timeout` is in milliseconds and defaults to **0**, requiring a close-button or programmatic dismissal. A positive timeout begins after entry animation. It pauses while the notification is hovered, contains keyboard focus, or the document is hidden, then resumes with the remaining time. Showing an already-open notification resets its timeout and announces the current message.
+
+`show()` and `hide()` resolve after their animations finish; `open` reports native visibility, including during exit. The helper honours reduced motion and does not focus the notification when showing it. If dismissal removes the focused close button, it restores the focus captured when opening.
+
+The helper emits a bubbling `close` event after dismissal. `event.detail.reason` is `close-button`, `timeout`, `programmatic` or `native`. This is a completion event, not a cancellable dismissal request. Native `hidePopover()` closes immediately and is reported as `native`; use the helper's `hide()` for animated closing.
+
+Separate helper-enabled notifications at the same position in the same view stack vertically, with the oldest nearest the edge. Closing one removes its gap. Reuse an element for a replaceable message, or create separate elements and controllers for separate notifications. Use unique IDs for native popover buttons.
+
+### Position within a view
+
+Pass a mounted element as `container` to use that view's visible bounds:
+
+```ts
+const view = document.querySelector<HTMLElement>("#editor-view")!;
+await notification.show({ container: view, position: "top-right", timeout: 0 });
+```
+
+The helper follows resizing and scrolling. `container: null` uses the viewport. Positioning does not move the markup: put the notification inside the view in the DOM when it should inherit that view's theme. Native popovers use the browser's top layer, so container overflow does not clip them.
+
+### Announcements and styling
+
+The helper announces only message text through a persistent polite live region. Set `announcement: "assertive"` for an urgent interruption, or `"off"` when the application already announces the same status. The visual `alert` variant does not automatically make the announcement assertive. Keep notifications with essential actions open using `timeout: 0`.
+
+The HTML-only example provides visibility and dismissal; use the helper when announcing dynamic application status. `destroy()` removes the helper's live region, observers and listeners. Application listeners remain your responsibility.
+
+| CSS token                          | Default | Use                                                 |
+| ---------------------------------- | ------- | --------------------------------------------------- |
+| `--notification-message-min-width` | `160px` | Minimum text width; reduced for narrow popover views |
+| `--notification-message-max-width` | `320px` | Maximum text width before wrapping                  |
+| `--notification-offset`            | `16px`  | Distance from view edges                            |
+| `--notification-gap`               | `12px`  | Gap between children and between stacked cards       |
+| `--notification-padding-block`     | `18px`  | Top and bottom padding                              |
+| `--notification-padding-inline`    | `16px`  | Left and right padding                              |
+
+Backgrounds reuse `--onPanelAlt`, `--error`, `--success` and `--caution`. Message text uses `--on-ctrl-fill-solid`, `--on-error`, `--on-success` and `--onPanel`, respectively. Alert/success icons use `--panel`; other icons and close buttons follow the text colour. Typography uses `--body-font-stack`, `--body2-text-size` and `--line-height`; animation uses the existing motion tokens.
+
+**Indicate / Notification** in Storybook includes the variant gallery, configurable example, six positions within a view, timed stacking and the native HTML example.
+
 ## Dialogs
 
 Use a labelled native dialog. This example uses HTML invoker commands and needs no Afterglow helper:
@@ -455,7 +570,7 @@ The helper sets `aria-readonly` and temporarily suspends `required` on read-only
 
 ## Themes and SCSS
 
-The stylesheet declares all 70 public design tokens on `:root`, including colours, typography, spacing and motion. These defaults come from the maps in [`src/styles/_tokens.scss`](src/styles/_tokens.scss). Component styles reference the declared variables, and your own CSS can use them without repeating fallback values:
+The stylesheet declares all 76 public design tokens on `:root`, including colours, typography, spacing and motion. These defaults come from the maps in [`src/styles/_tokens.scss`](src/styles/_tokens.scss). Component styles reference the declared variables, and your own CSS can use them without repeating fallback values:
 
 ```css
 .summary {
@@ -530,7 +645,7 @@ Initialise helpers with real element references after the view mounts, and call 
 
 Server-render the HTML and CSS normally; run helper initialisation only in the browser. Let the slider helper own the generated children of `ag-slider__marks` and its inline decoration positions. Keep application state in sync through the input's events. The library provides behaviour helpers, not framework component wrappers.
 
-All three helpers return the existing controller when called again with the same root element. Assign one lifecycle owner to each controller, avoid overlapping `enhanceControls` roots, and remember that destroying a controller removes its own listeners, not listeners attached by your application.
+All four helpers return the existing controller when called again with the same root element. Assign one lifecycle owner to each controller, avoid overlapping `enhanceControls` roots, and remember that destroying a controller removes its own listeners, not listeners attached by your application.
 
 ## Future Web Components
 
