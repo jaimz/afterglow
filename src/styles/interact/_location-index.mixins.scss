@@ -1,0 +1,81 @@
+@use "../foundation/tokens" as t;
+@use "../assets" as assets;
+
+@mixin index {
+  display: grid;
+  align-content: start;
+  gap: calc(#{t.$frame-gridY} * 2);
+  min-inline-size: 0;
+  font-family: t.$bodyFontStack;
+}
+
+// Figma Menu Item 217:1, applied to real links. The caller owns aria-current.
+@mixin link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  padding: 10px calc(#{t.$frame-gridX} * 2);
+  border-radius: calc(#{t.$frame-gridType} * 2);
+  color: t.$onSurface;
+  font-size: t.$body2TextSize;
+  line-height: t.$lineHeight;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  &:hover {
+    background: t.token("selection-fill");
+  }
+  &[aria-current]:not([aria-current="false"]) {
+    background: t.token("selection-fill");
+    border-radius: t.$frame-gridType;
+    color: t.$ctrlText;
+    line-height: normal;
+  }
+  &:focus-visible {
+    outline: 2px solid t.$ctrlText;
+    outline-offset: 2px;
+  }
+  @media (forced-colors: active) {
+    &[aria-current]:not([aria-current="false"]) {
+      outline: 1px solid Highlight;
+    }
+  }
+}
+
+@mixin styles {
+  .ag-location-index {
+    @include index;
+  }
+  .ag-location-index__list {
+    display: grid;
+    gap: t.$frame-gridType;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ag-location-index__title {
+    margin: 0 0 t.$frame-gridY;
+    padding-inline: calc(#{t.$frame-gridX} * 2);
+    color: t.$onSurfaceAlt;
+    font-size: t.$captionTextSize;
+    line-height: t.$lineHeight;
+    font-weight: 400;
+  }
+  .ag-location-index__link {
+    @include link;
+  }
+  .ag-location-index__icon {
+    display: block;
+    flex: 0 0 auto;
+    inline-size: 16px;
+    block-size: 16px;
+    object-fit: contain;
+    &[data-icon="shared"] {
+      background: currentColor;
+      mask: assets.$navigation-shared center / contain no-repeat;
+    }
+  }
+  .ag-location-index[hidden] {
+    display: none;
+  }
+}

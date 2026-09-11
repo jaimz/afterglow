@@ -1,0 +1,13 @@
+@use "../foundation/theme";
+@use "textarea.mixins" as recipe;
+
+.ag-textarea {
+  @include recipe.textarea;
+}
+.ag-textarea-field {
+  @include recipe.field;
+}
+.ag-textarea[hidden],
+.ag-textarea-field[hidden] {
+  display: none;
+}

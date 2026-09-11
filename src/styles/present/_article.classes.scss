@@ -1,0 +1,8 @@
+@use "../foundation/theme";
+@use "article.mixins" as recipe;
+.ag-article {
+  @include recipe.article;
+}
+.ag-article[hidden] {
+  display: none;
+}

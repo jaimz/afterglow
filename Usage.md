@@ -7,7 +7,11 @@ This guide describes the current consumer API. New components and changes to exi
 - [How to use the API](#how-to-use-the-api)
 - [Choose the behaviour you need](#choose-the-behaviour-you-need)
 - [Frames and typography](#frames-and-typography)
+- [Application and content layouts](#application-and-content-layouts)
+- [Articles and card content](#articles-and-card-content)
 - [Buttons](#buttons)
+- [Textareas](#textareas)
+- [Navigation](#navigation)
 - [Checkboxes](#checkboxes)
 - [Radios and radio groups](#radios-and-radio-groups)
 - [Switches](#switches)
@@ -22,7 +26,7 @@ This guide describes the current consumer API. New components and changes to exi
 
 ## How to use the API
 
-Load Afterglow's compiled stylesheet once, before your application's overrides. The examples below assume it is already loaded. With a bundler, the stylesheet import is `import "ag/css"`; a plain HTML page can link to a served copy of `afterglow.css`. When serving compiled files directly, keep the accompanying `dist/assets/` folder beside the CSS file so Notification icons resolve. Bundlers process these relative asset URLs when importing the stylesheet.
+Load Afterglow's compiled stylesheet once, before your application's overrides. The examples below assume it is already loaded. With a bundler, the stylesheet import is `import "ag/css"`; a plain HTML page can link to a served copy of `afterglow.css`. When serving compiled files directly, keep the accompanying `dist/assets/` folder beside the CSS file so the notification, navigation and button icons resolve. Bundlers process these relative asset URLs when importing the stylesheet.
 
 Then use native HTML with Afterglow's classes:
 
@@ -50,14 +54,20 @@ When a recipe needs a helper, import it from `ag` and initialise it after the ma
 
 ## Choose the behaviour you need
 
-| Part of the system              | HTML and CSS provide                                                                     | Optional JavaScript provides                                                                                 |
-| ------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Frames and typography           | Backgrounds, colour, depth and type styles                                               | Nothing required                                                                                             |
-| Buttons                         | Appearance, focus, activation and native form actions                                    | Your application's action handlers                                                                           |
-| Checkboxes, radios and switches | Selection, labels, keyboard activation, disabled states and form participation           | `enhanceControls` adds read-only behaviour, extra radio shortcuts and mixed-state reset handling             |
-| Sliders                         | A styled native range input with native values and interaction                           | `enhanceSlider` synchronises the custom fill, marks and label positions, and normalises vertical/RTL arrows  |
-| Notifications                   | Four visual variants, native popover visibility, six positions and a close button        | `enhanceNotification` adds optional timeouts, placement within a view, stacking, animation and announcements |
-| Dialogs                         | A styled native dialog, modal behaviour and HTML invoker commands in supporting browsers | `enhanceDialog` adds animated closing, dismissal requests and optional non-modal focus containment           |
+Recipes are grouped by their purpose. **Frame** arranges and contains other elements; **Indicate** reflects transient state; **Interact** accepts user input; **Present** displays lasting content. **Foundation** supplies shared tokens, typography, layout and motion tools. These categories organise the source and Storybook; existing class names and helper imports stay the same.
+
+| Part of the system                          | HTML and CSS provide                                                                     | Optional JavaScript provides                                                                                 |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Frames and typography                       | Backgrounds, colour, depth and type styles                                               | Nothing required                                                                                             |
+| Application, master-detail and card layouts | Responsive arrangement of semantic regions                                               | Your application chooses which regions to render or hide                                                     |
+| Articles and card content                   | Scoped headings, body text, content spacing and action layout                            | Nothing required                                                                                             |
+| Buttons                                     | Appearance, focus, activation and native form actions                                    | Your application's action handlers                                                                           |
+| Textareas                                   | Labels, editing, resizing, validation, disabled/read-only states and form participation  | Nothing required                                                                                             |
+| Navigation                                  | Styled links, current-location appearance and native link activation                     | Your application updates `aria-current` when the location changes                                            |
+| Checkboxes, radios and switches             | Selection, labels, keyboard activation, disabled states and form participation           | `enhanceControls` adds read-only behaviour, extra radio shortcuts and mixed-state reset handling             |
+| Sliders                                     | A styled native range input with native values and interaction                           | `enhanceSlider` synchronises the custom fill, marks and label positions, and normalises vertical/RTL arrows  |
+| Notifications                               | Four visual variants, native popover visibility, six positions and a close button        | `enhanceNotification` adds optional timeouts, placement within a view, stacking, animation and announcements |
+| Dialogs                                     | A styled native dialog, modal behaviour and HTML invoker commands in supporting browsers | `enhanceDialog` adds animated closing, dismissal requests and optional non-modal focus containment           |
 
 All Storybook examples use this same native implementation. **Overview** combines controls with helpers. **Native HTML / CSS Only** demonstrates controls without Afterglow helpers; **States** includes enhanced behaviours; **Declarative Dialog** demonstrates HTML invoker commands. Storybook itself uses JavaScript to render these examples.
 
@@ -75,7 +85,7 @@ Apply frame classes to containers with the semantics your page needs:
 | `ag-panel`      | Panel colour, foreground and shadow                                         |
 | `ag-paper`      | Paper colour, foreground and shadow                                         |
 
-Frames do not lay out the application for you. Set padding, gaps, widths and responsive layout in your application CSS. Percentage heights need a containing block with an appropriate height.
+These surface classes supply appearance. Add one of the layout recipes below when you want Afterglow to arrange regions, or use your own application layout. Percentage heights need a containing block with an appropriate height.
 
 ```html
 <main class="ag-appframe ag-surface ag-body">
@@ -96,6 +106,85 @@ Frames do not lay out the application for you. Set padding, gaps, widths and res
 ```
 
 Use `ag-body` for body text, `ag-caption` for captions and `ag-h1` through `ag-h5` for heading styles. Choose actual heading elements for the document hierarchy; a class does not add heading semantics. The default font stack prefers Lato, with system fallbacks. Supply Lato from your application if you want that typeface; Afterglow does not download fonts.
+
+## Application and content layouts
+
+Opt into the application grid with `data-layout="application"`. The plain `ag-appframe` class retains its original behaviour.
+
+```html
+<div class="ag-appframe ag-background ag-body" data-layout="application">
+  <header class="ag-appframe__header">Application title</header>
+  <nav class="ag-appframe__nav ag-panel" aria-label="Main">
+    <!-- Navigation recipe -->
+  </nav>
+  <main class="ag-appframe__main ag-paper">Main content</main>
+  <aside class="ag-appframe__tools ag-panel" aria-label="Tools">Tools</aside>
+</div>
+```
+
+Regions must be direct children. On wider screens, the header spans the top, with navigation, main content and tools below it. Omit or add `hidden` to the navigation/tools region to release its column. At viewport widths of `48rem` or less, regions stack in DOM order. Set application padding and height in your CSS; the recipe does not impose scrolling or fixed positioning. The default navigation and tools widths are each `240px`, controlled by `--app-nav-width` and `--app-tools-width`, with a `16px` gap next to the main content.
+
+For a list and its selected detail:
+
+```html
+<section class="ag-master-detail" aria-label="Notes">
+  <aside class="ag-master-detail__master">List of notes</aside>
+  <div class="ag-master-detail__detail">Selected note</div>
+  <footer class="ag-master-detail__aux">Optional related content</footer>
+</section>
+```
+
+`--master-width` defaults to `240px`. The auxiliary region spans both columns. Set `data-orientation="vertical"` on `ag-master-detail` to stack the regions inside a narrow desktop view; they also stack automatically at the same `48rem` viewport breakpoint. Your application owns selection and detail rendering.
+
+A structural card arranges a header, body and footer without choosing a background:
+
+```html
+<article class="ag-card ag-panel">
+  <header class="ag-card__header"><h2 class="ag-h3">Card title</h2></header>
+  <div class="ag-card__body">Card body</div>
+  <footer class="ag-card__footer">
+    <button type="button" class="ag-button">Open</button>
+  </footer>
+</article>
+```
+
+Each region has `16px` padding by default; footer actions wrap and align to the end. Regions are optional. Compose `ag-panel`, `ag-paper` or another surface class separately. **Frame / Layouts** in Storybook demonstrates all three layouts using Afterglow's existing palette.
+
+## Articles and card content
+
+Use `ag-article` on a semantic article or content container. Its direct headings, paragraphs, lists, quotes and media receive content typography and spacing:
+
+```html
+<article class="ag-article ag-paper">
+  <h1>A place for ideas</h1>
+  <p>Keep observations and useful details together.</p>
+  <h2>Getting started</h2>
+  <ul>
+    <li>Create your first note.</li>
+    <li>Group related notes.</li>
+  </ul>
+  <blockquote>Leave room for the next idea.</blockquote>
+</article>
+```
+
+The recipe uses Figma's mobile type ramp, including heading weights and letter spacing. Headings `h1`–`h5` follow the design; `h6` uses bold body size. Content blocks are bounded by `--max-line-width`. Default padding is `16px` vertically and `24px` horizontally, controlled by `--article-padding-block` and `--article-padding-inline`. Typography rules target direct children so nested controls and components retain their own styles. Use heading levels that fit the document hierarchy.
+
+`ag-card-content` is the compact content treatment from Figma: optional overline, title, body and actions. It can stand alone with a surface class or sit inside another container:
+
+```html
+<article class="ag-card-content ag-paper" aria-labelledby="note-title">
+  <p class="ag-card-content__overline">Notebook</p>
+  <h2 class="ag-card-content__title" id="note-title">An idea to revisit</h2>
+  <div class="ag-card-content__body">
+    <p>A short description of the note.</p>
+  </div>
+  <footer class="ag-card-content__actions">
+    <button type="button" class="ag-button" data-variant="flat">Open</button>
+  </footer>
+</article>
+```
+
+Children must be direct descendants. Omit any unused region; width and height follow the available space and content. The title has the visual size of Figma's third heading level, regardless of its semantic heading tag. Text regions have `16px` horizontal padding, so avoid adding another padded card-body wrapper unless you want extra inset. **Present / Article** and **Present / Card Content** show these recipes.
 
 ## Buttons
 
@@ -125,6 +214,80 @@ Optional leading and trailing content goes inside `ag-button__start` and `ag-but
 ```
 
 Give an icon-only button an accessible name with `aria-label`.
+
+### Floating action button
+
+Use a separate native button recipe for Figma's circular `56 × 56px` FAB:
+
+```html
+<button type="button" class="ag-fab" aria-label="Add note">
+  <span class="ag-fab__icon" data-icon="add" aria-hidden="true"></span>
+</button>
+```
+
+The supplied add icon is an exact Figma export. You can supply your own decorative image with `class="ag-fab__icon"` and `alt=""`; the icon box is `24 × 24px`. Use native `disabled` when unavailable. The application owns the action and placement; the class does not pin the button to a screen corner. **Interact / FAB** shows native activation and the disabled state.
+
+## Textareas
+
+A labelled native textarea works without a helper:
+
+```html
+<label class="ag-body" for="notes">Notes</label>
+<textarea
+  class="ag-textarea"
+  id="notes"
+  name="notes"
+  placeholder="Text area…"
+></textarea>
+```
+
+For the floating-label treatment from Figma, put the textarea before its associated label and keep the single-space placeholder:
+
+```html
+<div class="ag-textarea-field">
+  <textarea
+    class="ag-textarea"
+    id="description"
+    name="description"
+    placeholder=" "
+  ></textarea>
+  <label class="ag-textarea-field__label" for="description">Description</label>
+</div>
+```
+
+The label becomes smaller when the textarea has focus or content. The single-space placeholder lets CSS detect an empty value; it is not an accessible name. Always keep the real label and a unique matching ID. Native `required`, `readonly`, `disabled`, `maxlength`, `rows`, validation, reset and `FormData` work normally. `aria-invalid="true"` displays an application-reported error; connect an explanatory message with `aria-describedby`. Read-only text remains selectable and is submitted; disabled text is excluded from submission.
+
+The textarea fills its container and can be resized vertically. `--textarea-min-height` defaults to `158px`; override it to allow a shorter field. `--field-hint` controls placeholder/label colour, and `--keyline` controls the border. Fill, text and inset shadow use the existing paper, on-paper and surface tokens. **Interact / Textarea** includes content, states and plain HTML examples.
+
+## Navigation
+
+Use real links inside a labelled navigation landmark. The menu-item appearance follows Figma:
+
+```html
+<nav class="ag-location-index" aria-label="Notebook">
+  <ul class="ag-location-index__list">
+    <li>
+      <a class="ag-location-index__link" href="/notes" aria-current="page"
+        >Notes</a
+      >
+    </li>
+    <li>
+      <a class="ag-location-index__link" href="/shared">
+        <span
+          class="ag-location-index__icon"
+          data-icon="shared"
+          aria-hidden="true"
+        ></span>
+        Shared
+      </a>
+    </li>
+  </ul>
+</nav>
+```
+
+The application sets `aria-current="page"` on the current destination and removes it from other links. Other valid `aria-current` values also select the current appearance; `aria-current="false"` does not. Optional `ag-location-index__title` headings can introduce groups. Icons occupy `16 × 16px`; the supplied `shared` icon comes from Figma. Custom images can use the same icon class and empty `alt` text when decorative.
+
+This is ordinary navigation, with native link behaviour and keyboard focus. It does not implement a menu-widget keyboard model, routing or automatic location tracking. `--selection-fill` controls the selected background; foreground colours reuse existing surface/control tokens. **Interact / Location Index** demonstrates current and ordinary links.
 
 ## Checkboxes
 
@@ -425,14 +588,14 @@ The helper announces only message text through a persistent polite live region. 
 
 The HTML-only example provides visibility and dismissal; use the helper when announcing dynamic application status. `destroy()` removes the helper's live region, observers and listeners. Application listeners remain your responsibility.
 
-| CSS token                          | Default | Use                                                 |
-| ---------------------------------- | ------- | --------------------------------------------------- |
+| CSS token                          | Default | Use                                                  |
+| ---------------------------------- | ------- | ---------------------------------------------------- |
 | `--notification-message-min-width` | `160px` | Minimum text width; reduced for narrow popover views |
-| `--notification-message-max-width` | `320px` | Maximum text width before wrapping                  |
-| `--notification-offset`            | `16px`  | Distance from view edges                            |
+| `--notification-message-max-width` | `320px` | Maximum text width before wrapping                   |
+| `--notification-offset`            | `16px`  | Distance from view edges                             |
 | `--notification-gap`               | `12px`  | Gap between children and between stacked cards       |
-| `--notification-padding-block`     | `18px`  | Top and bottom padding                              |
-| `--notification-padding-inline`    | `16px`  | Left and right padding                              |
+| `--notification-padding-block`     | `18px`  | Top and bottom padding                               |
+| `--notification-padding-inline`    | `16px`  | Left and right padding                               |
 
 Backgrounds reuse `--onPanelAlt`, `--error`, `--success` and `--caution`. Message text uses `--on-ctrl-fill-solid`, `--on-error`, `--on-success` and `--onPanel`, respectively. Alert/success icons use `--panel`; other icons and close buttons follow the text colour. Typography uses `--body-font-stack`, `--body2-text-size` and `--line-height`; animation uses the existing motion tokens.
 
@@ -570,7 +733,7 @@ The helper sets `aria-readonly` and temporarily suspends `required` on read-only
 
 ## Themes and SCSS
 
-The stylesheet declares all 76 public design tokens on `:root`, including colours, typography, spacing and motion. These defaults come from the maps in [`src/styles/_tokens.scss`](src/styles/_tokens.scss). Component styles reference the declared variables, and your own CSS can use them without repeating fallback values:
+The stylesheet declares all 88 public design tokens on `:root`, including colours, typography, spacing and motion. The registry in [`foundation/_tokens.scss`](src/styles/foundation/_tokens.scss) combines foundation primitives and category token maps. Component styles reference the declared variables, and your own CSS can use them without repeating fallback values:
 
 ```css
 .summary {
@@ -611,12 +774,24 @@ Load Afterglow before application overrides and keep resets from overriding reci
 
 ### SCSS mixins
 
-Use the compiled stylesheet for the HTML recipes. If you are composing your own classes in Sass, frame and typography modules also expose mixins:
+Use the compiled stylesheet for all HTML recipes, or compile the full Sass entry point with `@use "pkg:ag/scss"`. To load a subset, category entry points emit their own recipe classes plus the shared default theme:
 
 ```scss
-@use "pkg:ag/scss/frames" as frames;
-@use "pkg:ag/scss/typography" as type;
-@use "pkg:ag/scss/tokens" as tokens;
+@use "pkg:ag/scss/foundation"; // Default theme and typography classes.
+@use "pkg:ag/scss/frame"; // Surfaces, layouts and dialog.
+@use "pkg:ag/scss/interact"; // Buttons, inputs and navigation.
+// Also available: indicate and present.
+```
+
+The theme is emitted once per Sass compilation. Categories do not automatically load other categories' classes: add `interact` when using action buttons in a card or notification, for example. Individual `*.classes` modules are also available, such as `pkg:ag/scss/interact/textarea.classes`.
+
+For your own classes, import pure token and mixin modules. They produce no CSS until a mixin is included. Load the theme explicitly if it is not already supplied by the compiled stylesheet or a category entry:
+
+```scss
+@use "pkg:ag/scss/foundation/theme";
+@use "pkg:ag/scss/foundation/tokens" as tokens;
+@use "pkg:ag/scss/foundation/typography.mixins" as type;
+@use "pkg:ag/scss/frame/surface.mixins" as frames;
 
 .preferences {
   @include tokens.theme(
@@ -631,11 +806,24 @@ Use the compiled stylesheet for the HTML recipes. If you are composing your own 
 }
 ```
 
-These package imports use Dart Sass's [Node package importer](https://sass-lang.com/documentation/cli/dart-sass/#pkg-importernode). The full stylesheet is available as `pkg:ag/scss` when compiling Sass instead of importing the compiled CSS; include it once.
+These package imports use Dart Sass's [Node package importer](https://sass-lang.com/documentation/cli/dart-sass/#pkg-importernode). Bundlers with a package-aware Sass resolver can use their equivalent import paths. Keep exported icons available to your CSS pipeline when composing recipes that reference assets.
 
 `tokens.theme()` is the Sass equivalent of an `ag-theme` boundary: it emits the derived expressions and then any supplied overrides. Map keys use the CSS token name without `--`; unknown names produce a Sass error. With this mixin, the example needs only `class="preferences"` to establish its local theme. You can also use `tokens.theme()` with no arguments and declare overrides in the same rule yourself.
 
-Frame mixins are `background`, `surface`, `panel` and `paper`; typography mixins are `body` and `caption`. Their modules emit the default token theme once per Sass compilation, along with the corresponding utility classes. Importing only these modules does not include button, checkable, slider or dialog styles. Use the full entry point when using those recipes.
+Surface mixins are `background`, `surface`, `panel` and `paper`; typography mixins are `body`, `caption` and `headline($level)`. Each category also has a pure `mixins` barrel with prefixed names, such as `frame.surface-panel` and `foundation.layout-flex-row(12px)`.
+
+Complex native recipes expose a `styles` mixin which emits the complete documented `.ag-*` selectors. This lets you opt into or scope the recipe while retaining its required child markup:
+
+```scss
+@use "pkg:ag/scss/foundation/theme";
+@use "pkg:ag/scss/interact/button.mixins" as button;
+
+.checkout {
+  @include button.styles;
+}
+```
+
+The existing imports `pkg:ag/scss/tokens`, `frames`, `typography`, `button`, `checkable`, `slider`, `dialog` and `notification` remain compatibility entry points. They retain their previous CSS emission and exported Sass members. Prefer the explicit category modules for new code. See [Architecture.md](Architecture.md) for module ownership and the conventions for adding recipes.
 
 ## Using a UI framework
 

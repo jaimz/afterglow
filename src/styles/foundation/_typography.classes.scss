@@ -1,0 +1,25 @@
+@use "theme";
+@use "tokens" as t;
+@use "typography.mixins" as typography;
+
+.ag-body {
+  @include typography.body;
+}
+.ag-caption {
+  @include typography.caption;
+}
+@each $level,
+  $size
+    in (
+      1: t.$h1TextSize,
+      2: t.$h2TextSize,
+      3: t.$h3TextSize,
+      4: t.$h4TextSize,
+      5: t.$h5TextSize
+    )
+{
+  .ag-h#{$level} {
+    font-family: t.$titleFontStack;
+    font-size: $size;
+  }
+}

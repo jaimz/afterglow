@@ -1,0 +1,12 @@
+@use "tokens" as t;
+
+// This is the only module that emits the default theme.
+:where(:root) {
+  @each $name, $value in t.$defaults {
+    --#{$name}: #{$value};
+  }
+  @include t.theme;
+}
+:where(.ag-theme) {
+  @include t.theme;
+}

@@ -1,0 +1,31 @@
+@use "../foundation/theme";
+@use "surface.mixins" as surface;
+
+.ag-appframe {
+  display: block;
+  min-height: 100%;
+}
+
+.ag-background {
+  display: block;
+  @include surface.background;
+}
+
+.ag-surface {
+  display: block;
+  @include surface.surface;
+}
+
+.ag-panel {
+  display: block;
+  @include surface.panel;
+}
+
+.ag-paper {
+  display: block;
+  @include surface.paper;
+}
+
+:is(.ag-appframe, .ag-background, .ag-surface, .ag-panel, .ag-paper)[hidden] {
+  display: none !important;
+}

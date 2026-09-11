@@ -3,6 +3,12 @@ import { playwrightLauncher } from "@web/test-runner-playwright";
 import { compile } from "sass";
 import { readFileSync } from "node:fs";
 const css = compile("src/styles/afterglow.scss").css;
+const categoryStyles = new Map(
+  ["frame", "indicate", "interact", "present"].map((category) => [
+    `/afterglow-${category}.css`,
+    compile(`src/styles/${category}/_index.scss`).css,
+  ])
+);
 const products = (process.env.WTR_BROWSERS || "chromium").split(",");
 export default {
   hostname: "127.0.0.1",
@@ -15,8 +21,10 @@ export default {
       serve(context) {
         if (context.path === "/afterglow.css")
           return { body: css, type: "css" };
+        if (categoryStyles.has(context.path))
+          return { body: categoryStyles.get(context.path), type: "css" };
         if (
-          /^\/assets\/notification\/(info|alert|success|caution|close)\.svg$/.test(
+          /^\/assets\/(notification\/(info|alert|success|caution|close)|navigation\/shared|button\/add)\.svg$/.test(
             context.path
           )
         )

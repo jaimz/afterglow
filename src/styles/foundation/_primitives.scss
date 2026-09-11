@@ -1,0 +1,45 @@
+// Definitions only. The shared registry validates and declares these tokens.
+$defaults: (
+  "gridType": 4,
+  "gridX": 8,
+  "gridY": 8,
+  "body-font-stack": (
+    "Lato",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif,
+  ),
+  "body-text-size": 16px,
+  "line-height": 1.5,
+  "max-line-width": 72ch,
+  "text-scale": 1.2,
+  "title-font-stack": (
+    "Lato",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif,
+  ),
+  "type-scale": 1.2,
+  "grid-type": 4px,
+  "grid-x": 8px,
+  "grid-y": 8px,
+  "motionFastDuration": 50ms,
+  "motionMediumDuration": 125ms,
+  "motionSlowDuration": 250ms,
+  "motionEntryCurve": ease-in,
+  "motionExitCurve": ease-out,
+  "motionPush": 16px,
+);
+
+$derived: (
+  "body2-text-size": calc(var(--body-text-size) / var(--text-scale)),
+  "caption-text-size": calc(var(--body2-text-size) / var(--text-scale)),
+  "h1-text-size": calc(var(--h2-text-size) * var(--text-scale)),
+  "h2-text-size": calc(var(--h3-text-size) * var(--text-scale)),
+  "h3-text-size": calc(var(--h4-text-size) * var(--text-scale)),
+  "h4-text-size": calc(var(--h5-text-size) * var(--text-scale)),
+  "h5-text-size": calc(var(--body-text-size) * var(--text-scale)),
+  "small-caption-text-size": calc(var(--caption-text-size) / var(--text-scale)),
+);

@@ -1,0 +1,42 @@
+@use "tokens" as t;
+
+@mixin body {
+  font-family: t.$bodyFontStack;
+  font-size: t.$bodyTextSize;
+  line-height: t.$lineHeight;
+}
+
+@mixin caption {
+  font-family: t.$bodyFontStack;
+  font-size: t.$captionTextSize;
+  line-height: t.$lineHeight;
+}
+
+// Figma's mobile type ramp. Existing utility classes retain their original API;
+// composed content recipes opt into this complete headline treatment.
+@mixin headline($level: 1) {
+  @if $level < 1 or $level > 6 {
+    @error "Headline level must be between 1 and 6.";
+  }
+  font-family: t.$titleFontStack;
+  @if $level == 6 {
+    font-size: t.$bodyTextSize;
+    font-weight: 700;
+  } @else {
+    font-size: t.token("h#{$level}-text-size");
+    @if $level < 5 {
+      font-weight: 300;
+    } @else {
+      font-weight: 500;
+    }
+  }
+  line-height: normal;
+  @if $level == 1 {
+    letter-spacing: -0.02381em;
+  } @else if $level == 4 or $level == 6 {
+    letter-spacing: 0;
+  } @else {
+    letter-spacing: -0.008333em;
+  }
+  color: t.$onSurfaceAlt;
+}

@@ -1,0 +1,47 @@
+@use "../foundation/tokens" as t;
+@use "../foundation/typography.mixins" as type;
+
+// Figma Card content 235:17, with content-driven height and native action buttons.
+@mixin content {
+  display: grid;
+  gap: t.$frame-gridY;
+  min-inline-size: 0;
+  font-family: t.$bodyFontStack;
+  color: t.$onSurface;
+  padding-block: t.$frame-gridType;
+  overflow-wrap: anywhere;
+
+  > :is(.ag-card-content__overline, .ag-card-content__title, .ag-card-content__body) {
+    margin: 0;
+    padding-inline: calc(#{t.$frame-gridX} * 2);
+  }
+  > .ag-card-content__overline {
+    font-size: t.$captionTextSize;
+    line-height: normal;
+    color: color-mix(in srgb, #{t.$onSurface} 50%, transparent);
+  }
+  > .ag-card-content__title {
+    @include type.headline(3);
+  }
+  > .ag-card-content__body {
+    font-size: t.$body2TextSize;
+    line-height: normal;
+    > p {
+      margin-block: 0 t.$frame-gridY;
+    }
+    > :last-child {
+      margin-block-end: 0;
+    }
+  }
+  > .ag-card-content__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-block-start: t.$frame-gridType;
+    font-size: t.$body2TextSize;
+    font-weight: 700;
+    > .ag-button {
+      padding: 10px calc(#{t.$frame-gridX} * 2);
+    }
+  }
+}

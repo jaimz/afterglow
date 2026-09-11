@@ -1,0 +1,63 @@
+@use "../foundation/tokens" as t;
+@use "../foundation/typography.mixins" as type;
+
+@mixin article {
+  @include type.body;
+  box-sizing: border-box;
+  min-inline-size: 0;
+  padding: t.token("article-padding-block") t.token("article-padding-inline");
+  color: t.$onSurface;
+  overflow-wrap: anywhere;
+
+  // Direct children keep embedded controls, cards and nested recipes independent.
+  > :is(p, ul, ol, dl, blockquote) {
+    max-inline-size: t.$maxLineWidth;
+    margin-block: 0 calc(#{t.$frame-gridY} * 2);
+  }
+  > :is(ul, ol) {
+    padding-inline-start: calc(#{t.$frame-gridX} * 3);
+  }
+  > blockquote {
+    margin-inline: 0;
+    padding-inline-start: calc(#{t.$frame-gridX} * 2);
+    border-inline-start: 2px solid t.token("keyline");
+  }
+  @for $level from 1 through 6 {
+    > h#{$level} {
+      @include type.headline($level);
+      margin-block: calc(#{t.$frame-gridY} * 3) calc(#{t.$frame-gridY} * 2);
+    }
+  }
+  > :first-child {
+    margin-block-start: 0;
+  }
+  > :last-child {
+    margin-block-end: 0;
+  }
+  > :is(p, ul, ol, blockquote) a {
+    color: t.$ctrlText;
+    text-underline-offset: 0.15em;
+    &:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
+  }
+  > :is(img, picture, video) {
+    display: block;
+    max-inline-size: 100%;
+    block-size: auto;
+    margin-block: calc(#{t.$frame-gridY} * 2);
+  }
+  > pre {
+    max-inline-size: 100%;
+    overflow: auto;
+    padding: calc(#{t.$frame-gridY} * 2);
+    background: t.$surface;
+    color: t.$onSurface;
+  }
+  > hr {
+    margin-block: calc(#{t.$frame-gridY} * 3);
+    border: 0;
+    border-block-start: 1px solid t.token("keyline");
+  }
+}

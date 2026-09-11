@@ -1,0 +1,19 @@
+@use "tokens" as t;
+
+@mixin entry($properties...) {
+  transition-property: $properties;
+  transition-duration: t.$motionFastDuration;
+  transition-timing-function: t.$motionEntryCurve;
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+@mixin exit($properties...) {
+  transition-property: $properties;
+  transition-duration: t.$motionMediumDuration;
+  transition-timing-function: t.$motionExitCurve;
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}

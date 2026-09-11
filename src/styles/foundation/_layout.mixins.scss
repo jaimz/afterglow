@@ -1,0 +1,27 @@
+@use "tokens" as t;
+
+@mixin flex-row($gap: t.$frame-gridX) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: $gap;
+}
+
+@mixin flex-column($gap: t.$frame-gridY) {
+  display: flex;
+  flex-direction: column;
+  gap: $gap;
+}
+
+@mixin fill-container {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+@mixin absolute-position($x: 0, $y: 0, $width: 100%, $height: 100%) {
+  position: absolute;
+  inset-inline-start: $x;
+  inset-block-start: $y;
+  inline-size: $width;
+  block-size: $height;
+}

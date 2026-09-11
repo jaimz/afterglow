@@ -1,0 +1,15 @@
+// Definitions only. The shared registry validates and declares these tokens.
+$defaults: (
+  "caution": #ecbb5b,
+  "error": #cf3558,
+  "on-caution": #f3eee6,
+  "on-error": #f3eee6,
+  "on-success": #f3eee6,
+  "success": #52a96a,
+  "notification-message-min-width": 160px,
+  "notification-message-max-width": 320px,
+  "notification-offset": 16px,
+  "notification-gap": 12px,
+  "notification-padding-block": 18px,
+  "notification-padding-inline": 16px,
+);

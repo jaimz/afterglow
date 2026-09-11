@@ -1,0 +1,16 @@
+@use "../foundation/theme";
+@use "layout.mixins" as layout;
+
+.ag-appframe[data-layout="application"] {
+  @include layout.application;
+}
+.ag-master-detail {
+  @include layout.master-detail;
+}
+.ag-card {
+  @include layout.card;
+}
+
+:is(.ag-master-detail, .ag-card, .ag-appframe__header, .ag-appframe__nav, .ag-appframe__main, .ag-appframe__tools)[hidden] {
+  display: none;
+}

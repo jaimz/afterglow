@@ -1,0 +1,79 @@
+@use "../foundation/tokens" as t;
+@use "../foundation/typography.mixins" as type;
+
+// Figma TextArea 143:107: native textarea, with an optional floating label.
+@mixin textarea {
+  @include type.body;
+  appearance: none;
+  display: block;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: t.token("textarea-min-height");
+  padding: calc(#{t.$frame-gridX} * 2);
+  border: 1px solid t.token("keyline");
+  border-radius: 0;
+  background: t.$paper;
+  color: t.$onPaper;
+  box-shadow: inset 0 3px 4px t.$surface;
+  line-height: normal;
+  resize: vertical;
+
+  &::placeholder {
+    color: t.token("field-hint");
+    opacity: 1;
+  }
+  &:focus-visible {
+    outline: 2px solid t.$ctrlText;
+    outline-offset: 2px;
+  }
+  &:is(:user-invalid, [aria-invalid="true"]) {
+    border-color: t.$error;
+  }
+  &:is(:user-invalid, [aria-invalid="true"]):focus-visible {
+    outline-color: t.$error;
+  }
+  &:disabled {
+    opacity: t.$disabledOpacity;
+    cursor: not-allowed;
+  }
+  @media (forced-colors: active) {
+    background: Field;
+    color: FieldText;
+    border-color: ButtonText;
+    box-shadow: none;
+    &:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+}
+
+@mixin field {
+  position: relative;
+  min-inline-size: 0;
+  > .ag-textarea-field__label {
+    position: absolute;
+    inset-block-start: calc(#{t.$frame-gridY} * 2 + 1px);
+    inset-inline: calc(#{t.$frame-gridX} * 2 + 1px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: t.$bodyFontStack;
+    font-size: t.$bodyTextSize;
+    line-height: normal;
+    color: t.token("field-hint");
+    cursor: text;
+  }
+  > .ag-textarea:is(:focus, :not(:placeholder-shown)) {
+    padding-block-start: calc(
+      #{t.$frame-gridY} * 2 + #{t.$body2TextSize} * #{t.$lineHeight} + 10px
+    );
+    + .ag-textarea-field__label {
+      font-size: t.$body2TextSize;
+    }
+  }
+  > .ag-textarea:disabled + .ag-textarea-field__label {
+    opacity: t.$disabledOpacity;
+    cursor: not-allowed;
+  }
+}

@@ -1,0 +1,216 @@
+@use "../foundation/tokens" as t;
+@use "../assets" as assets;
+
+// Emit the complete native HTML recipe; safe to import without emitting CSS.
+@mixin styles {
+  .ag-notification[hidden] {
+    display: none !important;
+  }
+  .ag-notification {
+    --ag-notification-icon-width: 20px;
+    display: flex;
+    align-items: center;
+    gap: t.$notificationGap;
+    box-sizing: border-box;
+    width: max-content;
+    max-width: 100%;
+    padding: t.$notificationPaddingBlock t.$notificationPaddingInline;
+    border: 0;
+    border-radius: 0;
+    margin: 0;
+    background: t.$onPanelAlt;
+    color: t.$onCtrlFillSolid;
+    font-family: t.$bodyFontStack;
+    font-size: t.$body2TextSize;
+    font-weight: 400;
+    line-height: t.$lineHeight;
+    text-align: start;
+    overflow-wrap: anywhere;
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.2);
+
+    &[data-variant="alert"] {
+      background: t.$error;
+      color: t.$onError;
+    }
+    &[data-variant="success"] {
+      --ag-notification-icon-width: 16px;
+      background: t.$success;
+      color: t.$onSuccess;
+    }
+    &[data-variant="caution"] {
+      background: t.$caution;
+      color: t.$onPanel;
+    }
+  }
+
+  .ag-notification__message {
+    flex: 1 1 auto;
+    width: max-content;
+    min-width: t.$notificationMessageMinWidth;
+    max-width: t.$notificationMessageMaxWidth;
+    margin: 0;
+  }
+  .ag-notification__icon {
+    position: relative;
+    flex: 0 0 auto;
+    width: var(--ag-notification-icon-width);
+    height: 20px;
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: currentColor;
+      mask: assets.$notification-info center / 100% 100% no-repeat;
+    }
+  }
+  .ag-notification[data-variant="alert"] .ag-notification__icon::before {
+    mask-image: assets.$notification-alert;
+  }
+  .ag-notification:is([data-variant="alert"], [data-variant="success"])
+    .ag-notification__icon {
+    color: t.$panel;
+  }
+  .ag-notification[data-variant="success"] .ag-notification__icon {
+    height: 11px;
+    &::before {
+      mask-image: assets.$notification-success;
+    }
+  }
+  .ag-notification[data-variant="caution"] .ag-notification__icon {
+    height: 17px;
+    &::before {
+      mask-image: assets.$notification-caution;
+    }
+  }
+  .ag-notification__close {
+    appearance: none;
+    display: block;
+    position: relative;
+    flex: 0 0 auto;
+    width: 10px;
+    height: 10px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    color: inherit;
+    background: transparent;
+    cursor: pointer;
+    &::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      background: currentColor;
+      mask: assets.$notification-close center / 100% 100% no-repeat;
+    }
+    // Expand the hit target to 44px without changing the Figma glyph or layout.
+    &::after {
+      content: "";
+      position: absolute;
+      inset: -16px;
+    }
+    &:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 5px;
+    }
+  }
+
+  .ag-notification[popover] {
+    --ag-notification-available-width: max(
+      0px,
+      calc(
+        100vw - var(--ag-notification-view-left, 0px) -
+          var(--ag-notification-view-right, 0px) - #{t.$notificationOffset} * 2
+      )
+    );
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    max-width: var(--ag-notification-available-width);
+    max-height: max(
+      0px,
+      calc(
+        100vh - var(--ag-notification-view-top, 0px) -
+          var(--ag-notification-view-bottom, 0px) - #{t.$notificationOffset} * 2
+      )
+    );
+    overflow: auto;
+
+    .ag-notification__message {
+      // Let a narrow view take precedence over the preferred text minimum.
+      min-width: min(
+        #{t.$notificationMessageMinWidth},
+        max(
+          0px,
+          calc(
+            var(--ag-notification-available-width) - #{t.$notificationPaddingInline} *
+              2 - var(--ag-notification-icon-width) - 12px - #{t.$notificationGap} *
+              2
+          )
+        )
+      );
+    }
+
+    &:not(:popover-open) {
+      display: none;
+    }
+    &::backdrop {
+      background: transparent;
+      pointer-events: none;
+    }
+    &:not([data-position]),
+    &[data-position^="top-"] {
+      top: calc(
+        var(--ag-notification-view-top, 0px) + #{t.$notificationOffset} + var(--ag-notification-stack-offset, 0px)
+      );
+    }
+    &[data-position^="bottom-"] {
+      bottom: calc(
+        var(--ag-notification-view-bottom, 0px) + #{t.$notificationOffset} + var(--ag-notification-stack-offset, 0px)
+      );
+    }
+    &[data-position$="-left"] {
+      left: calc(
+        var(--ag-notification-view-left, 0px) + #{t.$notificationOffset}
+      );
+    }
+    &:not([data-position]),
+    &[data-position$="-right"] {
+      right: calc(
+        var(--ag-notification-view-right, 0px) + #{t.$notificationOffset}
+      );
+    }
+    &[data-position$="-center"] {
+      left: calc(
+        var(--ag-notification-view-left, 0px) +
+          (
+            100% - var(--ag-notification-view-left, 0px) -
+              var(--ag-notification-view-right, 0px)
+          ) / 2
+      );
+      translate: -50% 0;
+    }
+  }
+
+  .ag-notification-announcer {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (forced-colors: active) {
+    .ag-notification {
+      background: Canvas;
+      color: CanvasText;
+      outline: 1px solid CanvasText;
+    }
+    .ag-notification__icon::before,
+    .ag-notification__close::before {
+      forced-color-adjust: none;
+      background: CanvasText;
+    }
+  }
+}

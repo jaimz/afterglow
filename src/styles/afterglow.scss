@@ -1,12 +1,9 @@
-// Import CSS once, or consume the individual Sass modules and mixins.
-@use "tokens";
-@use "typography";
-@use "frames";
-@use "button";
-@use "checkable";
-@use "slider";
-@use "dialog";
-@use "notification";
+// Full stylesheet: shared foundations followed by the four component categories.
+@use "foundation";
+@use "frame";
+@use "indicate";
+@use "interact";
+@use "present";
 
 // Explicit component display rules must never override HTML's hidden attribute.
 :is(.ag-appframe, .ag-background, .ag-surface, .ag-panel, .ag-paper, .ag-button, .ag-checkbox, .ag-radio, .ag-switch, .ag-radio-group, .ag-slider, .ag-dialog, .ag-notification)[hidden] {

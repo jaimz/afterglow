@@ -1,0 +1,8 @@
+@use "../foundation/theme";
+@use "card-content.mixins" as recipe;
+.ag-card-content {
+  @include recipe.content;
+}
+.ag-card-content[hidden] {
+  display: none;
+}

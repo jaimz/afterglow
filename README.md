@@ -8,6 +8,8 @@ Use HTML and CSS first. Add the optional TypeScript helpers for dynamic slider d
 
 See [Usage.md](Usage.md) for HTML recipes, CSS classes and variants, theming, optional JavaScript helpers, framework integration and the usage documentation expected for future Web Components.
 
+Styles are organised into **foundation**, **frame**, **indicate**, **interact** and **present**. Each category separates token definitions, pure Sass mixins and emitted classes. See [Architecture.md](Architecture.md) for the structure, compatibility entry points and design sources.
+
 ## Development
 
 Use Node.js 22 or later and Bun (or Yarn).
@@ -21,12 +23,14 @@ bun run build-storybook
 
 Storybook uses its HTML renderer. **Afterglow / Overview** demonstrates a working preferences form and animated dialog. **Afterglow / Native HTML / CSS Only** has no Afterglow behaviour helpers; selection and reset still work. **States** covers mixed, disabled, backdrop, read-only and vertical controls. The Vite development page also demonstrates a form without JavaScript.
 
+**Frame / Layouts**, **Interact / Textarea**, **Interact / Location Index**, **Interact / FAB**, **Present / Article** and **Present / Card Content** demonstrate the additional native recipes and their composition with the existing surfaces.
+
 The build produces independent assets:
 
 - `dist/afterglow.css`: the complete stylesheet.
-- `dist/assets/`: exported Notification icons referenced by the stylesheet; keep this folder beside the CSS when serving it directly.
+- `dist/assets/`: exported notification, navigation and button icons referenced by the stylesheet; keep this folder beside the CSS when serving it directly.
 - `dist/afterglow.mjs`: optional ES module helpers, with TypeScript declarations in `dist/`.
-- `src/styles/afterglow.scss`: Sass entry point; individual modules expose tokens and frame/typography mixins.
+- `src/styles/afterglow.scss`: complete Sass entry point; category entries and pure token/mixin modules are also available.
 
 The package exports these as `ag/css`, `ag` and `ag/scss`. The stylesheet includes default CSS token declarations; use `ag-theme` or the Sass `tokens.theme()` mixin for a local typography theme. See [the theming guide](Usage.md#themes-and-scss). You can also copy the compiled CSS into a project without adopting Sass or a JavaScript framework.
 
@@ -55,6 +59,7 @@ This is an intentional markup/API migration. Existing custom tags no longer rend
 
 ```sh
 bunx playwright install chromium firefox webkit
+bun run test:styles
 bun run test
 bun run test:browsers
 ```
@@ -66,4 +71,4 @@ WTR_BROWSER_CHANNEL=chrome bun run test
 WTR_BROWSER_CHANNEL=chrome bun run test:browsers
 ```
 
-Web Test Runner compiles SCSS in memory and tests native forms, labels, keyboard input, theme inheritance, read-only states, range bounds/marks/RTL/vertical behaviour and dialog lifecycle across Chromium, Firefox and WebKit. WebKit is the automated engine check; it does not replace testing Safari/iOS with real touch and assistive technology. The compiled library and Storybook builds are separate checks.
+The Sass tests verify import purity, category boundaries, theme validation, package paths and compatibility imports. Web Test Runner compiles SCSS in memory and tests native forms, labels, keyboard input, theme inheritance, read-only states, range bounds/marks/RTL/vertical behaviour, dialog/notification lifecycle and responsive layouts across Chromium, Firefox and WebKit. WebKit is the automated engine check; it does not replace testing Safari/iOS with real touch and assistive technology. The compiled library and Storybook builds are separate checks.

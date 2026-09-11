@@ -12,6 +12,7 @@
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "test": "web-test-runner --config web-test-runner.config.mjs",
+    "test:styles": "node --test test/styles.test.mjs",
     "test:watch": "web-test-runner --config web-test-runner.config.mjs --watch",
     "build:css": "node scripts/build-styles.mjs",
     "test:browsers": "WTR_BROWSERS=chromium,firefox,webkit web-test-runner --config web-test-runner.config.mjs"
@@ -48,7 +49,8 @@
   "files": [
     "dist",
     "src/styles",
-    "Usage.md"
+    "Usage.md",
+    "Architecture.md"
   ],
   "sideEffects": [
     "**/*.css",

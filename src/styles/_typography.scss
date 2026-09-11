@@ -1,32 +1,3 @@
-@use "tokens" as t;
-@mixin body {
-  font-family: t.$bodyFontStack;
-  font-size: t.$bodyTextSize;
-  line-height: t.$lineHeight;
-}
-@mixin caption {
-  font-family: t.$bodyFontStack;
-  font-size: t.$captionTextSize;
-  line-height: t.$lineHeight;
-}
-.ag-body {
-  @include body;
-}
-.ag-caption {
-  @include caption;
-}
-@each $level,
-  $size
-    in (
-      1: t.$h1TextSize,
-      2: t.$h2TextSize,
-      3: t.$h3TextSize,
-      4: t.$h4TextSize,
-      5: t.$h5TextSize
-    )
-{
-  .ag-h#{$level} {
-    font-family: t.$titleFontStack;
-    font-size: $size;
-  }
-}
+// Compatibility entry for existing Sass consumers.
+@forward "foundation/typography.mixins";
+@use "foundation/typography.classes";

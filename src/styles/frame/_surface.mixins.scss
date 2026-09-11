@@ -1,0 +1,31 @@
+@use "../foundation/tokens" as t;
+
+@mixin background {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    ellipse 90% 80% at top,
+    #{t.$backdropLight},
+    #{t.$backdrop}
+  );
+  color: #{t.$onBackdrop};
+  text-shadow: #{t.$backdropTextElevation};
+}
+
+@mixin surface {
+  background: #{t.$surface};
+  color: #{t.$onSurface};
+  box-shadow: #{t.$elevationShadow};
+}
+
+@mixin panel {
+  background: #{t.$panel};
+  color: #{t.$onPanel};
+  box-shadow: #{t.$elevationShadow};
+}
+
+@mixin paper {
+  background: #{t.$paper};
+  color: #{t.$onPaper};
+  box-shadow: #{t.$elevationShadow};
+}

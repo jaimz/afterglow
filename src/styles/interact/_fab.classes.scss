@@ -1,0 +1,3 @@
+@use "../foundation/theme";
+@use "fab.mixins" as recipe;
+@include recipe.styles;

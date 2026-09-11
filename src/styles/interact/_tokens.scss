@@ -1,0 +1,46 @@
+// Definitions only. The shared registry validates and declares these tokens.
+$defaults: (
+  "ctrl-border": rgba(110, 163, 176, 0.6),
+  "ctrl-fill":
+    radial-gradient(
+      102.33% 168.95% at 50% 0%,
+      #ffffff 0%,
+      #ffffff 37.77%,
+      #e6e6e6 100%
+    ),
+  "ctrl-fill-active":
+    radial-gradient(
+      272.33% 168.95% at 50% 0%,
+      #e6e6e6 0%,
+      #ffffff 90.96%,
+      #f0f0ed 100%
+    ),
+  "ctrl-fill-dark": #e6e6e6,
+  "ctrl-fill-hi": #ffffff,
+  "ctrl-fill-hover":
+    radial-gradient(
+      272.33% 168.95% at 50% 0%,
+      #ffffff 0%,
+      #ffffff 40.96%,
+      #e6e6e6 100%
+    ),
+  "ctrl-fill-lo": #f0f0ed,
+  "ctrl-fill-solid": #007693,
+  "ctrlFillSolidDesaturate": #5e8c97,
+  "ctrlFillSolidDesaturate40": rgba(94, 140, 151, 0.4),
+  "ctrl-fill-solid-hi": #149cbd,
+  "ctrl-fill-solid-lo": #004c5e,
+  "ctrlHint": #6ea3b0,
+  "ctrlHint50": #6ea3b088,
+  "ctrlText": #007693,
+  "ctrlTextDesat": #5e8c97,
+  "ctrlTextDesat40": #5e8c97,
+  "disabled-opacity": 0.5,
+  "on-ctrl-fill-solid": #f3eee6,
+  "field-hint": #b6b4a8,
+  "textarea-min-height": 158px,
+  "selection-fill": rgba(110, 163, 176, 0.2),
+  "fab-border": rgba(224, 224, 224, 0.19),
+  "fab-inner-glow": #2ed7ff,
+  "fab-blur": 13.59px,
+);

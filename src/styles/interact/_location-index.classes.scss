@@ -1,0 +1,3 @@
+@use "../foundation/theme";
+@use "location-index.mixins" as recipe;
+@include recipe.styles;

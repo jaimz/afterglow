@@ -1,0 +1,107 @@
+@use "../foundation/tokens" as t;
+
+// Structural recipes inspired by Tai; palette and surface treatments are composed
+// using existing Afterglow classes. No application-specific theme is imported.
+@mixin application {
+  --ag-app-nav-size: calc(#{t.token("app-nav-width")} + #{t.$frame-gridX} * 2);
+  --ag-app-tools-size: calc(
+    #{t.token("app-tools-width")} + #{t.$frame-gridX} * 2
+  );
+  display: grid;
+  grid-template-areas: "header header header" "nav main tools";
+  grid-template-columns: minmax(0, var(--ag-app-nav-size)) minmax(0, 1fr) minmax(
+      0,
+      var(--ag-app-tools-size)
+    );
+  grid-template-rows: auto minmax(0, 1fr);
+  row-gap: calc(#{t.$frame-gridY} * 2);
+  box-sizing: border-box;
+  min-inline-size: 0;
+  > * {
+    min-inline-size: 0;
+  }
+  > .ag-appframe__header {
+    grid-area: header;
+  }
+  > .ag-appframe__nav {
+    grid-area: nav;
+    margin-inline-end: calc(#{t.$frame-gridX} * 2);
+  }
+  > .ag-appframe__main {
+    grid-area: main;
+  }
+  > .ag-appframe__tools {
+    grid-area: tools;
+    margin-inline-start: calc(#{t.$frame-gridX} * 2);
+  }
+  &:not(:has(> .ag-appframe__nav:not([hidden]))) {
+    --ag-app-nav-size: 0px;
+  }
+  &:not(:has(> .ag-appframe__tools:not([hidden]))) {
+    --ag-app-tools-size: 0px;
+  }
+  @media (max-width: 48rem) {
+    grid-template-areas: "header" "nav" "main" "tools";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    > .ag-appframe__nav,
+    > .ag-appframe__tools {
+      margin-inline: 0;
+    }
+  }
+}
+
+@mixin master-detail {
+  display: grid;
+  grid-template-columns: minmax(0, #{t.token("master-width")}) minmax(0, 1fr);
+  gap: calc(#{t.$frame-gridX} * 2);
+  min-inline-size: 0;
+  > * {
+    min-inline-size: 0;
+  }
+  > .ag-master-detail__master {
+    grid-column: 1;
+  }
+  > .ag-master-detail__detail {
+    grid-column: 2;
+  }
+  > .ag-master-detail__aux {
+    grid-column: 1 / -1;
+  }
+  &[data-orientation="vertical"] {
+    grid-template-columns: minmax(0, 1fr);
+    > :is(.ag-master-detail__master, .ag-master-detail__detail, .ag-master-detail__aux) {
+      grid-column: 1;
+    }
+  }
+  @media (max-width: 48rem) {
+    grid-template-columns: minmax(0, 1fr);
+    > :is(.ag-master-detail__master, .ag-master-detail__detail, .ag-master-detail__aux) {
+      grid-column: 1;
+    }
+  }
+}
+
+@mixin card {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  box-sizing: border-box;
+  min-inline-size: 0;
+  > :is(.ag-card__header, .ag-card__body, .ag-card__footer) {
+    min-inline-size: 0;
+    padding: calc(#{t.$frame-gridY} * 2) calc(#{t.$frame-gridX} * 2);
+  }
+  > .ag-card__header {
+    grid-row: 1;
+  }
+  > .ag-card__body {
+    grid-row: 2;
+  }
+  > .ag-card__footer {
+    grid-row: 3;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: t.$frame-gridX;
+  }
+}

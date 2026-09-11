@@ -1,0 +1,65 @@
+@use "../foundation/tokens" as t;
+@use "../assets" as assets;
+
+// Figma FAB 284:1, including its translucent fill and exported add icon.
+@mixin button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  inline-size: 56px;
+  block-size: 56px;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 1px solid t.token("fab-border");
+  border-radius: 50%;
+  background: color-mix(in srgb, #{t.$ctrlFillSolid} 60%, transparent);
+  color: t.$onCtrlFillSolid;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 30%),
+    inset 0 1px 3px t.token("fab-inner-glow");
+  backdrop-filter: blur(#{t.token("fab-blur")});
+  cursor: pointer;
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, #{t.$ctrlFillSolidHi} 60%, transparent);
+  }
+  &:active:not(:disabled) {
+    background: color-mix(in srgb, #{t.$ctrlFillSolidLo} 60%, transparent);
+  }
+  &:focus-visible {
+    outline: 2px solid t.$ctrlText;
+    outline-offset: 3px;
+  }
+  &:disabled {
+    opacity: t.$disabledOpacity;
+    cursor: not-allowed;
+  }
+  @media (forced-colors: active) {
+    background: ButtonFace;
+    color: ButtonText;
+    border-color: ButtonText;
+    box-shadow: none;
+    &:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+}
+
+@mixin styles {
+  .ag-fab {
+    @include button;
+  }
+  .ag-fab__icon {
+    display: block;
+    inline-size: 24px;
+    block-size: 24px;
+    object-fit: contain;
+    &[data-icon="add"] {
+      background: currentColor;
+      mask: assets.$button-add center / contain no-repeat;
+    }
+  }
+  .ag-fab[hidden] {
+    display: none;
+  }
+}
