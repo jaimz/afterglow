@@ -1,7 +1,7 @@
 @use "../foundation/tokens" as t;
 @use "../assets" as assets;
 
-// Figma FAB 284:1, including its translucent fill and exported add icon.
+// Floating action button, including its translucent fill and add icon.
 @mixin button {
   appearance: none;
   display: inline-flex;

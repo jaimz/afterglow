@@ -24,13 +24,18 @@ export default {
         if (categoryStyles.has(context.path))
           return { body: categoryStyles.get(context.path), type: "css" };
         if (
-          /^\/assets\/(notification\/(info|alert|success|caution|close)|navigation\/shared|button\/add)\.svg$/.test(
+          /^\/assets\/(notification\/(info|alert|success|caution|close)|navigation\/shared|button\/add|avatar\/blank)\.svg$/.test(
             context.path
           )
         )
           return {
             body: readFileSync(`src/styles${context.path}`),
             type: "image/svg+xml",
+          };
+        if (context.path === "/assets/avatar/Comfortaa.ttf")
+          return {
+            body: readFileSync("src/styles/assets/avatar/Comfortaa.ttf"),
+            type: "font/ttf",
           };
       },
     },

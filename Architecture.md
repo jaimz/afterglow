@@ -8,7 +8,7 @@ Afterglow groups styles and components by their purpose. Native HTML supplies se
 | `frame`      | Arrange and contain other elements      | Background, surface, panel, paper, application grid, master-detail, structural card, dialog |
 | `indicate`   | Reflect changing or transient state     | Notification and status colours                                                             |
 | `interact`   | Accept user input                       | Button, FAB, checkbox, radio, switch, slider, textarea, navigation links                    |
-| `present`    | Display lasting content                 | Article typography and card content                                                         |
+| `present`    | Display lasting content                 | Article typography, card content and avatars                                                |
 
 Choose a component's category by its primary purpose. A notification remains in `indicate` even though it contains a dismiss button; that button is an interaction within a status presentation. A structural card belongs to `frame`, while its optional text treatment belongs to `present`.
 
@@ -69,6 +69,7 @@ The **Afterglow** page of the **Mobile** Figma file remains the visual authority
 | Navigation links          | [Menu Item 217:1](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=217-1)        |
 | Card content              | [Card content 235:17](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=235-17)   |
 | Floating action button    | [FAB 284:1](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=284-1)              |
+| Avatar                    | [Avatar 204:112](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=204-112)       |
 
 The application grid, master-detail arrangement and structural card are flexible layout recipes inspired by Tai. Their widths, responsive breakpoint and composition rules are library choices, not assertions that Figma specifies a complete responsive application shell. They use existing Afterglow surfaces. Figma's fixed sample dimensions become content-driven sizing where needed: textareas have a minimum height, cards grow with content, and navigation labels can wrap.
 

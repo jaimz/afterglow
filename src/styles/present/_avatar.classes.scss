@@ -1,0 +1,5 @@
+@use "../foundation/theme";
+@use "avatar.mixins" as recipe;
+
+@include recipe.font;
+@include recipe.styles;

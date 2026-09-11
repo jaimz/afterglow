@@ -2,4 +2,16 @@
 $defaults: (
   "article-padding-block": 16px,
   "article-padding-inline": 24px,
+  "avatar-size": 40px,
+  "avatar-header-size": 48px,
+  "avatar-large-size": 80px,
+  "avatar-font-stack": (
+    "Comfortaa",
+    sans-serif,
+  ),
+  "avatar-initials-size": 36px,
+  "avatar-header-initials-size": 48px,
+  "avatar-large-initials-size": 72px,
+  "avatar-shade": #ebebeb,
+  "avatar-shadow": 0 2px 7px rgba(0, 0, 0, 0.17),
 );

@@ -1,8 +1,8 @@
 # Afterglow
 
-A native HTML and SCSS design system based on the **Afterglow** page in the **Mobile** Figma file. Buttons and form controls are real HTML elements. There is no custom-element registration, Shadow DOM, Lit or FAST runtime.
+**Afterglow** is a native HTML and SCSS design system. Buttons and form controls are real HTML elements. There is no custom-element registration, Shadow DOM, Lit or FAST runtime.
 
-Use HTML and CSS first. Add the optional TypeScript helpers for dynamic slider decorations, animated dialogs, notification timing and announcements, read-only controls or extra radio-group shortcuts. Future components should follow the same rule: a native element that can be styled appropriately does not need a web component.
+Use HTML and CSS first. Add the optional TypeScript helpers for avatar initials and fitting, dynamic slider decorations, animated dialogs, notification timing and announcements, read-only controls or extra radio-group shortcuts. Future components should follow the same rule: a native element that can be styled appropriately does not need a web component.
 
 ## Using Afterglow
 
@@ -25,10 +25,12 @@ Storybook uses its HTML renderer. **Afterglow / Overview** demonstrates a workin
 
 **Frame / Layouts**, **Interact / Textarea**, **Interact / Location Index**, **Interact / FAB**, **Present / Article** and **Present / Card Content** demonstrate the additional native recipes and their composition with the existing surfaces.
 
+**Present / Avatar** includes photo, initials, flat-initials and blank variants, three sizes, name and image URL editors, and photo fallback. Its helper exposes writable `name` and `imageUrl` properties and fits the extracted initials to the selected shape.
+
 The build produces independent assets:
 
 - `dist/afterglow.css`: the complete stylesheet.
-- `dist/assets/`: exported notification, navigation and button icons referenced by the stylesheet; keep this folder beside the CSS when serving it directly.
+- `dist/assets/`: exported icons and the Avatar font, with its licence; keep this folder beside the CSS when serving it directly.
 - `dist/afterglow.mjs`: optional ES module helpers, with TypeScript declarations in `dist/`.
 - `src/styles/afterglow.scss`: complete Sass entry point; category entries and pure token/mixin modules are also available.
 

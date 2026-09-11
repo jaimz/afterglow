@@ -9,6 +9,7 @@ This guide describes the current consumer API. New components and changes to exi
 - [Frames and typography](#frames-and-typography)
 - [Application and content layouts](#application-and-content-layouts)
 - [Articles and card content](#articles-and-card-content)
+- [Avatars](#avatars)
 - [Buttons](#buttons)
 - [Textareas](#textareas)
 - [Navigation](#navigation)
@@ -26,7 +27,7 @@ This guide describes the current consumer API. New components and changes to exi
 
 ## How to use the API
 
-Load Afterglow's compiled stylesheet once, before your application's overrides. The examples below assume it is already loaded. With a bundler, the stylesheet import is `import "ag/css"`; a plain HTML page can link to a served copy of `afterglow.css`. When serving compiled files directly, keep the accompanying `dist/assets/` folder beside the CSS file so the notification, navigation and button icons resolve. Bundlers process these relative asset URLs when importing the stylesheet.
+Load Afterglow's compiled stylesheet once, before your application's overrides. The examples below assume it is already loaded. With a bundler, the stylesheet import is `import "ag/css"`; a plain HTML page can link to a served copy of `afterglow.css`. When serving compiled files directly, keep the accompanying `dist/assets/` folder beside the CSS file so icons and the Avatar font resolve. Bundlers process these relative asset URLs when importing the stylesheet.
 
 Then use native HTML with Afterglow's classes:
 
@@ -61,6 +62,7 @@ Recipes are grouped by their purpose. **Frame** arranges and contains other elem
 | Frames and typography                       | Backgrounds, colour, depth and type styles                                               | Nothing required                                                                                             |
 | Application, master-detail and card layouts | Responsive arrangement of semantic regions                                               | Your application chooses which regions to render or hide                                                     |
 | Articles and card content                   | Scoped headings, body text, content spacing and action layout                            | Nothing required                                                                                             |
+| Avatars                                     | Photo, blank and static-initials variants, shapes and sizes                              | `enhanceAvatar` derives initials from `name`, fits letters and handles photo fallback                        |
 | Buttons                                     | Appearance, focus, activation and native form actions                                    | Your application's action handlers                                                                           |
 | Textareas                                   | Labels, editing, resizing, validation, disabled/read-only states and form participation  | Nothing required                                                                                             |
 | Navigation                                  | Styled links, current-location appearance and native link activation                     | Your application updates `aria-current` when the location changes                                            |
@@ -105,7 +107,7 @@ These surface classes supply appearance. Add one of the layout recipes below whe
 }
 ```
 
-Use `ag-body` for body text, `ag-caption` for captions and `ag-h1` through `ag-h5` for heading styles. Choose actual heading elements for the document hierarchy; a class does not add heading semantics. The default font stack prefers Lato, with system fallbacks. Supply Lato from your application if you want that typeface; Afterglow does not download fonts.
+Use `ag-body` for body text, `ag-caption` for captions and `ag-h1` through `ag-h5` for heading styles. Choose actual heading elements for the document hierarchy; a class does not add heading semantics. The default font stack prefers Lato, with system fallbacks. Supply Lato from your application if you want that typeface. The Avatar recipe separately bundles Comfortaa for its initials treatment.
 
 ## Application and content layouts
 
@@ -167,9 +169,9 @@ Use `ag-article` on a semantic article or content container. Its direct headings
 </article>
 ```
 
-The recipe uses Figma's mobile type ramp, including heading weights and letter spacing. Headings `h1`–`h5` follow the design; `h6` uses bold body size. Content blocks are bounded by `--max-line-width`. Default padding is `16px` vertically and `24px` horizontally, controlled by `--article-padding-block` and `--article-padding-inline`. Typography rules target direct children so nested controls and components retain their own styles. Use heading levels that fit the document hierarchy.
+The recipe uses Afterglow's mobile type ramp, including heading weights and letter spacing. Headings `h1`–`h5` follow the design; `h6` uses bold body size. Content blocks are bounded by `--max-line-width`. Default padding is `16px` vertically and `24px` horizontally, controlled by `--article-padding-block` and `--article-padding-inline`. Typography rules target direct children so nested controls and components retain their own styles. Use heading levels that fit the document hierarchy.
 
-`ag-card-content` is the compact content treatment from Figma: optional overline, title, body and actions. It can stand alone with a surface class or sit inside another container:
+`ag-card-content` is a compact content treatment with optional overline, title, body and actions. It can stand alone with a surface class or sit inside another container:
 
 ```html
 <article class="ag-card-content ag-paper" aria-labelledby="note-title">
@@ -184,7 +186,136 @@ The recipe uses Figma's mobile type ramp, including heading weights and letter s
 </article>
 ```
 
-Children must be direct descendants. Omit any unused region; width and height follow the available space and content. The title has the visual size of Figma's third heading level, regardless of its semantic heading tag. Text regions have `16px` horizontal padding, so avoid adding another padded card-body wrapper unless you want extra inset. **Present / Article** and **Present / Card Content** show these recipes.
+Children must be direct descendants. Omit any unused region; width and height follow the available space and content. The title has the visual size of Afterglow's third heading level, regardless of its semantic heading tag. Text regions have `16px` horizontal padding, so avoid adding another padded card-body wrapper unless you want extra inset. **Present / Article** and **Present / Card Content** show these recipes.
+
+## Avatars
+
+Avatars belong to **Present** and use native elements. A small helper supplies the writable `name` property and automatic initials; there is no custom element to register.
+
+```html
+<span id="author-avatar" class="ag-avatar" data-variant="initials"></span>
+```
+
+```ts
+import { enhanceAvatar } from "ag";
+
+const avatar = enhanceAvatar(
+  document.querySelector<HTMLElement>("#author-avatar")!,
+  {
+    name: "James O’Toole",
+  }
+);
+
+avatar.initials; // "jo"
+avatar.name = "Ada Lovelace"; // Updates the initials and accessible name.
+
+// When the owning view is removed:
+avatar.destroy();
+```
+
+The helper creates and updates an `ag-avatar__initials` child, sets the full name as the avatar's accessible label and treats the visual letters as decorative. A `data-name` attribute can supply the initial name instead of the option; subsequent attribute changes are observed. The writable `name` property belongs to the returned controller, not the native `span`.
+
+### Variants, sizes and photos
+
+| Attribute      | Values                                            | Default   |
+| -------------- | ------------------------------------------------- | --------- |
+| `data-variant` | `image`, `initials`, `flat-initials`, `blank`     | `image`   |
+| `data-size`    | `default` (40px), `header` (48px), `large` (80px) | `default` |
+| `data-shape`   | `leaf`, `circle`, `square`                        | `leaf`    |
+
+`initials` uses a light gradient and teal lettering; `flat-initials` uses a dark teal fill and light lettering. `blank` displays the Afterglow artwork. All variants support three sizes. Initials in circle/square shapes are centred.
+
+Set `imageUrl` when enhancing an image avatar, or assign it later through the controller:
+
+```html
+<span
+  id="profile-avatar"
+  class="ag-avatar"
+  data-variant="image"
+  data-shape="circle"
+></span>
+```
+
+```ts
+const avatar = enhanceAvatar(
+  document.querySelector<HTMLElement>("#profile-avatar")!,
+  { name: "Ada Lovelace", imageUrl: "/people/ada.jpg" }
+);
+
+avatar.imageUrl = "/people/ada-new.jpg"; // Replace the photo.
+avatar.imageUrl = ""; // Clear it and show initials, or blank artwork without a name.
+avatar.update({ name: "Grace Hopper", imageUrl: "/people/grace.jpg" });
+```
+
+The helper creates a native `img.ag-avatar__image` when needed. `imageUrl` belongs to the returned controller and reads the current `src` attribute, or `""` when absent. Setting it preserves the selected variant, size and shape; the image is visible in the `image` variant. No default portrait is bundled into the helper: the photographs in Storybook are examples only.
+
+Alternatively, supply the image directly in HTML. This example needs no helper:
+
+```html
+<span
+  class="ag-avatar"
+  data-variant="image"
+  data-size="header"
+  data-shape="circle"
+  role="img"
+  aria-label="Ada Lovelace"
+>
+  <img class="ag-avatar__image" src="/people/ada.jpg" alt="" />
+</span>
+```
+
+Images fill the shape with `object-fit: cover`. Set `--avatar-image-position`, for example `50% 30%`, to adjust cropping. The helper makes missing, loading or failed images fall back to initials, or to the blank artwork if there is no usable name. It responds when the image loads, its source changes or the image element is replaced.
+
+You can still manage native `img.src`, `srcset` and `sizes` directly. Omitting `imageUrl` preserves those attributes. Explicitly setting `imageUrl` replaces `src` and removes `srcset` and `sizes` so a responsive source cannot override the assigned URL; setting `""` clears all three. Other updates, such as changing `name`, leave the current image sources untouched.
+
+### Initials and positioning
+
+Automatic initials are lowercase. Extraction uses the first and last name parts, skips middle names and common English titles/suffixes, understands `Family, Given` ordering, and keeps Unicode graphemes intact:
+
+| Name                          | Initials |
+| ----------------------------- | -------- |
+| `James O’Toole`               | `jo`     |
+| `Dr. Mary Jane Watson, Ph.D.` | `mw`     |
+| `Lovelace, Ada`               | `al`     |
+| `Prince`                      | `p`      |
+| `Jean-Luc`                    | `jl`     |
+| `Jean-Luc Picard`             | `jp`     |
+| `Álvaro Núñez`                | `án`     |
+| `王 小明`                     | `王小`   |
+
+A single name without separators yields one initial; the helper does not guess surname boundaries in a compact name such as `王小明`. Pass `locale`, such as `"tr"`, for locale-specific casing; otherwise the helper uses the nearest HTML `lang` value. `getAvatarInitials(name, locale?)` is also exported for applications that want to generate their own markup, including server rendering.
+
+Name conventions vary. Use `avatar.update({ initials: "JD" })` to override the automatic choice; supplied case is preserved, whitespace is removed and at most two graphemes are used. `avatar.update({ initials: null })` restores automatic extraction.
+
+Latin pairs use an oversized monogram at the lower right. The helper measures the rendered font, reduces wide pairs and limits cropping of a narrow final letter. Single initials and non-Latin scripts are centred. An empty name uses the blank artwork. Fitting updates after font loading, avatar resizing, size/shape changes and name updates. Call `avatar.update()` after other application-driven font/theme changes that do not resize the avatar.
+
+For static HTML, supply the initials yourself:
+
+```html
+<span
+  class="ag-avatar"
+  data-variant="initials"
+  data-initial-count="2"
+  role="img"
+  aria-label="James O’Toole"
+>
+  <span class="ag-avatar__initials" aria-hidden="true">jo</span>
+</span>
+```
+
+Use `data-initial-count="1"` to centre a single initial, or `data-initial-layout="centered"` for another centred monogram. Automatic extraction and fitting require the helper.
+
+### Accessibility, theming and lifecycle
+
+The helper uses the full name as the accessible label, with `"Unknown user"` for an empty name. Override this through `label` when a different or translated label is needed. Set `decorative: true`, or initialise an element with `aria-hidden="true"`, when adjacent text already identifies the person. For an interactive avatar, put a decorative avatar inside a labelled native button or link; the Avatar itself does not introduce focus or interaction.
+
+`update(options)` accepts the same `name`, `imageUrl`, `initials`, `locale`, `decorative` and `label` options as initialisation. `destroy()` removes observers, image listeners and pending fitting work, leaving the rendered avatar as static HTML. Repeated enhancement returns the existing controller; use `update()` to change its options. No custom events are emitted.
+
+Size tokens are `--avatar-size`, `--avatar-header-size` and `--avatar-large-size`; matching type tokens are `--avatar-initials-size`, `--avatar-header-initials-size` and `--avatar-large-initials-size`. `--avatar-font-stack`, `--avatar-shade` and `--avatar-shadow` control the font, gradient endpoint and shadow. Colours reuse existing paper, panel, backdrop and control tokens. Properties beginning `--ag-avatar-` are internal fitting/layout values.
+
+The stylesheet bundles the Comfortaa font, with its licence, and loads it from the local assets directory. For selective Sass use, load `present/avatar.classes`; when composing only pure mixins, include `avatar.font` once as well as `avatar.styles` and the shared theme.
+
+**Present / Avatar** includes name and image URL editors, a **Variants** gallery showing all 18 appearance and size combinations, varied names, photo fallback and a static HTML example.
 
 ## Buttons
 
@@ -217,7 +348,7 @@ Give an icon-only button an accessible name with `aria-label`.
 
 ### Floating action button
 
-Use a separate native button recipe for Figma's circular `56 × 56px` FAB:
+Use a separate native button recipe for the circular `56 × 56px` floating action button:
 
 ```html
 <button type="button" class="ag-fab" aria-label="Add note">
@@ -225,7 +356,7 @@ Use a separate native button recipe for Figma's circular `56 × 56px` FAB:
 </button>
 ```
 
-The supplied add icon is an exact Figma export. You can supply your own decorative image with `class="ag-fab__icon"` and `alt=""`; the icon box is `24 × 24px`. Use native `disabled` when unavailable. The application owns the action and placement; the class does not pin the button to a screen corner. **Interact / FAB** shows native activation and the disabled state.
+The add icon is included with the stylesheet. You can supply your own decorative image with `class="ag-fab__icon"` and `alt=""`; the icon box is `24 × 24px`. Use native `disabled` when unavailable. The application owns the action and placement; the class does not pin the button to a screen corner. **Interact / FAB** shows native activation and the disabled state.
 
 ## Textareas
 
@@ -241,7 +372,7 @@ A labelled native textarea works without a helper:
 ></textarea>
 ```
 
-For the floating-label treatment from Figma, put the textarea before its associated label and keep the single-space placeholder:
+For the floating-label treatment, put the textarea before its associated label and keep the single-space placeholder:
 
 ```html
 <div class="ag-textarea-field">
@@ -261,7 +392,7 @@ The textarea fills its container and can be resized vertically. `--textarea-min-
 
 ## Navigation
 
-Use real links inside a labelled navigation landmark. The menu-item appearance follows Figma:
+Use real links inside a labelled navigation landmark. Apply the menu-item classes as follows:
 
 ```html
 <nav class="ag-location-index" aria-label="Notebook">
@@ -285,7 +416,7 @@ Use real links inside a labelled navigation landmark. The menu-item appearance f
 </nav>
 ```
 
-The application sets `aria-current="page"` on the current destination and removes it from other links. Other valid `aria-current` values also select the current appearance; `aria-current="false"` does not. Optional `ag-location-index__title` headings can introduce groups. Icons occupy `16 × 16px`; the supplied `shared` icon comes from Figma. Custom images can use the same icon class and empty `alt` text when decorative.
+The application sets `aria-current="page"` on the current destination and removes it from other links. Other valid `aria-current` values also select the current appearance; `aria-current="false"` does not. Optional `ag-location-index__title` headings can introduce groups. Icons occupy `16 × 16px`; the `shared` icon is included with the stylesheet. Custom images can use the same icon class and empty `alt` text when decorative.
 
 This is ordinary navigation, with native link behaviour and keyboard focus. It does not implement a menu-widget keyboard model, routing or automatic location tracking. `--selection-fill` controls the selected background; foreground colours reuse existing surface/control tokens. **Interact / Location Index** demonstrates current and ordinary links.
 
@@ -490,7 +621,7 @@ slider.destroy();
 
 ## Notifications
 
-Notifications follow the [Figma Notification design](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=149-43): an icon, message and close button. They use native HTML and `popover="manual"`, with an optional helper for timing and announcements. There is no custom element to register.
+Notifications contain an icon, message and close button. They use native HTML and `popover="manual"`, with an optional helper for timing and announcements. There is no custom element to register.
 
 This complete HTML example can be opened and dismissed without an Afterglow helper:
 
@@ -522,7 +653,7 @@ This complete HTML example can be opened and dismissed without an Afterglow help
 </div>
 ```
 
-Keep the native close button and message element. The icon is decorative: CSS uses the original Figma SVGs as masks so their colours follow the theme. The close button has a larger hit area than its visible glyph. Omit `popover` only for an inline notification managed by your application.
+Keep the native close button and message element. The icon is decorative: CSS uses the supplied SVGs as masks so their colours follow the theme. The close button has a larger hit area than its visible glyph. Omit `popover` only for an inline notification managed by your application.
 
 The notification sizes itself around its contents: the message has a minimum width of `160px` and a maximum of `320px`, with icons, gaps and padding added around it. Longer text wraps at the maximum. In a narrow view, a popover's message can shrink below the minimum to keep the close button visible.
 
@@ -733,7 +864,7 @@ The helper sets `aria-readonly` and temporarily suspends `required` on read-only
 
 ## Themes and SCSS
 
-The stylesheet declares all 88 public design tokens on `:root`, including colours, typography, spacing and motion. The registry in [`foundation/_tokens.scss`](src/styles/foundation/_tokens.scss) combines foundation primitives and category token maps. Component styles reference the declared variables, and your own CSS can use them without repeating fallback values:
+The stylesheet declares all public design tokens on `:root`, including colours, typography, spacing and motion. The registry in [`foundation/_tokens.scss`](src/styles/foundation/_tokens.scss) combines foundation primitives and category token maps. Component styles reference the declared variables, and your own CSS can use them without repeating fallback values:
 
 ```css
 .summary {
@@ -833,7 +964,7 @@ Initialise helpers with real element references after the view mounts, and call 
 
 Server-render the HTML and CSS normally; run helper initialisation only in the browser. Let the slider helper own the generated children of `ag-slider__marks` and its inline decoration positions. Keep application state in sync through the input's events. The library provides behaviour helpers, not framework component wrappers.
 
-All four helpers return the existing controller when called again with the same root element. Assign one lifecycle owner to each controller, avoid overlapping `enhanceControls` roots, and remember that destroying a controller removes its own listeners, not listeners attached by your application.
+All helpers return the existing controller when called again with the same root element. Assign one lifecycle owner to each controller, avoid overlapping `enhanceControls` roots, and remember that destroying a controller removes its own listeners, not listeners attached by your application. For avatars, initialise `enhanceAvatar` after mounting and assign `controller.name` when the person's name changes, or render static initials with `getAvatarInitials`.
 
 ## Future Web Components
 

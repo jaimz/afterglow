@@ -1,0 +1,191 @@
+@use "../foundation/tokens" as t;
+@use "../assets";
+
+@mixin font {
+  @font-face {
+    font-family: "Comfortaa";
+    src: assets.$avatar-font format("truetype");
+    font-style: normal;
+    font-weight: 300 700;
+    font-display: swap;
+  }
+}
+
+// Physical leaf corners and monogram placement remain
+// the same in RTL; the initials themselves are directionally isolated.
+@mixin avatar {
+  --ag-avatar-size: #{t.token("avatar-size")};
+  --ag-avatar-initial-size: #{t.token("avatar-initials-size")};
+  --ag-avatar-radius: 6px 16px 6px 16px;
+  --ag-avatar-text-bottom: -17.5%;
+  --ag-avatar-text-right: -16.25%;
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  inline-size: var(--ag-avatar-size);
+  block-size: var(--ag-avatar-size);
+  vertical-align: middle;
+  overflow: hidden;
+  border-radius: var(--ag-avatar-radius);
+  background: t.$paper;
+  color: t.$ctrlText;
+  text-shadow: none;
+  isolation: isolate;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    box-sizing: border-box;
+    border-radius: inherit;
+    border: 0.5px solid t.$panel;
+    box-shadow: inset 0 1px 2px t.$paper;
+    pointer-events: none;
+  }
+  &[data-size="header"] {
+    --ag-avatar-size: #{t.token("avatar-header-size")};
+    --ag-avatar-initial-size: #{t.token("avatar-header-initials-size")};
+    --ag-avatar-radius: 6px 18px 6px 18px;
+    --ag-avatar-text-bottom: -22.916667%;
+    --ag-avatar-text-right: -18.75%;
+    box-shadow: t.token("avatar-shadow");
+  }
+  &[data-size="large"] {
+    --ag-avatar-size: #{t.token("avatar-large-size")};
+    --ag-avatar-initial-size: #{t.token("avatar-large-initials-size")};
+    --ag-avatar-radius: 6px 30px 6px 30px;
+    --ag-avatar-text-bottom: -8.75%;
+    --ag-avatar-text-right: -18.75%;
+    box-shadow: t.token("avatar-shadow");
+  }
+  &[data-shape="circle"] {
+    border-radius: 50%;
+    box-shadow: t.token("avatar-shadow");
+    &::after {
+      border-width: 1px;
+      box-shadow: none;
+    }
+  }
+  &[data-shape="square"] {
+    border-radius: 8px;
+    box-shadow: t.token("avatar-shadow");
+    &::after {
+      border-width: 1px;
+      box-shadow: inset 0 4px 4px rgb(0 0 0 / 25%);
+    }
+  }
+  &:is([data-variant="initials"], [data-variant="blank"], [data-avatar-fallback]) {
+    background: radial-gradient(
+      137.5% 90% at 50% 10%,
+      #{t.$paper},
+      #{t.token("avatar-shade")}
+    );
+    box-shadow: t.token("avatar-shadow");
+    &::after {
+      border: 0.5px solid t.$backdropLight;
+      box-shadow: inset 0 1px 1px t.$paper;
+    }
+  }
+  &[data-variant="flat-initials"] {
+    background: t.$ctrlFillSolidLo;
+    color: t.$onCtrlFillSolid;
+    box-shadow: none;
+    &::after {
+      display: none;
+    }
+  }
+  &:is([data-variant="blank"], [data-avatar-fallback="blank"])::before {
+    content: "";
+    position: absolute;
+    left: 25.8%;
+    top: 19.6%;
+    width: 47.4%;
+    height: 60%;
+    background: t.$backdrop;
+    mask: assets.$avatar-blank center / contain no-repeat;
+  }
+  // Empty names use the blank artwork while retaining a requested flat fill.
+  &[data-variant="flat-initials"][data-avatar-fallback="blank"]::before {
+    background: currentColor;
+  }
+  @media (forced-colors: active) {
+    &,
+    &[data-variant],
+    &[data-avatar-fallback],
+    &[data-variant][data-avatar-fallback] {
+      background: Canvas;
+      color: CanvasText;
+      box-shadow: none;
+      &::after {
+        display: block;
+        border: 1px solid CanvasText;
+        box-shadow: none;
+      }
+      &::before {
+        forced-color-adjust: none;
+        background: CanvasText;
+      }
+    }
+  }
+}
+
+@mixin styles {
+  .ag-avatar {
+    @include avatar;
+  }
+  .ag-avatar__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--avatar-image-position, center);
+  }
+  .ag-avatar__initials {
+    position: absolute;
+    bottom: var(--ag-avatar-initial-bottom, var(--ag-avatar-text-bottom));
+    right: var(--ag-avatar-initial-right, var(--ag-avatar-text-right));
+    width: max-content;
+    margin: 0;
+    padding: 0;
+    font-family: t.token("avatar-font-stack");
+    font-size: calc(
+      var(--ag-avatar-initial-size) * var(--ag-avatar-initial-fit, 1)
+    );
+    font-weight: 300;
+    font-style: normal;
+    font-synthesis: none;
+    line-height: 1.25;
+    letter-spacing: -0.2765px;
+    white-space: nowrap;
+    direction: ltr;
+    unicode-bidi: isolate;
+    pointer-events: none;
+  }
+  .ag-avatar[data-initial-count="1"] > .ag-avatar__initials,
+  .ag-avatar[data-initial-layout="centered"] > .ag-avatar__initials,
+  .ag-avatar:is([data-shape="circle"], [data-shape="square"])
+    > .ag-avatar__initials {
+    top: 50%;
+    bottom: auto;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
+  }
+  .ag-avatar > .ag-avatar__initials {
+    display: none;
+  }
+  .ag-avatar:is([data-variant="initials"], [data-variant="flat-initials"], [data-avatar-fallback="initials"])
+    > .ag-avatar__initials {
+    display: block;
+  }
+  .ag-avatar:is([data-variant="initials"], [data-variant="flat-initials"], [data-variant="blank"], [data-avatar-fallback])
+    > .ag-avatar__image,
+  .ag-avatar[data-avatar-fallback="blank"] > .ag-avatar__initials {
+    display: none;
+  }
+  .ag-avatar[hidden],
+  .ag-avatar > [hidden] {
+    display: none !important;
+  }
+}

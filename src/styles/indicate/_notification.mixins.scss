@@ -102,7 +102,7 @@
       background: currentColor;
       mask: assets.$notification-close center / 100% 100% no-repeat;
     }
-    // Expand the hit target to 44px without changing the Figma glyph or layout.
+    // Expand the hit target to 44px without changing the visible glyph or layout.
     &::after {
       content: "";
       position: absolute;

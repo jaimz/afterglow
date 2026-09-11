@@ -1,7 +1,7 @@
 @use "../foundation/tokens" as t;
 @use "../foundation/typography.mixins" as type;
 
-// Figma Card content 235:17, with content-driven height and native action buttons.
+// Card content, with content-driven height and native action buttons.
 @mixin content {
   display: grid;
   gap: t.$frame-gridY;

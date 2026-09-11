@@ -12,7 +12,7 @@
   line-height: t.$lineHeight;
 }
 
-// Figma's mobile type ramp. Existing utility classes retain their original API;
+// Afterglow's mobile type ramp. Existing utility classes retain their original API;
 // composed content recipes opt into this complete headline treatment.
 @mixin headline($level: 1) {
   @if $level < 1 or $level > 6 {

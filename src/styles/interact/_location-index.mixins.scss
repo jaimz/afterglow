@@ -9,7 +9,7 @@
   font-family: t.$bodyFontStack;
 }
 
-// Figma Menu Item 217:1, applied to real links. The caller owns aria-current.
+// Menu-item styling applied to real links. The caller owns aria-current.
 @mixin link {
   display: flex;
   align-items: center;

@@ -12,3 +12,5 @@ export type {
   NotificationPosition,
   NotificationCloseReason,
 } from "./behaviors/notification";
+export { enhanceAvatar, getAvatarInitials } from "./behaviors/avatar";
+export type { AvatarController, AvatarOptions } from "./behaviors/avatar";
