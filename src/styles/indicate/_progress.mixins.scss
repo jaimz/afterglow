@@ -1,0 +1,144 @@
+@use "../foundation/tokens" as t;
+
+@mixin progress {
+  --ag-progress-travel: 300%;
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  gap: t.token("progress-label-gap");
+  inline-size: t.token("progress-width");
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  vertical-align: middle;
+  color: t.$ctrlTextDesat;
+
+  &[data-variant="error"] {
+    color: t.$error;
+  }
+  &[data-variant="caution"] {
+    color: t.$caution;
+  }
+  &:where(:has(> .ag-progress__bar:indeterminate:not([hidden])))::before {
+    content: "";
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    inline-size: 25%;
+    block-size: t.token("progress-height");
+    border-radius: t.token("progress-height");
+    background: currentColor;
+    pointer-events: none;
+    animation: ag-progress-indeterminate 1.4s ease-in-out infinite alternate;
+  }
+  &:dir(rtl) {
+    --ag-progress-travel: -300%;
+  }
+  &[data-variant="error"]::before {
+    animation: none;
+    inset-inline-start: 37.5%;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &::before {
+      animation: none;
+      inset-inline-start: 37.5%;
+    }
+  }
+  @media (forced-colors: active) {
+    &::before {
+      forced-color-adjust: none;
+      background: Highlight;
+    }
+  }
+  &[hidden] {
+    display: none !important;
+  }
+}
+
+@mixin bar {
+  --ag-progress-track: color-mix(in srgb, currentColor 50%, transparent);
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-inline-size: 0;
+  block-size: t.token("progress-height");
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: inherit;
+  background: linear-gradient(
+      var(--ag-progress-track),
+      var(--ag-progress-track)
+    )
+    center / 100% 1px no-repeat;
+  box-shadow: none;
+
+  // Keep engine-specific selectors separate: unsupported selectors invalidate lists.
+  &::-webkit-progress-bar {
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  &::-webkit-progress-value {
+    background: currentColor;
+    border-radius: t.token("progress-height");
+    box-shadow: none;
+  }
+  &::-moz-progress-bar {
+    background: currentColor;
+    border: 0;
+    border-radius: t.token("progress-height");
+    box-shadow: none;
+  }
+  &:indeterminate::-webkit-progress-value {
+    background: transparent;
+  }
+  &:indeterminate::-moz-progress-bar {
+    background: transparent;
+  }
+  @media (forced-colors: active) {
+    --ag-progress-track: GrayText;
+    forced-color-adjust: none;
+    color: Highlight;
+  }
+  &[hidden] {
+    display: none !important;
+  }
+}
+
+@mixin label {
+  display: block;
+  min-inline-size: 0;
+  font-family: t.$bodyFontStack;
+  font-size: t.$captionTextSize;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: 0;
+  text-align: center;
+  overflow-wrap: anywhere;
+  &[hidden] {
+    display: none !important;
+  }
+}
+
+@mixin styles {
+  .ag-progress {
+    @include progress;
+  }
+  .ag-progress__bar {
+    @include bar;
+  }
+  .ag-progress__label {
+    @include label;
+  }
+  @keyframes ag-progress-indeterminate {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(var(--ag-progress-travel));
+    }
+  }
+}

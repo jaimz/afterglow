@@ -6,7 +6,7 @@ Afterglow groups styles and components by their purpose. Native HTML supplies se
 | ------------ | --------------------------------------- | ------------------------------------------------------------------------------------------- |
 | `foundation` | Shared primitives and composition tools | Type scale, token registry, theme boundaries, generic layout and motion mixins              |
 | `frame`      | Arrange and contain other elements      | Background, surface, panel, paper, application grid, master-detail, structural card, dialog |
-| `indicate`   | Reflect changing or transient state     | Notification and status colours                                                             |
+| `indicate`   | Reflect changing or transient state     | Notification, progress bars and status colours                                               |
 | `interact`   | Accept user input                       | Button, FAB, checkbox, radio, switch, slider, textarea, navigation links                    |
 | `present`    | Display lasting content                 | Article typography, card content, avatars and reusable icons                                 |
 
@@ -52,6 +52,8 @@ Asset URLs remain in the root `_assets.scss` module so both Vite's source import
 
 The reusable `present/icon` recipe applies Feather SVG masks to native elements. It inherits colour, uses the `icon-size` token and composes with existing control child-spacing classes. `_assets.scss` forwards the generated root `_feather.scss` URL map. Run `bun run build:icons` after changing the supplied files; the style tests detect a stale catalogue. Pure icon mixins can emit a selected subset of names or style a consumer selector. Existing component-specific assets remain available for their established visual treatments.
 
+The `indicate/progress` recipe retains native `progress` value/max semantics and label association. CSS styles the browser fill and track; `:indeterminate` drives a decorative animated segment on the wrapper. No helper, duplicate ARIA values or percentage custom property is needed. The full recipe includes reduced-motion, error, RTL and forced-colour treatments.
+
 ## Compatibility
 
 The complete `ag/css` and `ag/scss` entry points, existing `.ag-*` classes, data attributes, helper exports and CSS custom properties remain available. Previous flat Sass modules forward their original public members and retain their previous CSS side effects. New consumers can use category entries or pure modules as documented in [Usage.md](Usage.md#scss-mixins).
@@ -72,6 +74,7 @@ The **Afterglow** page of the **Mobile** Figma file remains the visual authority
 | Card content              | [Card content 235:17](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=235-17)   |
 | Floating action button    | [FAB 284:1](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=284-1)              |
 | Avatar                    | [Avatar 204:112](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=204-112)       |
+| Progress bar              | [Progress bar 146:7](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=146-7)    |
 
 The application grid, master-detail arrangement and structural card are flexible layout recipes inspired by Tai. Their widths, responsive breakpoint and composition rules are library choices, not assertions that Figma specifies a complete responsive application shell. They use existing Afterglow surfaces. Figma's fixed sample dimensions become content-driven sizing where needed: textareas have a minimum height, cards grow with content, and navigation labels can wrap.
 

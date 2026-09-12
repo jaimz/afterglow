@@ -18,6 +18,7 @@ This guide describes the current consumer API. New components and changes to exi
 - [Radios and radio groups](#radios-and-radio-groups)
 - [Switches](#switches)
 - [Sliders](#sliders)
+- [Progress bars](#progress-bars)
 - [Notifications](#notifications)
 - [Dialogs](#dialogs)
 - [Forms and optional control behaviour](#forms-and-optional-control-behaviour)
@@ -71,6 +72,7 @@ Recipes are grouped by their purpose. **Frame** arranges and contains other elem
 | Checkboxes, radios and switches             | Selection, labels, keyboard activation, disabled states and form participation           | `enhanceControls` adds read-only behaviour, extra radio shortcuts and mixed-state reset handling             |
 | Sliders                                     | A styled native range input with native values and interaction                           | `enhanceSlider` synchronises the custom fill, marks and label positions, and normalises vertical/RTL arrows  |
 | Notifications                               | Four visual variants, native popover visibility, six positions and a close button        | `enhanceNotification` adds optional timeouts, placement within a view, stacking, animation and announcements |
+| Progress bars                               | Native values, default/error/caution appearance, labels and indeterminate animation      | Your application updates the native `value` and `max` properties and status text                            |
 | Dialogs                                     | A styled native dialog, modal behaviour and HTML invoker commands in supporting browsers | `enhanceDialog` adds animated closing, dismissal requests and optional non-modal focus containment           |
 
 All Storybook examples use this same native implementation. **Overview** combines controls with helpers. **Native HTML / CSS Only** demonstrates controls without Afterglow helpers; **States** includes enhanced behaviours; **Declarative Dialog** demonstrates HTML invoker commands. Storybook itself uses JavaScript to render these examples.
@@ -695,6 +697,79 @@ slider.destroy();
 ```
 
 `setValue()` does not dispatch `input` or `change` events. Notify application state explicitly when changing a value programmatically. Attribute changes to bounds, step and label positions are observed, and the helper follows native input/change events and form reset.
+
+## Progress bars
+
+Use native `progress` inside the `ag-progress` wrapper. A surrounding `label` supplies the accessible name and positions the caption below the bar:
+
+```html
+<label class="ag-progress">
+  <progress id="upload-progress" class="ag-progress__bar" value="25" max="100"></progress>
+  <span class="ag-progress__label">Uploading files…</span>
+</label>
+```
+
+No Afterglow JavaScript is required. The browser controls the fill from `value` and `max`, so property assignments update both the visual progress and native accessibility values:
+
+```ts
+const progress = document.querySelector<HTMLProgressElement>("#upload-progress")!;
+progress.max = 20; // Total files, bytes, steps, or another positive unit.
+progress.value = 7; // Seven of twenty: 35%.
+
+progress.removeAttribute("value"); // Unknown amount of work: indeterminate.
+progress.value = 12; // Return to determinate progress.
+```
+
+`value="0"` means zero progress; it is different from omitting `value`. If `max` is omitted, HTML uses `1`, so `value="0.25"` represents 25%. Values are bounded by the browser to `0`–`max`. Keep `max` positive. Reaching `max` fills the bar but does not change the label or hide the component; the application decides what completion means. For an amount within a range that is not task progress, use a native `meter` instead.
+
+### Variants and status text
+
+Set `data-variant` on the wrapper. Its values are `default` (the default), `error` and `caution`:
+
+```html
+<label class="ag-progress" data-variant="error">
+  <progress class="ag-progress__bar" value="40" max="100"></progress>
+  <span class="ag-progress__label">Connection lost. Please retry.</span>
+</label>
+
+<label class="ag-progress" data-variant="caution">
+  <progress class="ag-progress__bar" value="80" max="100"></progress>
+  <span class="ag-progress__label">Some files could not be uploaded.</span>
+</label>
+```
+
+The variant changes the track, fill and label colours without changing the progress value. Describe the status in text as well as colour. Update the label with `textContent` when the status changes, and use your application's live region for important announcements. Do not add a second `role="progressbar"` or manually maintain `aria-valuenow` alongside the native element.
+
+### Indeterminate progress
+
+Omit `value` when the amount of work is unknown:
+
+```html
+<label class="ag-progress">
+  <progress class="ag-progress__bar" max="100"></progress>
+  <span class="ag-progress__label">Preparing your files…</span>
+</label>
+```
+
+A rounded segment moves along the track. It becomes stationary when the user requests reduced motion or the wrapper uses the `error` variant. The native progress element remains indeterminate in both cases. Right-to-left containers reverse the direction of the fill and indeterminate movement.
+
+### Layout, optional labels and theming
+
+The default width is `142px`, constrained by the available space. Set `--progress-width:100%` to fill a container. Labels are centred and wrap, including long filenames. The default track is `1px` thick with a `3px` rounded fill and a small bold caption using the existing body font stack.
+
+```html
+<div class="ag-progress" style="--progress-width:100%">
+  <progress class="ag-progress__bar" value="25" max="100" aria-label="Uploading files"></progress>
+</div>
+```
+
+This omits the visible caption while retaining an accessible name. You can also connect an external label using `label[for]` and the progress element's `id`, or use `aria-labelledby`. A progress bar does not accept input and should not be placed inside a button or made focusable.
+
+`--progress-width`, `--progress-height` and `--progress-label-gap` control width, fill thickness and space below the visible bar. Colours reuse `--ctrlTextDesat`, `--error` and `--caution`; caption typography uses `--body-font-stack` and `--caption-text-size`. Use local theme overrides to change these values. Forced-colour mode uses system colours. Native `hidden` works on the wrapper, bar and caption.
+
+For selective Sass, use `indicate/progress.classes`, or include the complete `progress.styles` mixin from `indicate/progress.mixins` together with the shared theme. The complete mixin includes the required selectors and indeterminate keyframes.
+
+**Indicate / Progress** includes editable controls, all three variants, zero/complete/indeterminate states, live property updates and layout examples.
 
 ## Notifications
 

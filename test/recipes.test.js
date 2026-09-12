@@ -47,7 +47,7 @@ it("keeps theme defaults and native hidden when loading individual categories", 
       "ag-slider",
       "ag-textarea",
     ],
-    indicate: ["ag-notification"],
+    indicate: ["ag-notification", "ag-progress", "ag-progress__bar"],
     present: ["ag-article", "ag-card-content", "ag-icon"],
   };
   for (const [category, classes] of Object.entries(categories)) {

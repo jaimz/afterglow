@@ -29,6 +29,8 @@ Storybook uses its HTML renderer. **Afterglow / Overview** demonstrates a workin
 
 **Present / Icon** includes the Feather catalogue, a searchable gallery and examples of icons in buttons, navigation and text. Use `ag-icon` with `data-icon` to select a glyph; it inherits text colour and supports the `--icon-size` token. **Interact / Button / With Icons** demonstrates the same native recipe in controls.
 
+**Indicate / Progress** styles native `progress` elements with default, error and caution variants. Examples cover native value updates, indeterminate progress, reduced motion, wrapping labels and RTL layouts. No helper is required.
+
 The build produces independent assets:
 
 - `dist/afterglow.css`: the complete stylesheet.
