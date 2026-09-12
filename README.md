@@ -27,12 +27,16 @@ Storybook uses its HTML renderer. **Afterglow / Overview** demonstrates a workin
 
 **Present / Avatar** includes photo, initials, flat-initials and blank variants, three sizes, name and image URL editors, and photo fallback. Its helper exposes writable `name` and `imageUrl` properties and fits the extracted initials to the selected shape.
 
+**Present / Icon** includes the Feather catalogue, a searchable gallery and examples of icons in buttons, navigation and text. Use `ag-icon` with `data-icon` to select a glyph; it inherits text colour and supports the `--icon-size` token. **Interact / Button / With Icons** demonstrates the same native recipe in controls.
+
 The build produces independent assets:
 
 - `dist/afterglow.css`: the complete stylesheet.
 - `dist/assets/`: exported icons and the Avatar font, with its licence; keep this folder beside the CSS when serving it directly.
 - `dist/afterglow.mjs`: optional ES module helpers, with TypeScript declarations in `dist/`.
 - `src/styles/afterglow.scss`: complete Sass entry point; category entries and pure token/mixin modules are also available.
+
+To update the Feather catalogue, add or remove SVGs in `src/styles/assets/feather/` and run `bun run build:icons`. The assets stay unchanged; this regenerates the Sass URL map. The style tests check that the catalogue matches the files.
 
 The package exports these as `ag/css`, `ag` and `ag/scss`. The stylesheet includes default CSS token declarations; use `ag-theme` or the Sass `tokens.theme()` mixin for a local typography theme. See [the theming guide](Usage.md#themes-and-scss). You can also copy the compiled CSS into a project without adopting Sass or a JavaScript framework.
 

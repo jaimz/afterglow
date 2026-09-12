@@ -1,0 +1,55 @@
+@use "sass:map";
+@use "../foundation/tokens" as t;
+@use "../assets";
+
+// Select a supplied Feather asset for an element using the icon mixin.
+@mixin glyph($name) {
+  @if not map.has-key(assets.$feather-icons, $name) {
+    @error "Unknown Afterglow icon: #{$name}";
+  }
+  -webkit-mask-image: map.get(assets.$feather-icons, $name);
+  mask-image: map.get(assets.$feather-icons, $name);
+}
+
+// Native inline presentation; the caller supplies accessible semantics.
+@mixin icon($name: null) {
+  display: inline-block;
+  flex: 0 0 auto;
+  inline-size: t.token("icon-size");
+  block-size: t.token("icon-size");
+  vertical-align: middle;
+  color: inherit;
+  background-color: currentColor;
+  // A missing or unknown name leaves an empty box, not a solid colour square.
+  -webkit-mask: linear-gradient(transparent, transparent) center / contain
+    no-repeat;
+  mask: linear-gradient(transparent, transparent) center / contain no-repeat;
+  @if $name != null {
+    @include glyph($name);
+  }
+  &[hidden] {
+    display: none !important;
+  }
+  @media (forced-colors: active) {
+    // Keep the mask painted with a system foreground in every browser.
+    background-color: CanvasText;
+    forced-color-adjust: none;
+    @supports (forced-color-adjust: preserve-parent-color) {
+      color: inherit;
+      background-color: currentColor;
+      forced-color-adjust: preserve-parent-color;
+    }
+  }
+}
+
+// Pass a list of names to emit only the icon selectors a consumer needs.
+@mixin styles($names: map.keys(assets.$feather-icons)) {
+  .ag-icon {
+    @include icon;
+  }
+  @each $name in $names {
+    .ag-icon[data-icon="#{$name}"] {
+      @include glyph($name);
+    }
+  }
+}

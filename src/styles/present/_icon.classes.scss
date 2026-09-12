@@ -1,0 +1,4 @@
+@use "../foundation/theme";
+@use "icon.mixins" as recipe;
+
+@include recipe.styles;

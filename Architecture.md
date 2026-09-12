@@ -8,7 +8,7 @@ Afterglow groups styles and components by their purpose. Native HTML supplies se
 | `frame`      | Arrange and contain other elements      | Background, surface, panel, paper, application grid, master-detail, structural card, dialog |
 | `indicate`   | Reflect changing or transient state     | Notification and status colours                                                             |
 | `interact`   | Accept user input                       | Button, FAB, checkbox, radio, switch, slider, textarea, navigation links                    |
-| `present`    | Display lasting content                 | Article typography, card content and avatars                                                |
+| `present`    | Display lasting content                 | Article typography, card content, avatars and reusable icons                                 |
 
 Choose a component's category by its primary purpose. A notification remains in `indicate` even though it contains a dismiss button; that button is an interaction within a status presentation. A structural card belongs to `frame`, while its optional text treatment belongs to `present`.
 
@@ -49,6 +49,8 @@ The pure `mixins` barrels prefix names to avoid collisions. Examples are `founda
 Generic layout mixins use logical dimensions and honour their gap arguments. Motion mixins are opt-in, honour reduced motion and do not add persistent `will-change` hints. Existing dialog and notification animations retain their current behaviour.
 
 Asset URLs remain in the root `_assets.scss` module so both Vite's source import and the standalone CSS build can resolve the same exported files. The build copies `assets/` beside `afterglow.css`; do not move the CSS away from that directory when serving it directly.
+
+The reusable `present/icon` recipe applies Feather SVG masks to native elements. It inherits colour, uses the `icon-size` token and composes with existing control child-spacing classes. `_assets.scss` forwards the generated root `_feather.scss` URL map. Run `bun run build:icons` after changing the supplied files; the style tests detect a stale catalogue. Pure icon mixins can emit a selected subset of names or style a consumer selector. Existing component-specific assets remain available for their established visual treatments.
 
 ## Compatibility
 

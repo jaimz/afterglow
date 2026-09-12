@@ -1,4 +1,6 @@
 // Shared asset references; no CSS is emitted by importing this module.
+@forward "feather";
+
 $notification-info: url("./assets/notification/info.svg");
 $notification-alert: url("./assets/notification/alert.svg");
 $notification-success: url("./assets/notification/success.svg");

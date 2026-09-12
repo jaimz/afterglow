@@ -10,6 +10,7 @@ import {
 } from "node:fs";
 import { resolve } from "node:path";
 import { tmpdir } from "node:os";
+import { execFileSync } from "node:child_process";
 
 const styles = resolve("src/styles");
 const compile = (source) => compileString(source, { loadPaths: [styles] }).css;
@@ -81,6 +82,35 @@ test("complete recipe mixins support explicit opt-in and scoping", () => {
   );
   assert.ok(css.includes(".checkout .ag-button {"));
   assert.ok(!css.includes(":root"));
+});
+
+test("the icon catalogue covers every asset and allows selective Sass composition", () => {
+  execFileSync(process.execPath, ["scripts/build-icons.mjs", "--check"]);
+  const names = readdirSync(`${styles}/assets/feather`)
+    .filter((file) => file.endsWith(".svg"))
+    .map((file) => file.slice(0, -4));
+  const css = compile('@use "present/icon.classes";');
+  for (const name of names) {
+    assert.ok(css.includes(`.ag-icon[data-icon=${name}]`), name);
+    assert.ok(css.includes(`./assets/feather/${name}.svg`), name);
+  }
+  const selected = compile(`
+    @use "present/icon.mixins" as icon;
+    .custom { @include icon.icon("search"); }
+    .scoped { @include icon.styles(("check", "x")); }
+  `);
+  assert.ok(selected.includes(".custom {"));
+  assert.ok(selected.includes(".scoped .ag-icon[data-icon=check]"));
+  assert.ok(selected.includes("./assets/feather/search.svg"));
+  assert.ok(!selected.includes("./assets/feather/feather.svg"));
+  assert.ok(!selected.includes(":root"));
+  assert.throws(
+    () =>
+      compile(
+        '@use "present/icon.mixins" as icon; .custom { @include icon.icon("missing"); }'
+      ),
+    /Unknown Afterglow icon/
+  );
 });
 
 test("theme boundaries inherit base tokens and validate overrides", () => {

@@ -15,6 +15,7 @@
     "test:styles": "node --test test/styles.test.mjs",
     "test:watch": "web-test-runner --config web-test-runner.config.mjs --watch",
     "build:css": "node scripts/build-styles.mjs",
+    "build:icons": "node scripts/build-icons.mjs",
     "test:browsers": "WTR_BROWSERS=chromium,firefox,webkit web-test-runner --config web-test-runner.config.mjs"
   },
   "devDependencies": {

@@ -10,6 +10,7 @@ This guide describes the current consumer API. New components and changes to exi
 - [Application and content layouts](#application-and-content-layouts)
 - [Articles and card content](#articles-and-card-content)
 - [Avatars](#avatars)
+- [Icons](#icons)
 - [Buttons](#buttons)
 - [Textareas](#textareas)
 - [Navigation](#navigation)
@@ -63,6 +64,7 @@ Recipes are grouped by their purpose. **Frame** arranges and contains other elem
 | Application, master-detail and card layouts | Responsive arrangement of semantic regions                                               | Your application chooses which regions to render or hide                                                     |
 | Articles and card content                   | Scoped headings, body text, content spacing and action layout                            | Nothing required                                                                                             |
 | Avatars                                     | Photo, blank and static-initials variants, shapes and sizes                              | `enhanceAvatar` derives initials from `name`, fits letters and handles photo fallback                        |
+| Icons                                       | Feather glyphs, inherited colour and configurable size                                  | Nothing required                                                                                             |
 | Buttons                                     | Appearance, focus, activation and native form actions                                    | Your application's action handlers                                                                           |
 | Textareas                                   | Labels, editing, resizing, validation, disabled/read-only states and form participation  | Nothing required                                                                                             |
 | Navigation                                  | Styled links, current-location appearance and native link activation                     | Your application updates `aria-current` when the location changes                                            |
@@ -316,6 +318,81 @@ Size tokens are `--avatar-size`, `--avatar-header-size` and `--avatar-large-size
 The stylesheet bundles the Comfortaa font, with its licence, and loads it from the local assets directory. For selective Sass use, load `present/avatar.classes`; when composing only pure mixins, include `avatar.font` once as well as `avatar.styles` and the shared theme.
 
 **Present / Avatar** includes name and image URL editors, a **Variants** gallery showing all 18 appearance and size combinations, varied names, photo fallback and a static HTML example.
+
+## Icons
+
+Use an empty native `span` with `ag-icon` and a Feather name in `data-icon`. No JavaScript, icon font or Web Component is required:
+
+```html
+<span class="ag-icon" data-icon="search" aria-hidden="true"></span>
+```
+
+All 287 supplied Feather icons are available. Names match the SVG filenames without `.svg`, such as `search`, `save`, `plus`, `arrow-right`, `user` and `trash-2`. **Present / Icon / Gallery** provides a searchable catalogue. Changing `data-icon` changes the glyph. A missing or unknown name displays an empty box.
+
+Icons inherit the surrounding CSS `color` and use a square `24px` box by default. Set `--icon-size` on an icon or an ancestor to change the size; use `1em` to follow the text size. Colour comes from normal CSS, so themed text, links and button variants colour their icons automatically:
+
+```html
+<p style="color: var(--error); --icon-size: 1em">
+  <span class="ag-icon" data-icon="alert-circle" aria-hidden="true"></span>
+  Could not save your changes.
+</p>
+```
+
+### Composing with controls
+
+Place the icon inside the native button or link. Buttons already provide `ag-button__start` and `ag-button__end` for spacing before or after their label:
+
+```html
+<button type="button" class="ag-button" data-variant="primary" style="--icon-size:20px">
+  <span class="ag-icon ag-button__start" data-icon="save" aria-hidden="true"></span>
+  Save
+</button>
+
+<button type="button" class="ag-button" style="--icon-size:20px">
+  Continue
+  <span class="ag-icon ag-button__end" data-icon="arrow-right" aria-hidden="true"></span>
+</button>
+
+<button type="button" class="ag-button" aria-label="Search">
+  <span class="ag-icon" data-icon="search" aria-hidden="true"></span>
+</button>
+
+<button type="button" class="ag-fab" aria-label="Add note">
+  <span class="ag-icon" data-icon="plus" aria-hidden="true"></span>
+</button>
+```
+
+The button owns focus, click handling and `disabled`. The icon inherits its colour and is covered by the button's disabled opacity. In navigation, use `ag-icon` inside `ag-location-index__link`; the link supplies the gap, and `--icon-size:16px` matches the existing navigation icon box. Directional arrows keep their named direction in RTL; select the opposite icon explicitly when needed.
+
+### Accessibility and assets
+
+Keep decorative icons `aria-hidden="true"`, especially when nearby text already explains them. For an icon-only button, provide `aria-label` on the button. If a standalone icon conveys meaning, give the icon `role="img"` and an accessible label instead of hiding it:
+
+```html
+<span class="ag-icon" data-icon="wifi-off" role="img" aria-label="Offline"></span>
+```
+
+The supplied SVGs are used as CSS masks. Their rounded strokes scale with the icon; size and colour are configurable, while individual SVG stroke settings are not exposed through the mask. The recipe is intended for empty `span` elements. Use ordinary `img` or inline `svg` markup separately if your application needs those elements.
+
+The build places the original SVGs and their licence in `dist/assets/feather/`. Serve that directory beside `afterglow.css`, or let your bundler resolve the CSS asset URLs. The library does not contact an external icon service. Native `hidden` removes an icon. In forced-colour mode, icons use the parent's system text colour where supported, with a system foreground fallback in other browsers.
+
+### Selective SCSS
+
+The full stylesheet and the `present` category include the catalogue. Use `present/icon.classes` to load the icon recipe alone. To emit only selected names, use the pure mixin with the shared theme:
+
+```scss
+@use "ag/scss/foundation/theme";
+@use "ag/scss/present/icon.mixins" as icon;
+
+@include icon.styles(("search", "save", "x"));
+
+// Or apply the recipe to your own selector, without emitting ag-icon classes:
+.search-symbol {
+  @include icon.icon("search");
+}
+```
+
+`icon.glyph("name")` changes the image on a selector that already includes `icon.icon`. Unknown names in Sass are compile errors. **Present / Icon** demonstrates sizing, colour and composition; **Interact / Button / With Icons** shows common button arrangements.
 
 ## Buttons
 

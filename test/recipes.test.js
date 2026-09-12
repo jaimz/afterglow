@@ -48,7 +48,7 @@ it("keeps theme defaults and native hidden when loading individual categories", 
       "ag-textarea",
     ],
     indicate: ["ag-notification"],
-    present: ["ag-article", "ag-card-content"],
+    present: ["ag-article", "ag-card-content", "ag-icon"],
   };
   for (const [category, classes] of Object.entries(categories)) {
     const frame = document.createElement("iframe");
