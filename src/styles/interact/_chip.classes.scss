@@ -1,0 +1,3 @@
+@use "../foundation/theme";
+@use "chip.mixins" as recipe;
+@include recipe.styles;

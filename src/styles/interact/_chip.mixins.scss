@@ -1,0 +1,146 @@
+@use "../foundation/tokens" as t;
+@use "../foundation/typography.mixins" as typography;
+
+@mixin chip {
+  --ag-chip-remove-size: #{t.token("chip-remove-size")};
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  // gap: t.token("chip-gap");
+  box-sizing: border-box;
+  inline-size: max-content;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  padding: 6px 8px;
+  border-radius: 32px;
+  background: t.$onSurfaceAlt;
+  color: t.$surface;
+  @include typography.body;
+  font-weight: 400;
+  text-align: start;
+  text-shadow: none;
+  vertical-align: middle;
+
+  &:is([data-variant="avatar"], [data-variant="avatar-outlined"]) {
+    --ag-chip-remove-size: #{t.token("chip-avatar-size")};
+    padding: 1px;
+
+    // > .ag-chip__label {
+    //   top: 0;
+    // }
+  }
+  &:is([data-variant="outlined"], [data-variant="avatar-outlined"]) {
+    background: transparent;
+    color: t.$onSurfaceAlt;
+    box-shadow: inset 0 0 0 1px currentColor;
+  }
+  &[data-variant="backdrop"] {
+    min-block-size: 32px;
+    padding-block: 1px;
+    background: t.$backdropKeyline;
+    color: t.$onSurface;
+    font-size: t.$body2TextSize;
+  }
+  &:has(> .ag-chip__remove:disabled) {
+    opacity: t.$disabledOpacity;
+  }
+}
+
+@mixin styles {
+  .ag-chip {
+    @include chip;
+  }
+  .ag-chip__label {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    margin-inline-start: 8px;
+    margin-inline-end: 16px;
+
+    // Optical alignment in icon mode
+    // position: relative;
+    // top: 1px;
+  }
+  .ag-chip > .ag-chip__icon {
+    display: inline-block;
+    flex: 0 0 auto;
+    inline-size: t.token("chip-icon-size");
+    block-size: t.token("chip-icon-size");
+    object-fit: contain;
+  }
+  .ag-chip__icon > :is(img, svg, .ag-icon) {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: contain;
+  }
+  .ag-chip > .ag-avatar[data-shape="circle"] {
+    --ag-avatar-size: #{t.token("chip-avatar-size")};
+    --ag-avatar-initial-size: calc(#{t.token("chip-avatar-size")} * 0.6);
+    border-radius: 50%;
+    box-shadow: none;
+    &::after {
+      border: 0;
+      box-shadow: none;
+    }
+  }
+  .ag-chip__remove {
+    appearance: none;
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--ag-chip-remove-size);
+    block-size: var(--ag-chip-remove-size);
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    > .ag-icon {
+      inline-size: 100%;
+      block-size: 100%;
+    }
+    &:hover:not(:disabled) {
+      background: rgb(0 0 0 / 10%);
+    }
+    &:active:not(:disabled) {
+      background: rgb(0 0 0 / 20%);
+    }
+    &:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
+    &:disabled {
+      cursor: default;
+    }
+  }
+  .ag-chip[hidden],
+  .ag-chip > [hidden] {
+    display: none !important;
+  }
+  @media (forced-colors: active) {
+    .ag-chip,
+    .ag-chip[data-variant] {
+      background: Canvas;
+      color: CanvasText;
+      box-shadow: none;
+      outline: 1px solid CanvasText;
+      outline-offset: -1px;
+    }
+    .ag-chip:has(> .ag-chip__remove:disabled) {
+      color: GrayText;
+      opacity: 1;
+      outline-color: GrayText;
+    }
+    .ag-chip > .ag-avatar::after {
+      border: 1px solid CanvasText;
+    }
+  }
+}

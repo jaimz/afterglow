@@ -7,7 +7,7 @@ Afterglow groups styles and components by their purpose. Native HTML supplies se
 | `foundation` | Shared primitives and composition tools | Type scale, token registry, theme boundaries, generic layout and motion mixins              |
 | `frame`      | Arrange and contain other elements      | Background, surface, panel, paper, application grid, master-detail, structural card, dialog |
 | `indicate`   | Reflect changing or transient state     | Notification, progress bars and status colours                                               |
-| `interact`   | Accept user input                       | Button, FAB, checkbox, radio, switch, slider, textarea, navigation links                    |
+| `interact`   | Accept user input                       | Button, FAB, removable chips, checkbox, radio, switch, slider, textarea, navigation links                    |
 | `present`    | Display lasting content                 | Article typography, card content, avatars and reusable icons                                 |
 
 Choose a component's category by its primary purpose. A notification remains in `indicate` even though it contains a dismiss button; that button is an interaction within a status presentation. A structural card belongs to `frame`, while its optional text treatment belongs to `present`.
@@ -54,6 +54,8 @@ The reusable `present/icon` recipe applies Feather SVG masks to native elements.
 
 The `indicate/progress` recipe retains native `progress` value/max semantics and label association. CSS styles the browser fill and track; `:indeterminate` drives a decorative animated segment on the wrapper. No helper, duplicate ARIA values or percentage custom property is needed. The full recipe includes reduced-motion, error, RTL and forced-colour treatments.
 
+The `interact/chip` recipe composes native text, any leading icon or a circular `present/avatar`, and an optional native remove button. Application handlers own removal and focus placement. It has no component runtime; automatic initials and image fallback reuse `enhanceAvatar`. The icon and avatar styles remain in `present`, so consumers loading individual categories include both categories.
+
 ## Compatibility
 
 The complete `ag/css` and `ag/scss` entry points, existing `.ag-*` classes, data attributes, helper exports and CSS custom properties remain available. Previous flat Sass modules forward their original public members and retain their previous CSS side effects. New consumers can use category entries or pure modules as documented in [Usage.md](Usage.md#scss-mixins).
@@ -75,6 +77,7 @@ The **Afterglow** page of the **Mobile** Figma file remains the visual authority
 | Floating action button    | [FAB 284:1](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=284-1)              |
 | Avatar                    | [Avatar 204:112](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=204-112)       |
 | Progress bar              | [Progress bar 146:7](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=146-7)    |
+| Chip                      | [Chip 151:12](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=151-12)           |
 
 The application grid, master-detail arrangement and structural card are flexible layout recipes inspired by Tai. Their widths, responsive breakpoint and composition rules are library choices, not assertions that Figma specifies a complete responsive application shell. They use existing Afterglow surfaces. Figma's fixed sample dimensions become content-driven sizing where needed: textareas have a minimum height, cards grow with content, and navigation labels can wrap.
 

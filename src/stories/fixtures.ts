@@ -39,6 +39,9 @@ export interface ControlArgs {
   value?: string;
   onChange?: EventListener;
   ariaLabel?: string;
+  showStatusLabel?: boolean;
+  positiveStatusLabel?: string;
+  negativeStatusLabel?: string;
 }
 export function checkableMarkup(
   kind: "checkbox" | "radio" | "switch",
@@ -54,6 +57,9 @@ export function checkableMarkup(
     isReadOnly,
     isAutoFocused,
     ariaLabel,
+    showStatusLabel = true,
+    positiveStatusLabel = "On",
+    negativeStatusLabel = "Off",
   } = args;
   const input = `<input class="ag-check__input" type="${
     kind === "radio" ? "radio" : "checkbox"
@@ -69,7 +75,13 @@ export function checkableMarkup(
   const text = `<span class="ag-check__label">${escapeHTML(label)}</span>`;
   const decoration =
     kind === "switch"
-      ? `${text}<span class="ag-switch__track" aria-hidden="true"><span class="ag-switch__thumb"></span></span><span class="ag-switch__status" aria-hidden="true"><span class="ag-switch__on">On</span><span class="ag-switch__off">Off</span></span>`
+      ? `${text}<span class="ag-switch__track" aria-hidden="true"><span class="ag-switch__thumb"></span></span><span class="ag-switch__status" aria-hidden="true" ${
+          showStatusLabel ? "" : "hidden"
+        }><span class="ag-switch__on">${escapeHTML(
+          positiveStatusLabel
+        )}</span><span class="ag-switch__off">${escapeHTML(
+          negativeStatusLabel
+        )}</span></span>`
       : `<span class="ag-check__control" aria-hidden="true">${
           kind === "checkbox"
             ? tick + '<span class="ag-check__mixed"></span>'

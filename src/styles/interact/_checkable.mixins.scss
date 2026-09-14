@@ -3,7 +3,7 @@
 
 // Emit the complete native HTML recipe; safe to import without emitting CSS.
 @mixin styles {
-  :is(.ag-checkbox, .ag-radio, .ag-switch, .ag-radio-group)[hidden] {
+  :is(.ag-checkbox, .ag-radio, .ag-switch, .ag-switch__status, .ag-radio-group)[hidden] {
     display: none !important;
   }
   .ag-checkbox,

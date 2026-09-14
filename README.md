@@ -31,6 +31,8 @@ Storybook uses its HTML renderer. **Afterglow / Overview** demonstrates a workin
 
 **Indicate / Progress** styles native `progress` elements with default, error and caution variants. Examples cover native value updates, indeterminate progress, reduced motion, wrapping labels and RTL layouts. No helper is required.
 
+**Interact / Chip** includes filled, outlined, avatar, avatar-outlined and backdrop variants. Chips accept any icon or a circular Avatar; examples cover custom images, automatic initials, removal and restoration, disabled buttons and narrow/RTL layouts. Applications handle the native remove button's click event.
+
 The build produces independent assets:
 
 - `dist/afterglow.css`: the complete stylesheet.

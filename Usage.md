@@ -12,6 +12,7 @@ This guide describes the current consumer API. New components and changes to exi
 - [Avatars](#avatars)
 - [Icons](#icons)
 - [Buttons](#buttons)
+- [Chips](#chips)
 - [Textareas](#textareas)
 - [Navigation](#navigation)
 - [Checkboxes](#checkboxes)
@@ -67,6 +68,7 @@ Recipes are grouped by their purpose. **Frame** arranges and contains other elem
 | Avatars                                     | Photo, blank and static-initials variants, shapes and sizes                              | `enhanceAvatar` derives initials from `name`, fits letters and handles photo fallback                        |
 | Icons                                       | Feather glyphs, inherited colour and configurable size                                  | Nothing required                                                                                             |
 | Buttons                                     | Appearance, focus, activation and native form actions                                    | Your application's action handlers                                                                           |
+| Chips                                       | Five visual variants, any leading icon, circular avatars and a native remove button     | Your application handles removal; `enhanceAvatar` supplies automatic initials and photo fallback             |
 | Textareas                                   | Labels, editing, resizing, validation, disabled/read-only states and form participation  | Nothing required                                                                                             |
 | Navigation                                  | Styled links, current-location appearance and native link activation                     | Your application updates `aria-current` when the location changes                                            |
 | Checkboxes, radios and switches             | Selection, labels, keyboard activation, disabled states and form participation           | `enhanceControls` adds read-only behaviour, extra radio shortcuts and mixed-state reset handling             |
@@ -437,6 +439,75 @@ Use a separate native button recipe for the circular `56 × 56px` floating actio
 
 The add icon is included with the stylesheet. You can supply your own decorative image with `class="ag-fab__icon"` and `alt=""`; the icon box is `24 × 24px`. Use native `disabled` when unavailable. The application owns the action and placement; the class does not pin the button to a screen corner. **Interact / FAB** shows native activation and the disabled state.
 
+## Chips
+
+A chip represents an item such as a location, category or person. Use a native container with an optional remove button:
+
+```html
+<span class="ag-chip" data-variant="default">
+  <span class="ag-chip__icon ag-icon" data-icon="map-pin" aria-hidden="true"></span>
+  <span class="ag-chip__label">Portland</span>
+  <button class="ag-chip__remove" type="button" aria-label="Remove Portland">
+    <span class="ag-icon" data-icon="x-circle" aria-hidden="true"></span>
+  </button>
+</span>
+```
+
+The five `data-variant` values are:
+
+| Variant | Leading content | Appearance |
+| --- | --- | --- |
+| `default` | Any icon | Filled, 36px tall |
+| `outlined` | Any icon | Transparent with an outline, 36px tall |
+| `avatar` | Circular avatar | Filled, 30px tall |
+| `avatar-outlined` | Circular avatar | Transparent with an outline, 30px tall |
+| `backdrop` | Any icon | Backdrop palette and smaller text, 32px tall |
+
+These heights describe the default tokens and a single line of text. Width follows the content, up to the available space. Set `width` on `.ag-chip` when you want a particular width; the label truncates with an ellipsis if needed. Its full text remains available to assistive technology. Use a flex container with `flex-wrap: wrap` and your preferred gap for a collection of chips. Direction and spacing also work inside `dir="rtl"`.
+
+**Icons.** Choose any Feather glyph with `data-icon`. For your own icon, apply `.ag-chip__icon` to an `<img alt="">` or use it as a wrapper for an SVG or another icon component. The leading slot is 20px square and does not depend on a particular glyph. Close buttons remain 24px square, or 28px in avatar variants. Keep decorative icons hidden from assistive technology. Image files retain their own colours; `ag-icon` masks inherit the chip's colour.
+
+**Avatars.** Replace the icon with the existing Avatar recipe and set `data-shape="circle"`. Inside a chip, its size is 28px with no extra shadow or border:
+
+```html
+<span class="ag-chip" data-variant="avatar-outlined">
+  <span class="ag-avatar" data-shape="circle" data-variant="image" aria-hidden="true">
+    <img class="ag-avatar__image" src="/people/sandra.jpg" alt="">
+  </span>
+  <span class="ag-chip__label">Sandra Adams</span>
+  <button class="ag-chip__remove" type="button" aria-label="Remove Sandra Adams">
+    <span class="ag-icon" data-icon="x-circle" aria-hidden="true"></span>
+  </button>
+</span>
+```
+
+Photo, initials, flat-initials and blank avatars all work. For automatic initials or photo fallback, initialise the existing helper on the avatar, not the chip:
+
+```js
+import { enhanceAvatar } from "ag";
+
+const avatar = enhanceAvatar(chip.querySelector(".ag-avatar"), {
+  name: "Sandra Adams",
+  imageUrl: "/people/sandra.jpg",
+  decorative: true,
+});
+```
+
+Set `data-variant="initials"` on the avatar to show initials immediately. `avatar.name` and `avatar.imageUrl` remain writable; call `avatar.destroy()` when disposing of the element. The [Avatar guide](#avatars) also covers initials supplied directly in HTML.
+
+**Removal.** The chip body displays content; its remove button is the interactive element. Attach your application's handler to that button and update the underlying selection or data. Afterglow does not automatically delete content or change form values:
+
+```js
+chip.querySelector(".ag-chip__remove").addEventListener("click", () => {
+  // Update application state and move focus to the next chip or an input.
+  chip.remove();
+});
+```
+
+Give each remove button a translated accessible label identifying the item. Keep `type="button"` so removal never submits a surrounding form. Use native `disabled` on the remove button to disable it and dim the chip. Omit the button, or set its `hidden` property, for a chip that cannot be removed. The whole chip supports native `hidden` too. A chip itself has no form value or selection state; if it represents submitted data, maintain that data in your form or application.
+
+The label has an 8px start margin and a 16px end margin, set with logical properties on `.ag-chip__label`. The `chip-icon-size` and `chip-avatar-size` theme tokens control leading content size. `chip-remove-size` controls the close button independently in non-avatar variants; avatar variants use `chip-avatar-size` for both the avatar and close button. Colours and typography reuse the existing surface, backdrop and body tokens. With category-only Sass imports, include both `interact` and `present` for chips composed with icons or avatars. The pure `interact/chip.mixins` module offers `chip` for container declarations and `styles` for the complete recipe, including child and state selectors.
+
 ## Textareas
 
 A labelled native textarea works without a helper:
@@ -612,6 +683,34 @@ A switch is a native checkbox with `role="switch"`:
 ```
 
 Variants are `default` and `backdrop`. CSS moves the thumb and changes the visible On/Off text from the input's checked state. Keep the accessible label, here “Notifications”, constant. Use the input's native `checked` property to read or set its state; no Afterglow helper is required.
+
+Status labels are optional and their wording is yours to supply. Put the positive (checked) label in `.ag-switch__on` and the negative (unchecked) label in `.ag-switch__off`:
+
+```html
+<span class="ag-switch__status" aria-hidden="true">
+  <span class="ag-switch__on">Enabled</span>
+  <span class="ag-switch__off">Disabled</span>
+</span>
+```
+
+To hide both status labels, add `hidden` to `.ag-switch__status` or set that element's native boolean `hidden` property. The hidden status takes up no space. You can also omit the status element entirely when it is never needed.
+
+For a switch selected as `switchElement`, bind your application's boolean and strings directly to the native elements:
+
+```js
+const showStatusLabel = false;
+const positiveStatusLabel = "Enabled";
+const negativeStatusLabel = "Disabled";
+const status = switchElement.querySelector(".ag-switch__status");
+
+status.hidden = !showStatusLabel;
+status.querySelector(".ag-switch__on").textContent = positiveStatusLabel;
+status.querySelector(".ag-switch__off").textContent = negativeStatusLabel;
+```
+
+Set `status.hidden = false` to show the current status again. In HTML, remove `hidden` to show it; `hidden="false"` still hides it. Keep `aria-hidden="true"` on the status element because the native switch already communicates its checked state to assistive technology. The status wording does not change the submitted input `value`.
+
+Storybook exposes `showStatusLabel` (default `true`), `positiveStatusLabel` (default `"On"`) and `negativeStatusLabel` (default `"Off"`) as example controls. These generate the native markup above; they are not custom properties on the checkbox.
 
 ## Sliders
 
