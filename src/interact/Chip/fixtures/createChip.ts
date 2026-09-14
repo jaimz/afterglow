@@ -12,6 +12,7 @@ export interface ChipArgs {
   label?: string;
   variant?: ChipVariant;
   icon?: string;
+  withIcon?: boolean;
   avatarVariant?: "image" | "initials" | "flat-initials" | "blank";
   name?: string;
   imageUrl?: string;
@@ -25,7 +26,8 @@ export interface ChipArgs {
 export function chipMarkup({
   label = "Portland",
   variant = "default",
-  icon = "map-pin",
+  icon,
+  withIcon = true,
   avatarVariant = "image",
   name = "Sandra Adams",
   imageUrl = "",
@@ -34,6 +36,7 @@ export function chipMarkup({
   removeLabel = `Remove ${label}`,
 }: ChipArgs = {}) {
   const avatar = variant === "avatar" || variant === "avatar-outlined";
+  const iconName = icon?.trim() ?? "";
   return `<span class="ag-chip" data-variant="${variant}">
     ${
       avatar
@@ -46,9 +49,11 @@ export function chipMarkup({
                 )}" alt="">`
               : ""
           }</span>`
-        : `<span class="ag-chip__icon ag-icon" data-icon="${escapeHTML(
-            icon
+        : withIcon && iconName
+        ? `<span class="ag-chip__icon ag-icon" data-icon="${escapeHTML(
+            iconName
           )}" aria-hidden="true"></span>`
+        : ""
     }
     <span class="ag-chip__label">${escapeHTML(label)}</span>
     ${

@@ -63,6 +63,10 @@
     // position: relative;
     // top: 1px;
   }
+  // Balance the two ends when only text is visible, in any appearance.
+  .ag-chip:not(:has(> :is(.ag-chip__icon, .ag-avatar, .ag-chip__remove):not([hidden]))) > .ag-chip__label {
+    margin-inline-end: 8px;
+  }
   .ag-chip > .ag-chip__icon {
     display: inline-block;
     flex: 0 0 auto;

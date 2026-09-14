@@ -61,7 +61,7 @@ it("uses a native remove button, with one activation and no form submission", as
   expect(customElements.get("ag-chip")).to.equal(undefined);
 });
 
-it("keeps the five variants at their intended heights and circular avatar size", () => {
+it("keeps the variants at their intended heights and circular avatar size", () => {
   for (const [variant, height] of [
     ["default", 36],
     ["outlined", 36],
@@ -130,7 +130,10 @@ it("allows any Feather glyph and consumer-supplied image in the leading slot", (
 it("contains long text in narrow views and mirrors leading/trailing content in RTL", () => {
   root.style.width = "180px";
   const chip = fixture(
-    chipMarkup({ label: "A very long location name in a narrow view" })
+    chipMarkup({
+      label: "A very long location name in a narrow view",
+      icon: "map-pin",
+    })
   );
   const label = chip.querySelector(".ag-chip__label");
   const icon = chip.querySelector(".ag-chip__icon");

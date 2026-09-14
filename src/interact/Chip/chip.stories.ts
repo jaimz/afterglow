@@ -25,6 +25,7 @@ export default {
     label: "Portland",
     variant: "default",
     icon: "map-pin",
+    withIcon: true,
     avatarVariant: "image",
     name: "Sandra Adams",
     imageUrl: portrait,
@@ -34,10 +35,16 @@ export default {
   argTypes: {
     label: { control: "text" },
     variant: { control: "select", options: variants },
+    withIcon: {
+      control: "boolean",
+      description:
+        "Show the leading icon when an icon name is supplied. Avatar variants keep their avatar.",
+    },
     icon: {
-      control: "select",
-      options: icons,
-      description: "Leading Feather icon in non-avatar variants.",
+      control: { type: "select", labels: { "": "None" } },
+      options: ["", ...icons],
+      description:
+        "Optional leading Feather icon. Choose None for text only; unused in avatar variants.",
     },
     avatarVariant: {
       control: "select",
@@ -86,6 +93,9 @@ export const Default = (args: ChipArgs) => {
   return root;
 };
 
+export const TextOnly = (args: ChipArgs) => Default(args);
+TextOnly.args = { variant: "default", withIcon: false, label: "Design" };
+
 export const Variants = () => {
   const root = element(
     '<section class="ag-body" style="padding:32px;display:grid;gap:24px"></section>'
@@ -97,11 +107,17 @@ export const Variants = () => {
     </div>`);
     const chip = createChip({
       variant,
+      icon: "map-pin",
       label: variant.startsWith("avatar") ? "Sandra" : "Portland",
       imageUrl: portrait,
     });
     chip.style.width = "199px";
     row.append(chip);
+    if (!variant.startsWith("avatar")) {
+      const textChip = createChip({ variant, label: "Portland" });
+      textChip.style.width = "199px";
+      row.append(textChip);
+    }
     root.append(row);
   }
   return root;
@@ -119,7 +135,11 @@ export const IconsAndAvatars = () => {
   ]) {
     root.append(createChip({ label, icon, variant: "outlined" }));
   }
-  const custom = createChip({ label: "Custom image", variant: "outlined" });
+  const custom = createChip({
+    label: "Custom image",
+    variant: "outlined",
+    icon: "compass",
+  });
   const img = document.createElement("img");
   img.src = customIcon;
   img.alt = "";
@@ -155,18 +175,19 @@ export const StatesAndLayouts = () => {
   </section>`);
   root
     .querySelector("[data-disabled]")!
-    .append(createChip({ label: "Cannot remove", isDisabled: true }));
+    .append(
+      createChip({ label: "Cannot remove", icon: "map-pin", isDisabled: true })
+    );
   root
     .querySelector("[data-readonly]")!
     .append(createChip({ label: "Read only", icon: "tag", removable: false }));
-  root
-    .querySelector("[data-narrow]")!
-    .append(
-      createChip({
-        label: "A very long location name in a narrow view",
-        variant: "outlined",
-      })
-    );
+  root.querySelector("[data-narrow]")!.append(
+    createChip({
+      label: "A very long location name in a narrow view",
+      icon: "map-pin",
+      variant: "outlined",
+    })
+  );
   root
     .querySelector("[data-rtl]")!
     .append(

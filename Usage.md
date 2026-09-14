@@ -68,7 +68,7 @@ Recipes are grouped by their purpose. **Frame** arranges and contains other elem
 | Avatars                                     | Photo, blank and static-initials variants, shapes and sizes                              | `enhanceAvatar` derives initials from `name`, fits letters and handles photo fallback                        |
 | Icons                                       | Feather glyphs, inherited colour and configurable size                                  | Nothing required                                                                                             |
 | Buttons                                     | Appearance, focus, activation and native form actions                                    | Your application's action handlers                                                                           |
-| Chips                                       | Five visual variants, any leading icon, circular avatars and a native remove button     | Your application handles removal; `enhanceAvatar` supplies automatic initials and photo fallback             |
+| Chips                                       | Five visual variants, optional leading icons or circular avatars and a native remove button | Your application handles removal; `enhanceAvatar` supplies automatic initials and photo fallback             |
 | Textareas                                   | Labels, editing, resizing, validation, disabled/read-only states and form participation  | Nothing required                                                                                             |
 | Navigation                                  | Styled links, current-location appearance and native link activation                     | Your application updates `aria-current` when the location changes                                            |
 | Checkboxes, radios and switches             | Selection, labels, keyboard activation, disabled states and form participation           | `enhanceControls` adds read-only behaviour, extra radio shortcuts and mixed-state reset handling             |
@@ -457,15 +457,34 @@ The five `data-variant` values are:
 
 | Variant | Leading content | Appearance |
 | --- | --- | --- |
-| `default` | Any icon | Filled, 36px tall |
-| `outlined` | Any icon | Transparent with an outline, 36px tall |
+| `default` | Optional icon | Filled, 36px tall |
+| `outlined` | Optional icon | Transparent with an outline, 36px tall |
 | `avatar` | Circular avatar | Filled, 30px tall |
 | `avatar-outlined` | Circular avatar | Transparent with an outline, 30px tall |
-| `backdrop` | Any icon | Backdrop palette and smaller text, 32px tall |
+| `backdrop` | Optional icon | Backdrop palette and smaller text, 32px tall |
 
 These heights describe the default tokens and a single line of text. Width follows the content, up to the available space. Set `width` on `.ag-chip` when you want a particular width; the label truncates with an ellipsis if needed. Its full text remains available to assistive technology. Use a flex container with `flex-wrap: wrap` and your preferred gap for a collection of chips. Direction and spacing also work inside `dir="rtl"`.
 
 **Icons.** Choose any Feather glyph with `data-icon`. For your own icon, apply `.ag-chip__icon` to an `<img alt="">` or use it as a wrapper for an SVG or another icon component. The leading slot is 20px square and does not depend on a particular glyph. Close buttons remain 24px square, or 28px in avatar variants. Keep decorative icons hidden from assistive technology. Image files retain their own colours; `ag-icon` masks inherit the chip's colour.
+
+**Text only.** Omit the leading `.ag-chip__icon` element and choose `default`, `outlined` or `backdrop` as usual. Text-only is a content choice, so it works with all three appearances. The close button remains optional:
+
+```html
+<span class="ag-chip" data-variant="outlined">
+  <span class="ag-chip__label">Design</span>
+  <button class="ag-chip__remove" type="button" aria-label="Remove Design">
+    <span class="ag-icon" data-icon="x-circle" aria-hidden="true"></span>
+  </button>
+</span>
+```
+
+Change `data-variant` to `default` for a filled chip or `backdrop` for the backdrop palette. Omit the button for a chip containing just text; its start and end spacing will be balanced. To toggle an existing icon, set its native `hidden` property:
+
+```js
+chip.querySelector(".ag-chip__icon").hidden = !withIcon;
+```
+
+Storybook exposes a boolean `withIcon` control and a **None** choice in the icon selector. Either removes the leading icon, independently of the appearance and close button. Its example builder also omits the icon when `icon` is missing or blank. Avatar variants continue to display their circular avatar. These example arguments generate native markup; no chip helper or custom element is needed.
 
 **Avatars.** Replace the icon with the existing Avatar recipe and set `data-shape="circle"`. Inside a chip, its size is 28px with no extra shadow or border:
 
@@ -506,7 +525,7 @@ chip.querySelector(".ag-chip__remove").addEventListener("click", () => {
 
 Give each remove button a translated accessible label identifying the item. Keep `type="button"` so removal never submits a surrounding form. Use native `disabled` on the remove button to disable it and dim the chip. Omit the button, or set its `hidden` property, for a chip that cannot be removed. The whole chip supports native `hidden` too. A chip itself has no form value or selection state; if it represents submitted data, maintain that data in your form or application.
 
-The label has an 8px start margin and a 16px end margin, set with logical properties on `.ag-chip__label`. The `chip-icon-size` and `chip-avatar-size` theme tokens control leading content size. `chip-remove-size` controls the close button independently in non-avatar variants; avatar variants use `chip-avatar-size` for both the avatar and close button. Colours and typography reuse the existing surface, backdrop and body tokens. With category-only Sass imports, include both `interact` and `present` for chips composed with icons or avatars. The pure `interact/chip.mixins` module offers `chip` for container declarations and `styles` for the complete recipe, including child and state selectors.
+The label has an 8px start margin and a 16px end margin, set with logical properties on `.ag-chip__label`. Text-only chips without a visible close button use 8px for both margins. The `chip-icon-size` and `chip-avatar-size` theme tokens control leading content size. `chip-remove-size` controls the close button independently in non-avatar variants; avatar variants use `chip-avatar-size` for both the avatar and close button. Colours and typography reuse the existing surface, backdrop and body tokens. With category-only Sass imports, include both `interact` and `present` for chips composed with icons or avatars. The pure `interact/chip.mixins` module offers `chip` for container declarations and `styles` for the complete recipe, including child and state selectors.
 
 ## Textareas
 
