@@ -110,11 +110,14 @@ export interface SliderArgs {
   max?: number;
   step?: number;
   value?: number;
+  upperValue?: number;
+  isRange?: boolean;
   name?: string;
-  withLabels?: boolean;
+  upperName?: string;
+  label?: string;
+  upperLabel?: string;
   withMarks?: boolean;
   orientation?: string;
-  labels?: Array<{ position: number; label: string }>;
 }
 export function sliderMarkup({
   variant = "default",
@@ -123,42 +126,33 @@ export function sliderMarkup({
   min = 0,
   max = 100,
   step = 10,
-  value = (min + max) / 2,
-  name = "volume",
-  withLabels,
+  isRange = false,
+  value = min + (max - min) * (isRange ? 0.3 : 0.5),
+  upperValue = min + (max - min) * 0.7,
+  name = isRange ? "lower" : "volume",
+  upperName = "upper",
+  label = isRange ? "Lower value" : "Volume",
+  upperLabel = "Upper value",
   withMarks,
   orientation = "horizontal",
-  labels,
 }: SliderArgs = {}) {
+  const input = (value: number, name: string, label: string) =>
+    `<input class="ag-slider__input" aria-label="${escapeHTML(
+      label
+    )}" type="range" name="${escapeHTML(
+      name
+    )}" min="${min}" max="${max}" step="${step}" value="${value}" ${
+      isDisabled ? "disabled" : ""
+    } ${isReadOnly ? "data-readonly" : ""}>`;
   return `<div class="ag-slider" data-variant="${escapeHTML(
     variant
   )}" data-orientation="${escapeHTML(orientation)}" ${
     withMarks ? "data-marks" : ""
-  }>
+  } ${isRange ? "data-range" : ""}>
     <div class="ag-slider__control">
-      <input class="ag-slider__input" aria-label="Volume" type="range" name="${escapeHTML(
-        name
-      )}" min="${min}" max="${max}" step="${step}" value="${value}" ${
-    isDisabled ? "disabled" : ""
-  } ${isReadOnly ? "data-readonly" : ""}>
+      ${input(value, name, label)}
+      ${isRange ? input(upperValue, upperName, upperLabel) : ""}
       <div class="ag-slider__track" aria-hidden="true"><div class="ag-slider__fill"></div><div class="ag-slider__marks"></div></div>
-      ${
-        withLabels
-          ? `<div class="ag-slider__labels" aria-hidden="true">${(
-              labels ??
-              [min, min + (max - min) / 4, min + (max - min) * 0.75, max].map(
-                (position) => ({ position, label: String(position) })
-              )
-            )
-              .map(
-                ({ position, label }) =>
-                  `<span class="ag-slider__label" data-position="${position}" style="--ag-slider-position: ${
-                    max > min ? ((position - min) / (max - min)) * 100 : 0
-                  }%"><span>${escapeHTML(label)}</span></span>`
-              )
-              .join("")}</div>`
-          : ""
-      }
     </div>
   </div>`;
 }

@@ -63,12 +63,7 @@ export const Overview = () => {
           </div></fieldset>
           ${sliderMarkup({
             value: 40,
-            withLabels: true,
             withMarks: true,
-            labels: [
-              { position: 0, label: "Quiet" },
-              { position: 100, label: "Loud" },
-            ],
           })}
           <div class="row"><button class="ag-button" data-variant="primary" type="submit">Save preferences</button><button class="ag-button" type="reset">Reset</button></div>
           <output aria-live="polite">Change your preferences, then save.</output>
@@ -105,12 +100,7 @@ export const Overview = () => {
           ${sliderMarkup({
             variant: "backdrop",
             value: 60,
-            withLabels: true,
             withMarks: true,
-            labels: [
-              { position: 0, label: "0" },
-              { position: 100, label: "100" },
-            ],
           })}
         </div>
       </section>

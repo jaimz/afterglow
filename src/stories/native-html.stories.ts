@@ -74,7 +74,6 @@ export const States = () => {
     <h2>Vertical range</h2>
     ${sliderMarkup({
       orientation: "vertical",
-      withLabels: true,
       withMarks: true,
     })}
   </div>`);

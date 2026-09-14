@@ -72,7 +72,7 @@ Recipes are grouped by their purpose. **Frame** arranges and contains other elem
 | Textareas                                   | Labels, editing, resizing, validation, disabled/read-only states and form participation  | Nothing required                                                                                             |
 | Navigation                                  | Styled links, current-location appearance and native link activation                     | Your application updates `aria-current` when the location changes                                            |
 | Checkboxes, radios and switches             | Selection, labels, keyboard activation, disabled states and form participation           | `enhanceControls` adds read-only behaviour, extra radio shortcuts and mixed-state reset handling             |
-| Sliders                                     | A styled native range input with native values and interaction                           | `enhanceSlider` synchronises the custom fill, marks and label positions, and normalises vertical/RTL arrows  |
+| Sliders                                     | A styled native range input with native values and interaction                           | `enhanceSlider` synchronises fill, marks and value tooltips, coordinates two handles, and normalises vertical/RTL arrows  |
 | Notifications                               | Four visual variants, native popover visibility, six positions and a close button        | `enhanceNotification` adds optional timeouts, placement within a view, stacking, animation and announcements |
 | Progress bars                               | Native values, default/error/caution appearance, labels and indeterminate animation      | Your application updates the native `value` and `max` properties and status text                            |
 | Dialogs                                     | A styled native dialog, modal behaviour and HTML invoker commands in supporting browsers | `enhanceDialog` adds animated closing, dismissal requests and optional non-modal focus containment           |
@@ -733,7 +733,7 @@ Storybook exposes `showStatusLabel` (default `true`), `positiveStatusLabel` (def
 
 ## Sliders
 
-The input owns the range value and interaction. The surrounding markup provides Afterglow's track, fill, marks and labels:
+Use a native range input inside `ag-slider`. The helper keeps the fill and optional step marks in sync and creates a value tooltip above the handle. The tooltip appears while the handle is held or an adjustment key is pressed, then disappears on release, cancellation or loss of focus. Unnumbered marks align with the track's centerline and sit behind it in the stacking order, showing through the translucent track.
 
 ```html
 <div id="volume-slider" class="ag-slider" data-marks>
@@ -752,22 +752,6 @@ The input owns the range value and interaction. The surrounding markup provides 
       <div class="ag-slider__fill"></div>
       <div class="ag-slider__marks"></div>
     </div>
-    <div class="ag-slider__labels" aria-hidden="true">
-      <span
-        class="ag-slider__label"
-        data-position="0"
-        style="--ag-slider-position: 0%"
-      >
-        <span>Quiet</span>
-      </span>
-      <span
-        class="ag-slider__label"
-        data-position="100"
-        style="--ag-slider-position: 100%"
-      >
-        <span>Loud</span>
-      </span>
-    </div>
   </div>
 </div>
 ```
@@ -779,7 +763,7 @@ import { enhanceSlider } from "ag";
 
 const root = document.querySelector<HTMLElement>("#volume-slider")!;
 const slider = enhanceSlider(root, {
-  formatValue: (value) => `${value} percent`,
+  formatValue: (value) => `${value}%`,
 });
 
 slider.input.addEventListener("input", () => {
@@ -787,34 +771,76 @@ slider.input.addEventListener("input", () => {
 });
 ```
 
-`formatValue` is optional. It receives the input value as a string and supplies `aria-valuetext`; decorative endpoint labels do not name the input.
+`formatValue` is optional and receives a string. Its result supplies both the tooltip text and `aria-valuetext`. The input still needs a native `label`, `aria-label` or `aria-labelledby`; the tooltip does not name the control.
 
-| Configuration                                     | Where to put it                                             |
-| ------------------------------------------------- | ----------------------------------------------------------- |
-| `min`, `max`, `step`, `value`, `disabled`, `name` | Native range input                                          |
-| `data-variant="backdrop"`                         | `ag-slider` container                                       |
-| `data-orientation="vertical"`                     | `ag-slider` container; values increase from top to bottom   |
-| `dir="rtl"`                                       | Container or an ancestor for horizontal RTL                 |
-| `data-marks`                                      | Container to generate step marks                            |
-| `data-position="50"`                              | A label; use a value in the input's range, not a percentage |
-| `data-hide-mark`                                  | A label to hide its individual mark                         |
+To select a lower and upper value, add `data-range` to the wrapper and supply **two native range inputs**, in lower-then-upper order. Give each a distinct accessible label and form name:
 
-The `ag-slider__labels` block is optional. Omit `data-marks` when step marks are unnecessary. Generated marks are capped at 1,001; `step="any"` does not generate discrete marks. A custom visual thumb can be supplied as `ag-slider__thumb` inside `ag-slider__control`; enhancement positions it while the native input continues to handle interaction.
+```html
+<div id="price-range" class="ag-slider" data-range data-marks>
+  <div class="ag-slider__control">
+    <input class="ag-slider__input" type="range"
+      name="minimumPrice" aria-label="Minimum price"
+      min="0" max="100" step="5" value="25" />
+    <input class="ag-slider__input" type="range"
+      name="maximumPrice" aria-label="Maximum price"
+      min="0" max="100" step="5" value="75" />
+    <div class="ag-slider__track" aria-hidden="true">
+      <div class="ag-slider__fill"></div>
+      <div class="ag-slider__marks"></div>
+    </div>
+  </div>
+</div>
+```
 
-Without the helper, the native input is usable, but the custom fill will not track its value and step marks are not generated. Static `--ag-slider-position` percentages keep labels positioned before enhancement. Use the helper for the complete decorated appearance.
+```ts
+const rangeRoot = document.querySelector<HTMLElement>("#price-range")!;
+const range = enhanceSlider(rangeRoot, { formatValue: value => `$${value}` });
+
+rangeRoot.addEventListener("input", () => {
+  console.log(range.input.valueAsNumber, range.upperInput!.valueAsNumber);
+});
+
+range.setValues(30, 80);
+```
+
+The fill spans the selected interval. Handles can meet but cannot pass one another; dragging a handle past its partner stops at that value. Clicking the track moves the nearest available handle. Both handles retain native focus and keyboard interaction, and tab order stays lower then upper. Form submission includes both named inputs. The helper updates each handle's accessible limits as its partner moves.
+
+Use identical `min`, `max` and `step` on both inputs. The first input owns the shared scale: subsequent changes to its bounds or step are copied to the upper input. Set `disabled` or `data-readonly` on both inputs to apply the state to the whole range. Read-only sliders also need `enhanceControls`.
+
+| Configuration | Where to put it |
+| --- | --- |
+| `min`, `max`, `step`, `value`, `disabled`, `name` | Native range input |
+| `data-range` | Container with two inputs, lower first |
+| `data-variant="backdrop"` | `ag-slider` container |
+| `data-orientation="vertical"` | Container; values increase from top to bottom, with the tooltip beside the handle |
+| `dir="rtl"` | Container or ancestor for horizontal RTL |
+| `data-marks` | Container to generate unnumbered step marks |
+
+Omit `data-marks` when marks are unnecessary. Generated marks are capped at 1,001; `step="any"` has no discrete marks. The helper creates and removes `ag-slider__tooltip` elements; do not author them yourself. The previous `ag-slider__labels` / `ag-slider__label` markup has been replaced by these tooltips and should be removed from existing recipes.
+
+The slider reserves space above its track for the tooltip. Marks share the track's position and need no additional space below it. A single-value slider still supports optional custom visual content in `ag-slider__thumb`; the native input continues to handle interaction. Two-handle sliders use the native thumbs.
+
+Use `enhanceSlider` for the complete appearance and two-handle coordination. A single native input remains usable before enhancement, but the decorated fill, generated marks and tooltip need the helper.
 
 For programmatic changes:
 
 ```ts
-slider.setValue(60); // Updates the native value and decorations.
+slider.setValue(60); // Single value, or the lower handle clamped to its partner.
 slider.input.value = "70";
 slider.update(); // Required after direct property writes.
 
-// When this slider is removed or its owning view is disposed:
+range.setValues(30, 80); // Sets both values; reversed pairs are sorted.
+range.upperInput!.value = "90";
+range.update();
+
+// When the owning view is disposed:
 slider.destroy();
+range.destroy();
 ```
 
-`setValue()` does not dispatch `input` or `change` events. Notify application state explicitly when changing a value programmatically. Attribute changes to bounds, step and label positions are observed, and the helper follows native input/change events and form reset.
+`setValue()` and `setValues()` use native bounds and step rounding and do not dispatch `input` or `change`. Notify application state explicitly for programmatic updates. Attribute changes to bounds, step, orientation and marks are observed; the helper follows native input/change events and uncancelled form reset. For direct property writes, keep the lower value at or below the upper value before calling `update()`; if they cross, `update()` clamps the lower value to the upper value.
+
+The tooltip colours inherit the existing surface and backdrop theme tokens. Local `--ag-slider-tooltip-fill` and `--ag-slider-tooltip-color` overrides are available. `--ag-thumb-diameter` and `--ag-track-width` control the existing handle and track dimensions.
 
 ## Progress bars
 
@@ -1232,7 +1258,7 @@ Render the same native elements in your framework's templates. In React, transla
 
 Initialise helpers with real element references after the view mounts, and call each controller's `destroy()` during unmount or effect cleanup. If a framework writes a range value as a property, call `slider.update()` after that write, or use `slider.setValue()` when the application owns the input directly. Set checkbox mixed state through an element reference's `indeterminate` property.
 
-Server-render the HTML and CSS normally; run helper initialisation only in the browser. Let the slider helper own the generated children of `ag-slider__marks` and its inline decoration positions. Keep application state in sync through the input's events. The library provides behaviour helpers, not framework component wrappers.
+Server-render the HTML and CSS normally; run helper initialisation only in the browser. Let the slider helper own generated `ag-slider__marks` children, `ag-slider__tooltip` elements and inline decoration positions. Keep application state in sync through the input's events. The library provides behaviour helpers, not framework component wrappers.
 
 All helpers return the existing controller when called again with the same root element. Assign one lifecycle owner to each controller, avoid overlapping `enhanceControls` roots, and remember that destroying a controller removes its own listeners, not listeners attached by your application. For avatars, initialise `enhanceAvatar` after mounting and assign `controller.name` when the person's name changes, or render static initials with `getAvatarInitials`.
 

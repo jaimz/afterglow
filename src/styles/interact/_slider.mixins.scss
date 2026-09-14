@@ -19,17 +19,23 @@
   .ag-slider {
     --ag-thumb-diameter: 20px;
     --ag-track-width: calc((#{t.$gridType} - 1) * 1px);
+    --ag-slider-tooltip-fill: #{t.$onSurface};
+    --ag-slider-tooltip-color: #{t.$surface};
     display: inline-grid;
     inline-size: 100%;
     box-sizing: border-box;
+    // Reserve room so an active bubble does not overlap neighbouring content.
+    padding-block-start: 40px;
     user-select: none;
     cursor: pointer;
   }
   .ag-slider__control {
     position: relative;
+    isolation: isolate;
+    touch-action: pan-y;
     margin-inline: calc(#{t.$gridY} * 1px);
     display: grid;
-    grid-template-rows: var(--ag-thumb-diameter) 1fr;
+    grid-template-rows: var(--ag-thumb-diameter);
     align-items: center;
   }
   .ag-slider__input {
@@ -87,55 +93,78 @@
   }
   .ag-slider__fill {
     position: absolute;
-    inset-inline-start: 0;
+    inset-inline-start: var(--ag-slider-start, 0%);
     block-size: 100%;
-    inline-size: var(--ag-slider-progress, 0%);
+    inline-size: var(--ag-slider-selection, var(--ag-slider-progress, 0%));
     background: t.$ctrlFillSolidDesaturate;
     border-radius: inherit;
+  }
+  .ag-slider__marks {
+    position: absolute;
+    inset: 0;
+    // Keep marks behind the translucent track and the selected fill, within
+    // the control's stacking context so they cannot fall behind its surface.
+    z-index: -1;
   }
   .ag-slider__marks > span {
     position: absolute;
     inset-inline-start: var(--ag-slider-position);
-    inline-size: var(--ag-track-width);
-    block-size: var(--ag-track-width);
+    inset-block-start: 50%;
+    inline-size: calc(#{t.$gridType} * 1px);
+    block-size: calc(#{t.$gridType} * 1px);
+    transform: translate(-50%, -50%);
     background: t.$ctrlFillSolidDesaturate;
   }
-  .ag-slider__labels {
-    position: relative;
-    grid-area: 2 / 1;
-    min-block-size: 20px;
-  }
-  .ag-slider__label {
-    @include typography.caption;
+  .ag-slider__tooltip {
+    @include typography.body;
     position: absolute;
-    inset-inline-start: var(--ag-slider-position, 0%);
+    z-index: 3;
+    inset-inline-start: var(--ag-slider-position);
+    inset-block-end: calc(100% + 8px);
     transform: translateX(-50%);
-    display: grid;
-    justify-items: center;
+    box-sizing: border-box;
+    min-inline-size: 36px;
+    padding-inline: 8px;
+    border-radius: 4px;
+    background: var(--ag-slider-tooltip-fill);
+    color: var(--ag-slider-tooltip-color);
+    text-align: center;
     white-space: nowrap;
-    margin-block-start: -4px;
-    &::before {
-      content: "";
-      inline-size: calc(#{t.$gridType} * 1px);
-      block-size: calc(#{t.$gridType} * 1px);
-      background: currentColor;
-    }
-    &[data-hide-mark]::before {
+    pointer-events: none;
+    font-variant-numeric: tabular-nums;
+    &[hidden] {
       display: none;
     }
-    > span {
-      margin-block: 2px;
+  }
+  .ag-slider:dir(rtl) {
+    .ag-slider__marks > span {
+      transform: translate(50%, -50%);
+    }
+    .ag-slider__tooltip {
+      transform: translateX(50%);
     }
   }
-  .ag-slider:dir(rtl) .ag-slider__label {
-    transform: translateX(50%);
+  // Both native thumbs remain interactive; the transparent input boxes must
+  // not cover one another. The helper handles clicks between the thumbs.
+  .ag-slider[data-range][data-enhanced] .ag-slider__input {
+    pointer-events: none;
+    &::-webkit-slider-thumb {
+      pointer-events: auto;
+    }
+    &::-moz-range-thumb {
+      pointer-events: auto;
+    }
+    &:focus-visible,
+    &[data-active] {
+      z-index: 2;
+    }
   }
   // Custom thumb markup is optional; the real range still receives pointer and keyboard input.
   .ag-slider__thumb {
     display: none;
     pointer-events: none;
   }
-  .ag-slider[data-enhanced]:has(.ag-slider__thumb) {
+  .ag-slider[data-enhanced]:not([data-range]):has(.ag-slider__thumb) {
     .ag-slider__thumb {
       display: block;
       position: absolute;
@@ -164,6 +193,7 @@
     block-size: 100%;
     .ag-slider__control {
       min-block-size: inherit;
+      touch-action: pan-x;
       grid-template-rows: 1fr;
       grid-template-columns: var(--ag-thumb-diameter) 1fr;
     }
@@ -187,25 +217,20 @@
       inline-size: var(--ag-track-width);
     }
     .ag-slider__fill {
+      inset-inline-start: 0;
+      inset-block-start: var(--ag-slider-start, 0%);
       inline-size: 100%;
-      block-size: var(--ag-slider-progress, 0%);
+      block-size: var(--ag-slider-selection, var(--ag-slider-progress, 0%));
     }
     .ag-slider__marks > span {
-      inset-inline-start: 0;
+      inset-inline-start: 50%;
       inset-block-start: var(--ag-slider-position);
     }
-    .ag-slider__labels {
-      grid-area: 1 / 2;
-      block-size: 100%;
-    }
-    .ag-slider__label {
-      inset-inline-start: 0;
+    .ag-slider__tooltip {
+      inset-inline-start: calc(var(--ag-thumb-diameter) + 16px);
       inset-block-start: var(--ag-slider-position);
+      inset-block-end: auto;
       transform: translateY(-50%);
-      margin: 0;
-      grid-auto-flow: column;
-      gap: calc(#{t.$gridY} * 1px);
-      align-items: center;
     }
     &[data-enhanced] .ag-slider__thumb {
       inset-inline-start: 0;
@@ -214,6 +239,8 @@
     }
   }
   .ag-slider[data-variant="backdrop"] {
+    --ag-slider-tooltip-fill: #{t.$backdropKeyline};
+    --ag-slider-tooltip-color: #{t.$backdrop};
     color: t.$onBackdrop;
     .ag-slider__track {
       background: var(
@@ -234,6 +261,9 @@
       border-color: t.$backdrop;
     }
   }
+  .ag-slider:has(.ag-slider__input:disabled) .ag-slider__tooltip {
+    display: none;
+  }
   .ag-slider:has(.ag-slider__input:disabled) {
     opacity: t.$disabledOpacity;
     cursor: not-allowed;
@@ -242,6 +272,11 @@
     cursor: not-allowed;
   }
   @media (forced-colors: active) {
+    .ag-slider__tooltip {
+      background: Canvas;
+      color: CanvasText;
+      border: 1px solid CanvasText;
+    }
     .ag-slider__track {
       background: Canvas;
       border: 1px solid CanvasText;

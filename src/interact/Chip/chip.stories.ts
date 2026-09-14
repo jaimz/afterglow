@@ -41,8 +41,11 @@ export default {
         "Show the leading icon when an icon name is supplied. Avatar variants keep their avatar.",
     },
     icon: {
-      control: { type: "select", labels: { "": "None" } },
-      options: ["", ...icons],
+      // Empty object keys break shared metadata references in Storybook 6's
+      // serializer. Map a named choice to the component's empty icon value.
+      control: { type: "select", labels: { none: "None" } },
+      options: ["none", ...icons],
+      mapping: { none: "" },
       description:
         "Optional leading Feather icon. Choose None for text only; unused in avatar variants.",
     },

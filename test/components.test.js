@@ -414,23 +414,30 @@ it("works as a native range before enhancement and leaves programmatic changes e
   expect(input.value).to.equal("70");
   expect(events).to.equal(0);
 });
-it("updates slider fill, labels and marks with nonzero bounds and changing orientation", async () => {
+it("updates slider fill and unnumbered marks with nonzero bounds and changing orientation", async () => {
   const slider = fixture(
     sliderMarkup({
       min: 20,
       max: 40,
       step: 5,
       value: 30,
-      withLabels: true,
       withMarks: true,
     })
   );
   const controller = use(enhanceSlider(slider));
   expect(slider.style.getPropertyValue("--ag-slider-progress")).to.equal("50%");
   expect(slider.querySelectorAll(".ag-slider__marks > span")).to.have.length(5);
-  const labels = slider.querySelectorAll(".ag-slider__label");
-  expect(labels[1].style.getPropertyValue("--ag-slider-position")).to.equal(
-    "25%"
+  expect(slider.querySelectorAll(".ag-slider__label")).to.have.length(0);
+  expect(slider.querySelector(".ag-slider__marks").textContent).to.equal("");
+  const mark = slider
+    .querySelector(".ag-slider__marks > span")
+    .getBoundingClientRect();
+  const track = slider
+    .querySelector(".ag-slider__track")
+    .getBoundingClientRect();
+  expect(mark.top + mark.height / 2).to.be.closeTo(
+    track.top + track.height / 2,
+    0.5
   );
   controller.input.step = "10";
   slider.dataset.orientation = "vertical";
