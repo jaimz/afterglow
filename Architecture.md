@@ -6,7 +6,7 @@ Afterglow groups styles and components by their purpose. Native HTML supplies se
 | ------------ | --------------------------------------- | ------------------------------------------------------------------------------------------- |
 | `foundation` | Shared primitives and composition tools | Type scale, token registry, theme boundaries, generic layout and motion mixins              |
 | `frame`      | Arrange and contain other elements      | Background, surface, panel, paper, application grid, master-detail, structural card, dialog |
-| `indicate`   | Reflect changing or transient state     | Notification, progress bars and status colours                                               |
+| `indicate`   | Reflect changing or transient state     | Notification, linear/circular progress and status colours                                     |
 | `interact`   | Accept user input                       | Button, FAB, removable chips, checkbox, radio, switch, slider, textarea, navigation links                    |
 | `present`    | Display lasting content                 | Article typography, card content, avatars and reusable icons                                 |
 
@@ -54,6 +54,8 @@ The reusable `present/icon` recipe applies Feather SVG masks to native elements.
 
 The `indicate/progress` recipe retains native `progress` value/max semantics and label association. CSS styles the browser fill and track; `:indeterminate` drives a decorative animated segment on the wrapper. No helper, duplicate ARIA values or percentage custom property is needed. The full recipe includes reduced-motion, error, RTL and forced-colour treatments.
 
+The `indicate/circular-progress` recipe also retains a native `progress` element. `enhanceCircularProgress` mirrors its native value/max into a decorative CSS ring and derives not-started, in-progress and complete states; `data-error` independently overrides the display while retaining the amount. The helper exposes writable title/value/max/error properties, observes native attribute and title changes, and owns the ring, `data-state` and `data-enhanced`. Without enhancement, the native bar is visible. State icons reuse the Feather assets through pure icon mixins; no Web Component or duplicate accessible progressbar is introduced.
+
 The `interact/chip` recipe composes native text, an optional leading icon or a circular `present/avatar`, and an optional native remove button. Icon presence is independent of the filled, outlined and backdrop appearances; omit the icon element for text alone. Application handlers own removal and focus placement. It has no component runtime; automatic initials and image fallback reuse `enhanceAvatar`. The icon and avatar styles remain in `present`, so consumers loading individual categories include both categories when using those elements.
 
 The `interact/slider` recipe uses one native range input for a single value, or two inputs with `data-range` for an interval. `enhanceSlider` owns the fill, unnumbered marks and temporary value bubbles. Native inputs retain values, submission, keyboard focus and thumb dragging; the helper coordinates shared bounds, prevents crossing and handles track clicks for the pair. Keep each handle's accessible name distinct and preserve its DOM order.
@@ -81,6 +83,7 @@ The **Afterglow** page of the **Mobile** Figma file remains the visual authority
 | Floating action button    | [FAB 284:1](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=284-1)              |
 | Avatar                    | [Avatar 204:112](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=204-112)       |
 | Progress bar              | [Progress bar 146:7](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=146-7)    |
+| Circular progress         | [Circular progress 146:96](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=146-96) |
 | Slider                    | [Slider 147:2](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=147-2)          |
 | Chip                      | [Chip 151:12](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=151-12)           |
 

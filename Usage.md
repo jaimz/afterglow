@@ -75,6 +75,7 @@ Recipes are grouped by their purpose. **Frame** arranges and contains other elem
 | Sliders                                     | A styled native range input with native values and interaction                           | `enhanceSlider` synchronises fill, marks and value tooltips, coordinates two handles, and normalises vertical/RTL arrows  |
 | Notifications                               | Four visual variants, native popover visibility, six positions and a close button        | `enhanceNotification` adds optional timeouts, placement within a view, stacking, animation and announcements |
 | Progress bars                               | Native values, default/error/caution appearance, labels and indeterminate animation      | Your application updates the native `value` and `max` properties and status text                            |
+| Circular progress                           | Native progress semantics, title and a fallback bar                                     | `enhanceCircularProgress` adds the ring, four states, title updates and optional indeterminate animation      |
 | Dialogs                                     | A styled native dialog, modal behaviour and HTML invoker commands in supporting browsers | `enhanceDialog` adds animated closing, dismissal requests and optional non-modal focus containment           |
 
 All Storybook examples use this same native implementation. **Overview** combines controls with helpers. **Native HTML / CSS Only** demonstrates controls without Afterglow helpers; **States** includes enhanced behaviours; **Declarative Dialog** demonstrates HTML invoker commands. Storybook itself uses JavaScript to render these examples.
@@ -914,6 +915,116 @@ This omits the visible caption while retaining an accessible name. You can also 
 For selective Sass, use `indicate/progress.classes`, or include the complete `progress.styles` mixin from `indicate/progress.mixins` together with the shared theme. The complete mixin includes the required selectors and indeterminate keyframes.
 
 **Indicate / Progress** includes editable controls, all three variants, zero/complete/indeterminate states, live property updates and layout examples.
+
+## Circular progress
+
+Circular progress belongs to **Indicate**. It uses a native `progress` element with a title beneath the ring. The helper derives the state from the native value and adds the ring and status icons; there is no custom element to register.
+
+```html
+<label id="upload-progress" class="ag-circular-progress">
+  <progress class="ag-circular-progress__native" value="0" max="100"></progress>
+  <span class="ag-circular-progress__title">Upload</span>
+</label>
+```
+
+```ts
+import { enhanceCircularProgress } from "ag";
+
+const root = document.querySelector<HTMLElement>("#upload-progress")!;
+const upload = enhanceCircularProgress(root);
+
+upload.title = "Upload photos"; // Visible title and accessible name.
+upload.value = 38;             // In progress, 38% around the ring.
+upload.value = 100;            // Complete: full ring with a checkmark.
+
+upload.error = true;           // Error: red ring, exclamation mark and title.
+upload.error = false;          // Restore the state implied by the current value.
+upload.value = 0;              // Not started: thin empty ring.
+
+// When the owning view is removed:
+upload.destroy();
+```
+
+### States and values
+
+| State | How to select it | Appearance |
+| ----- | ---------------- | ---------- |
+| `not-started` | `value = 0` | Thin, muted ring |
+| `in-progress` | `0 < value < max` | Clockwise arc over the thin track |
+| `complete` | `value >= max` | Full ring and checkmark |
+| `error` | `error = true`, or `data-error` on the wrapper | Red circled exclamation mark and title |
+
+Error takes precedence and preserves the amount completed. Clearing it returns to the appropriate value-based state, so a failed operation can resume. Reaching the maximum marks completion automatically; the application decides whether to hide the component or start another task.
+
+Use `value = null` when work is underway but the amount is unknown. This removes the native `value` attribute and displays a rotating partial ring in the `in-progress` state. Reduced-motion users see a stationary arc. Zero is a known amount and means not started; it is different from an omitted `value`.
+
+Values and maximums use the same units: bytes, files or steps work just as well as percentages. The native element clamps values between zero and its maximum. Supply a positive `max`; the native default is `1` when omitted. Controller setters reject non-finite values and non-positive maximums before applying an update.
+
+### Controller properties and methods
+
+Initial options and `update(options)` accept `title`, `value`, `max`, `error` and `stateLabels`. Omitted options preserve the current values. For example:
+
+```ts
+const upload = enhanceCircularProgress(root, {
+  title: "Upload photos",
+  value: 0,
+  max: 20,
+});
+
+upload.update({ value: 7, title: "7 of 20 photos" });
+upload.state; // "in-progress", read-only.
+
+// Native property writes are also observed; update() refreshes immediately.
+upload.progress.value = 12;
+upload.update();
+```
+
+| Member | Purpose |
+| ------ | ------- |
+| `title` | Read or assign the caption as plain text, including an empty string to hide it |
+| `value` | Read or assign the native amount; `null` means indeterminate |
+| `max` | Read or assign the positive total |
+| `error` | Read or assign the failure flag |
+| `state` | Read the effective state from the table above |
+| `progress` | Access the native `HTMLProgressElement` |
+| `update(options?)` | Apply partial options and synchronise appearance/accessibility immediately |
+| `destroy()` | Remove the generated ring and observers, restore saved ARIA attributes, and show the native bar again |
+
+The `title` property belongs to the controller; the HTML `title` attribute remains the browser's ordinary hover hint. You can also update the caption element's `textContent` directly. The helper observes its text, native `value`/`max` attributes, and `data-error`. Boolean `data-error` is enabled by its presence; remove it to clear an error.
+
+### Markup, accessibility and theming
+
+Keep `ag-circular-progress` on the wrapper, `ag-circular-progress__native` on the native progress element and `ag-circular-progress__title` on the caption. The helper creates an `aria-hidden` `ag-circular-progress__ring` and manages `data-state` and `data-enhanced`; leave those to the helper. Before enhancement, and after destruction, a small native progress bar remains visible with the title.
+
+The native element supplies the accessible progress semantics and numeric range. The title provides its accessible name; for a title-free display, supply an explicit `aria-label` on the progress element. An authored `aria-labelledby` takes precedence. Do not add a second `role="progressbar"` or duplicate numeric ARIA attributes on the wrapper. The component accepts no input and does not enter the tab order.
+
+Accessible state descriptions use `aria-valuetext`. Translate them with, for example, `upload.update({ stateLabels: { "not-started": "Pas commencé", "in-progress": "En cours", complete: "Terminé", error: "Erreur" } })`. The helper appends the percentage to known in-progress and error states. It does not announce every update through a live region; use your application's status announcements for meaningful milestones and failures. Programmatic updates emit no `input` or `change` events.
+
+| CSS token | Default | Purpose |
+| --------- | ------- | ------- |
+| `--circular-progress-size` | `24px` | Ring diameter |
+| `--circular-progress-track-width` | `1px` | Thin background ring |
+| `--circular-progress-stroke-width` | `2px` | Progress arc and complete ring |
+| `--circular-progress-title-gap` | `4px` | Space between the ring and title |
+
+Colours reuse `--ctrlTextDesat` and `--error`; titles use `--body-font-stack`, `--small-caption-text-size` and `--line-height`. Long titles wrap within the available width. Rings advance clockwise in both LTR and RTL layouts, and forced-colour mode uses system colours. Keep the bundled Feather assets alongside the stylesheet for the check and error glyphs.
+
+For dark backdrop surfaces, add `data-variant="backdrop"` to the component wrapper:
+
+```html
+<div class="ag-background">
+  <label id="backdrop-upload" class="ag-circular-progress" data-variant="backdrop">
+    <progress class="ag-circular-progress__native" value="38" max="100"></progress>
+    <span class="ag-circular-progress__title">Upload</span>
+  </label>
+</div>
+```
+
+Initialise `enhanceCircularProgress` on the label as usual. This is a CSS variant: it uses `--onBackdrop` for the arc, completion icon and title, with `--backdropKeyline` for the empty track. In the error state, the circle has an `--error` fill and the icon and title use `--on-error`, matching the notification palette. Changing the variant does not change the progress value or behaviour. The variant selects the foreground treatment; the containing surface supplies its own backdrop.
+
+For selective Sass, use `indicate/circular-progress.classes`, or the pure `circular-progress.styles` mixin from `indicate/circular-progress.mixins` with the shared theme. The `indicate` category includes its glyph styles without requiring the full `present` category.
+
+**Indicate / Circular Progress** includes editable controls, all four states, **Backdrop** and **Backdrop States**, live title/value/error updates, layouts and native fallback examples.
 
 ## Notifications
 
