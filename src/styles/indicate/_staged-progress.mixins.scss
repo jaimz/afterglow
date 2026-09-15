@@ -1,0 +1,138 @@
+@use "../foundation/tokens" as t;
+
+@mixin staged-progress {
+  display: flex;
+  align-items: stretch;
+  gap: t.token("staged-progress-gap");
+  inline-size: max-content;
+  max-inline-size: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  color: t.$ctrlTextDesat;
+
+  &:where([data-variant="backdrop"]) {
+    color: t.$onBackdrop;
+  }
+  &[data-orientation="vertical"] {
+    flex-direction: column;
+  }
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+  }
+  &[hidden] {
+    display: none !important;
+  }
+}
+
+@mixin stage {
+  position: relative;
+  flex: none;
+  inline-size: max(
+    #{t.token("staged-progress-stage-width")},
+    #{t.token("circular-progress-size")}
+  );
+  min-inline-size: 0;
+
+  // Only stages with a later visible sibling get an outgoing connection.
+  &:where(:has(~ .ag-staged-progress__stage:not([hidden])))::after {
+    content: "";
+    position: absolute;
+    inset-block-start: calc(
+      (
+          #{t.token("circular-progress-size")} - #{t.token(
+              "staged-progress-connector-width"
+            )}
+        ) / 2
+    );
+    inset-inline-start: calc(
+      50% + #{t.token("circular-progress-size")} / 2 + #{t.token(
+          "staged-progress-connector-gap"
+        )}
+    );
+    inline-size: calc(
+      100% + #{t.token("staged-progress-gap")} - #{t.token(
+          "circular-progress-size"
+        )} - 2 * #{t.token("staged-progress-connector-gap")}
+    );
+    block-size: t.token("staged-progress-connector-width");
+    background: currentColor;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  &:where(:has(> .ag-circular-progress[data-state="complete"]))::after {
+    opacity: 1;
+  }
+  &[hidden] {
+    display: none !important;
+  }
+}
+
+@mixin styles {
+  .ag-staged-progress {
+    @include staged-progress;
+  }
+  .ag-staged-progress > .ag-staged-progress__stage {
+    @include stage;
+
+    > .ag-circular-progress {
+      inline-size: 100%;
+    }
+  }
+
+  .ag-staged-progress[data-orientation="vertical"]
+    > .ag-staged-progress__stage {
+    inline-size: auto;
+    min-block-size: t.token("circular-progress-size");
+
+    > .ag-circular-progress {
+      flex-direction: row;
+      gap: t.token("staged-progress-connector-gap");
+      min-block-size: t.token("circular-progress-size");
+      align-items: start;
+
+      > .ag-circular-progress__title {
+        min-inline-size: 0;
+        align-self: center;
+        text-align: start;
+      }
+    }
+    &::after {
+      inset-inline-start: calc(
+        (
+            #{t.token("circular-progress-size")} - #{t.token(
+                "staged-progress-connector-width"
+              )}
+          ) / 2
+      );
+      inset-block-start: calc(
+        #{t.token("circular-progress-size")} + #{t.token(
+            "staged-progress-connector-gap"
+          )}
+      );
+      inline-size: t.token("staged-progress-connector-width");
+      block-size: calc(
+        100% + #{t.token("staged-progress-gap")} - #{t.token(
+            "circular-progress-size"
+          )} - 2 * #{t.token("staged-progress-connector-gap")}
+      );
+    }
+  }
+
+  @media (forced-colors: active) {
+    .ag-staged-progress {
+      color: CanvasText;
+    }
+    .ag-staged-progress > .ag-staged-progress__stage::after {
+      background: GrayText;
+      opacity: 1;
+      forced-color-adjust: none;
+    }
+    .ag-staged-progress
+      > .ag-staged-progress__stage:has(> .ag-circular-progress[data-state="complete"])::after {
+      background: Highlight;
+    }
+  }
+}

@@ -1,6 +1,8 @@
 // Styles are a separate entry point; importing helpers never registers elements.
 export { enhanceSlider } from "./behaviors/slider";
 export { enhanceCircularProgress } from "./behaviors/circular-progress";
+export { enhanceStagedProgress } from "./behaviors/staged-progress";
+export type { StagedProgressController } from "./behaviors/staged-progress";
 export type {
   CircularProgressController,
   CircularProgressOptions,

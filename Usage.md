@@ -76,6 +76,7 @@ Recipes are grouped by their purpose. **Frame** arranges and contains other elem
 | Notifications                               | Four visual variants, native popover visibility, six positions and a close button        | `enhanceNotification` adds optional timeouts, placement within a view, stacking, animation and announcements |
 | Progress bars                               | Native values, default/error/caution appearance, labels and indeterminate animation      | Your application updates the native `value` and `max` properties and status text                            |
 | Circular progress                           | Native progress semantics, title and a fallback bar                                     | `enhanceCircularProgress` adds the ring, four states, title updates and optional indeterminate animation      |
+| Staged progress                             | An ordered list of circular progress controls, horizontal/vertical layout and connecting lines | `enhanceStagedProgress` enhances each stage and reconciles added, removed and reordered subtasks          |
 | Dialogs                                     | A styled native dialog, modal behaviour and HTML invoker commands in supporting browsers | `enhanceDialog` adds animated closing, dismissal requests and optional non-modal focus containment           |
 
 All Storybook examples use this same native implementation. **Overview** combines controls with helpers. **Native HTML / CSS Only** demonstrates controls without Afterglow helpers; **States** includes enhanced behaviours; **Declarative Dialog** demonstrates HTML invoker commands. Storybook itself uses JavaScript to render these examples.
@@ -1025,6 +1026,91 @@ Initialise `enhanceCircularProgress` on the label as usual. This is a CSS varian
 For selective Sass, use `indicate/circular-progress.classes`, or the pure `circular-progress.styles` mixin from `indicate/circular-progress.mixins` with the shared theme. The `indicate` category includes its glyph styles without requiring the full `present` category.
 
 **Indicate / Circular Progress** includes editable controls, all four states, **Backdrop** and **Backdrop States**, live title/value/error updates, layouts and native fallback examples.
+
+## Staged progress
+
+Staged progress belongs to **Indicate**. It shows a task as an ordered sequence of subtasks, each using the circular progress recipe above. There is no Web Component and no fixed stage count. Each subtask has its own title, amount, maximum and error flag.
+
+```html
+<ol id="publish-progress" class="ag-staged-progress" role="list"
+    aria-label="Publish photos" data-orientation="horizontal">
+  <li class="ag-staged-progress__stage">
+    <label class="ag-circular-progress">
+      <progress class="ag-circular-progress__native" value="100" max="100"></progress>
+      <span class="ag-circular-progress__title">Prepare</span>
+    </label>
+  </li>
+  <li class="ag-staged-progress__stage">
+    <label class="ag-circular-progress">
+      <progress class="ag-circular-progress__native" value="38" max="100"></progress>
+      <span class="ag-circular-progress__title">Upload</span>
+    </label>
+  </li>
+  <li class="ag-staged-progress__stage">
+    <label class="ag-circular-progress">
+      <progress class="ag-circular-progress__native" value="0" max="100"></progress>
+      <span class="ag-circular-progress__title">Finish</span>
+    </label>
+  </li>
+</ol>
+```
+
+```ts
+import { enhanceStagedProgress } from "ag";
+
+const root = document.querySelector<HTMLElement>("#publish-progress")!;
+const task = enhanceStagedProgress(root);
+const upload = task.stages[1];
+
+upload.title = "Upload photos";
+upload.value = 60;
+upload.error = true;                  // Retain 60% while showing failure.
+upload.error = false;                 // Resume from the retained amount.
+upload.value = 100;
+task.stages[2].value = null;           // Start work with an unknown amount.
+
+root.dataset.orientation = "vertical";
+
+// When disposing the view:
+task.destroy();
+```
+
+`stages` is a read-only snapshot of circular progress controllers in DOM order. Each controller supports all the properties and methods described in **Circular progress**, including `update({ value, max, error, title, stateLabels })`. Native `progress.value` and `progress.max` changes are also observed. Several stages can fail independently; clearing one error leaves the others untouched. The application decides when to start a subtask, whether to stop after an error, and when to retry. This display does not schedule work or invent an aggregate percentage.
+
+### Stage lists and lifecycle
+
+Keep one direct `li.ag-staged-progress__stage` per subtask, containing its `label.ag-circular-progress`. Add, remove or reorder these list items normally. The helper automatically enhances new complete stage markup and releases removed stages. To access a newly added controller immediately, call `task.refresh()` after editing the list. Read `task.stages` again after a reorder; controllers for surviving elements keep their identity and current values.
+
+| Member | Purpose |
+| ------ | ------- |
+| `stages` | Read the current circular progress controllers in list order |
+| `refresh()` | Reconcile list changes and synchronise stage displays immediately |
+| `destroy()` | Stop observation, remove decoration created by this helper and restore native bars |
+
+Repeated enhancement returns the same staged controller. Let the sequence own the lifecycle of the circles it creates; call `task.destroy()` when removing its view. If a circle was already enhanced independently, the sequence reuses it and leaves its cleanup with the original owner. An empty list and a single stage are supported; a single visible stage has no connecting line.
+
+### Layout, connections and accessibility
+
+`data-orientation="horizontal"` is the default. Titles sit beneath their rings and wrap within each stage's width. The sequence scrolls horizontally when it has more stages than the available space, preserving their order. The helper makes an overflowing list keyboard-focusable and removes that extra tab stop once everything fits; an authored `tabindex` is preserved.
+
+With `data-orientation="vertical"`, rings run down the leading edge and titles sit alongside them. Titles wrap to the available width. Both layouts respect `dir="rtl"`. Connections follow the previous stage: a completed stage has a full-colour outgoing line, while pending, running and failed stages have a muted line. Errors remain local to their stage; they do not turn the remaining sequence red. The last visible stage has no outgoing line, and hidden list items are omitted from the layout.
+
+Give the list an accessible name with `aria-label` or `aria-labelledby`. Keep `role="list"` to preserve list announcements in browsers that otherwise suppress them when list markers are removed. Each native progress element supplies its own accessible name, amount and state. Connections are decorative CSS; this is a status display, not a step-navigation widget. Use application-level status announcements for significant milestones and failures rather than announcing every numeric update.
+
+For a backdrop surface, set `data-variant="backdrop"` on **both the list and each circular progress label**. The list sets the connection colour, while the circles use their existing backdrop treatment. Place the sequence inside `ag-background` or another backdrop surface.
+
+| CSS token | Default | Purpose |
+| --------- | ------- | ------- |
+| `--staged-progress-stage-width` | `80px` | Horizontal stage width, including its wrapping title |
+| `--staged-progress-gap` | `32px` | Space between stage boxes in either orientation |
+| `--staged-progress-connector-gap` | `8px` | Clearance between a connecting line and a ring; also the vertical title gap |
+| `--staged-progress-connector-width` | `1px` | Connecting line thickness |
+
+The circular progress tokens still control ring diameter, stroke and title spacing. Default rings have a 72px connecting line horizontally. Keep enough stage spacing for the chosen ring size and connector clearance. Forced-colour mode uses system colours for both circles and connections; indeterminate stages retain the circular progress reduced-motion behaviour.
+
+For selective Sass, import `indicate/staged-progress.classes`; it includes the circular progress recipe once. When using pure mixins, include both `circular-progress.styles` and `staged-progress.styles` with the shared theme. The full **Indicate** category includes both recipes.
+
+**Indicate / Staged Progress** includes editable stage arrays, vertical and backdrop variants, multiple errors, empty/single/many-stage support through the stage control, layout examples and a **Live Updates** story for editing, adding and removing subtasks.
 
 ## Notifications
 
