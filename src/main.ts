@@ -12,6 +12,8 @@ export type { SliderController, SliderOptions } from "./behaviors/slider";
 export { enhanceDialog } from "./behaviors/dialog";
 export type { DialogController, DialogOptions } from "./behaviors/dialog";
 export { enhanceControls } from "./behaviors/controls";
+export { enhanceTextField } from "./behaviors/text-field";
+export type { TextFieldController, TextFieldOptions } from "./behaviors/text-field";
 export type { ControlsController } from "./behaviors/controls";
 export { enhanceNotification } from "./behaviors/notification";
 export type {

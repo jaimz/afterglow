@@ -7,7 +7,7 @@ Afterglow groups styles and components by their purpose. Native HTML supplies se
 | `foundation` | Shared primitives and composition tools | Type scale, token registry, theme boundaries, generic layout and motion mixins              |
 | `frame`      | Arrange and contain other elements      | Background, surface, panel, paper, application grid, master-detail, structural card, dialog |
 | `indicate`   | Reflect changing or transient state     | Notification, linear/circular/staged progress and status colours                              |
-| `interact`   | Accept user input                       | Button, FAB, removable chips, checkbox, radio, switch, slider, textarea, navigation links                    |
+| `interact`   | Accept user input                       | Button, FAB, removable chips, checkbox, radio, switch, slider, textarea, text field, navigation links        |
 | `present`    | Display lasting content                 | Article typography, card content, avatars and reusable icons                                 |
 
 Choose a component's category by its primary purpose. A notification remains in `indicate` even though it contains a dismiss button; that button is an interaction within a status presentation. A structural card belongs to `frame`, while its optional text treatment belongs to `present`.
@@ -62,6 +62,8 @@ The `interact/chip` recipe composes native text, an optional leading icon or a c
 
 The `interact/slider` recipe uses one native range input for a single value, or two inputs with `data-range` for an interval. `enhanceSlider` owns the fill, unnumbered marks and temporary value bubbles. Native inputs retain values, submission, keyboard focus and thumb dragging; the helper coordinates shared bounds, prevents crossing and handles track clicks for the pair. Keep each handle's accessible name distinct and preserve its DOM order.
 
+The `interact/text-field` recipe retains native input editing, types, validation and form participation. CSS owns standard/backdrop treatments, an independent `data-compact` size flag, placeholder-style labels, optional icon slots and status glyphs. Every variant has a full border and shows its label inside the empty input, preserving the accessible name when populated. `enhanceTextField` optionally adds inline native/custom validation, persistent application errors and reset/cleanup handling; it does not replace native values or events. The helper owns its generated error description and restores externally supplied validation on cleanup.
+
 ## Compatibility
 
 Slider endpoint-label markup (`ag-slider__labels` and `ag-slider__label`) has been replaced by transient value tooltips. Remove that old decorative markup when updating consumers.
@@ -89,6 +91,7 @@ The **Afterglow** page of the **Mobile** Figma file remains the visual authority
 | Staged progress           | [Staged Progress 146:168](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=146-168) |
 | Slider                    | [Slider 147:2](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=147-2)          |
 | Chip                      | [Chip 151:12](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=151-12)           |
+| Text field                | [TextField 143:33](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=143-33)     |
 
 The application grid, master-detail arrangement and structural card are flexible layout recipes inspired by Tai. Their widths, responsive breakpoint and composition rules are library choices, not assertions that Figma specifies a complete responsive application shell. They use existing Afterglow surfaces. Figma's fixed sample dimensions become content-driven sizing where needed: textareas have a minimum height, cards grow with content, and navigation labels can wrap.
 

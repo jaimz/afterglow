@@ -14,6 +14,7 @@ This guide describes the current consumer API. New components and changes to exi
 - [Buttons](#buttons)
 - [Chips](#chips)
 - [Textareas](#textareas)
+- [Text fields](#text-fields)
 - [Navigation](#navigation)
 - [Checkboxes](#checkboxes)
 - [Radios and radio groups](#radios-and-radio-groups)
@@ -70,6 +71,7 @@ Recipes are grouped by their purpose. **Frame** arranges and contains other elem
 | Buttons                                     | Appearance, focus, activation and native form actions                                    | Your application's action handlers                                                                           |
 | Chips                                       | Five visual variants, optional leading icons or circular avatars and a native remove button | Your application handles removal; `enhanceAvatar` supplies automatic initials and photo fallback             |
 | Textareas                                   | Labels, editing, resizing, validation, disabled/read-only states and form participation  | Nothing required                                                                                             |
+| Text fields                                 | Native input types, labels, hints, icons, visual states, validation and form participation | `enhanceTextField` adds optional inline constraint/custom validation and persistent server errors            |
 | Navigation                                  | Styled links, current-location appearance and native link activation                     | Your application updates `aria-current` when the location changes                                            |
 | Checkboxes, radios and switches             | Selection, labels, keyboard activation, disabled states and form participation           | `enhanceControls` adds read-only behaviour, extra radio shortcuts and mixed-state reset handling             |
 | Sliders                                     | A styled native range input with native values and interaction                           | `enhanceSlider` synchronises fill, marks and value tooltips, coordinates two handles, and normalises vertical/RTL arrows  |
@@ -560,6 +562,128 @@ For the floating-label treatment, put the textarea before its associated label a
 The label becomes smaller when the textarea has focus or content. The single-space placeholder lets CSS detect an empty value; it is not an accessible name. Always keep the real label and a unique matching ID. Native `required`, `readonly`, `disabled`, `maxlength`, `rows`, validation, reset and `FormData` work normally. `aria-invalid="true"` displays an application-reported error; connect an explanatory message with `aria-describedby`. Read-only text remains selectable and is submitted; disabled text is excluded from submission.
 
 The textarea fills its container and can be resized vertically. `--textarea-min-height` defaults to `158px`; override it to allow a shorter field. `--field-hint` controls placeholder/label colour, and `--keyline` controls the border. Fill, text and inset shadow use the existing paper, on-paper and surface tokens. **Interact / Textarea** includes content, states and plain HTML examples.
+
+## Text fields
+
+Text fields belong to **Interact** and use native `input` elements. The standard and backdrop treatments, each with an optional compact size, need only HTML and CSS. Use native `type="text"`, `search`, `password`, `email`, `url`, `tel` or `number` for the appropriate editing behaviour. Password masking, search clearing where supported, numeric controls, autocomplete, selection, keyboard input, form submission and reset remain browser features.
+
+```html
+<div id="email-field" class="ag-text-field">
+  <div class="ag-text-field__control">
+    <input class="ag-text-field__input" id="email" name="email"
+           type="email" autocomplete="off" required placeholder=" "
+           aria-describedby="email-hint">
+    <label class="ag-text-field__label" for="email">Email address</label>
+  </div>
+  <p class="ag-text-field__hint" id="email-hint">Use an address you can receive mail at.</p>
+</div>
+```
+
+Keep the real label, a unique input ID and its matching `for`. The single-space placeholder enables CSS to detect an empty value; it is not the accessible name. In every variant, the label appears inside the empty input like a placeholder, including while focused. It disappears visually when a value is entered and returns when the input is cleared or reset, retaining its accessible name throughout. The label never moves above the input or adds to its height. Hints appear below while the field is focused or populated, and wrap to the available width. The input's `aria-describedby` keeps its authored hint associated even while that hint is visually hidden.
+
+Use `autocomplete="off"` by default, as in the Storybook examples. Consumers can opt in with `autocomplete="on"` or an appropriate token such as `email` or `name`. Set this on the native input; CSS and the optional validation helper do not control autocomplete.
+
+### Variants, compact size, icons and status
+
+Set `data-variant` on `ag-text-field`:
+
+| Variant | Input height | Appearance |
+| ------- | ------------ | ---------- |
+| `default` or omitted | `48px` | Paper fill, inset shadow and a full keyline |
+| `backdrop` | `40px` | Translucent fill, light foreground and a full light border; place it on a backdrop surface |
+
+All variants use a border on all four sides and the same placeholder-style label behaviour. Size is independent of the visual variant: set the Storybook `compact` boolean to `true`, or add `data-compact` to the wrapper in native HTML, for a `32px` input with `16px` icons. Compact is off by default and works with either variant.
+
+```html
+<div class="ag-text-field" data-compact>
+  <div class="ag-text-field__control">
+    <input class="ag-text-field__input" id="compact-name" name="name"
+           type="text" autocomplete="off" placeholder=" ">
+    <label class="ag-text-field__label" for="compact-name">Name</label>
+  </div>
+</div>
+```
+
+For a compact backdrop field, also set `data-variant="backdrop"` on the wrapper. Remove `data-compact` to restore the larger size; setting it to `"false"` still leaves the attribute present. To toggle from JavaScript, use `field.toggleAttribute("data-compact", compact)` with a boolean.
+
+For a leading search icon, insert this before the input inside `ag-text-field__control`. Any Feather icon can be used; the input's type and icon are independent.
+
+```html
+<span class="ag-text-field__leading" aria-hidden="true">
+  <span class="ag-icon" data-icon="search"></span>
+</span>
+```
+
+Use `ag-text-field__trailing` after the label for a trailing decoration. Omit the wrapper entirely when no icon is needed. These icon wrappers are decorative; an action requires a native button with its own accessible name and handler. When loading separate categories, include the `present/icon` recipe for `ag-icon`.
+
+Add `<span class="ag-text-field__status" aria-hidden="true"></span>` inside the control to opt into the validation glyph. It is hidden in the neutral state and uses the existing Feather check and alert-circle assets. Glyphs are 24px normally and 16px when compact, in either variant. Status glyph styling is included with the text-field recipe itself.
+
+For static feedback without a helper, set `data-status="success"` or `data-status="error"` on the wrapper. For an error, also set `aria-invalid="true"` on the input and associate an explanatory `p.ag-text-field__error` using `aria-describedby`. Status colours and glyphs are visual feedback; an ARIA error flag alone does not block submission. Use native constraints or `input.setCustomValidity(message)` when submission must be blocked. `:user-invalid` supplies the error appearance for native validation as well. Include explanatory error text so colour is not the only signal.
+
+Native `required`, `pattern`, `minlength`, `maxlength`, `min`, `max`, `step`, `multiple`, `readonly`, `disabled` and `form` attributes retain their usual meanings. Read-only values stay selectable and participate in submission; disabled fields are excluded. For visible input text, assign `input.value` directly.
+
+### Optional inline validation
+
+Enhance a field when it needs inline error messages. Ordinary browser validation continues to work without this helper.
+
+```ts
+import { enhanceTextField } from "ag";
+
+const email = enhanceTextField(document.querySelector<HTMLElement>("#email-field")!);
+
+email.input.value = "hello@example.com";
+email.update();                         // Recheck programmatic changes.
+email.validate();                       // Reveal feedback and return true/false.
+email.setError("This address is already registered.");
+email.setError(null);                    // Explicitly clear the server error.
+
+// When removing the view:
+email.destroy();
+```
+
+The helper evaluates native constraints and shows feedback after blur or an attempted submission. Once revealed, feedback updates on input; unfinished IME composition is left alone until composition ends. Empty optional fields remain neutral, and disabled/read-only fields do not receive helper validation feedback. A valid populated field receives the success treatment, but the status glyph is shown only if you included it in the markup. Browser validation messages retain the browser's language.
+
+Supply a synchronous `validation` callback for application-specific rules. Return a plain-text error or `null`; native constraints are checked too. The callback is also checked before interaction so its custom validity can block an untouched form submission. It should be fast and have no side effects.
+
+```ts
+const displayName = enhanceTextField(nameField, {
+  validation: (input) =>
+    input.value && input.value.trim().length < 3
+      ? "Use at least three non-space characters."
+      : null,
+});
+```
+
+For asynchronous server checks, your application owns the request and ignores stale responses before calling `setError`. A supplied server error takes priority and persists through typing until explicitly cleared or the native form is reset. No password-strength rules are built into the library; supply the rules your application actually requires.
+
+| Member | Purpose |
+| ------ | ------- |
+| `input` | The native `HTMLInputElement` |
+| `validate()` | Recheck constraints/callback, reveal feedback and return validity |
+| `update()` | Recheck a programmatic value change, preserving whether feedback has been revealed |
+| `setError(message)` | Set a persistent server/application error; pass `null` to clear it |
+| `reset()` | Clear interaction feedback and server errors without changing the input's value |
+| `destroy()` | Remove owned messages, listeners and custom validity; retain entered data |
+
+The helper creates its own error paragraph with a unique ID and a polite live region. It adds that ID to `aria-describedby` only while an error is shown, preserving other description references. It also manages `aria-invalid` and `data-status`. Avoid separately controlling those same attributes while enhanced. Existing externally assigned custom validity is preserved when the helper's override is removed. Form reset clears helper feedback after the native reset, unless that reset was cancelled. `novalidate` and submitter `formnovalidate` remain available. Programmatic helper calls do not emit synthetic `input` or `change` events, and repeated enhancement returns the same controller.
+
+### Size and theming
+
+The default width is `344px`, capped by the containing width. Override `--text-field-width` or set the wrapper's `inline-size` to fill a form column. Hints and error messages add to the field's overall height below the control.
+
+| CSS token | Default |
+| --------- | ------- |
+| `--text-field-width` | `344px` |
+| `--text-field-height` | `48px` |
+| `--text-field-compact-height` | `32px` |
+| `--text-field-backdrop-height` | `40px` |
+| `--text-field-padding-inline` | `16px` |
+| `--text-field-icon-size` | `24px` |
+| `--text-field-compact-icon-size` | `16px` |
+
+Colours reuse paper, surface, keyline, field-hint, on-surface, backdrop, success and error tokens. Logical positioning supports RTL; forced-colour mode uses system colours and retains the focus outline. For selective Sass, use `interact/text-field.classes`, or include the pure `text-field.styles` mixin with the shared theme. The full **Interact** category includes this recipe.
+
+**Interact / Text Field** includes editable controls, all visual variants, native HTML, disabled/read-only and narrow RTL examples, and **Live Validation** for custom rules, server errors and reset.
 
 ## Navigation
 

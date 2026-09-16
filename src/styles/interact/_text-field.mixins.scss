@@ -1,0 +1,260 @@
+@use "../foundation/tokens" as t;
+@use "../present/icon.mixins" as icon;
+
+// A native input, an associated label and optional icons/messages compose a field.
+@mixin text-field {
+  --ag-text-field-height: #{t.token("text-field-height")};
+  --ag-text-field-icon-size: #{t.token("text-field-icon-size")};
+  --ag-text-field-label-inset: #{t.token("text-field-padding-inline")};
+  --ag-text-field-trailing-space: 0px;
+  --ag-text-field-status-space: 0px;
+  position: relative;
+  box-sizing: border-box;
+  inline-size: t.token("text-field-width");
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  color: t.$onSurface;
+  font-family: t.$bodyFontStack;
+  text-shadow: none;
+
+  &:has(.ag-text-field__leading:not([hidden])) {
+    --ag-text-field-label-inset: calc(
+      #{t.token("text-field-padding-inline")} / 2 + var(
+          --ag-text-field-icon-size
+        ) + 8px
+    );
+  }
+  &:has(.ag-text-field__trailing:not([hidden])) {
+    --ag-text-field-trailing-space: calc(var(--ag-text-field-icon-size) + 8px);
+  }
+  &[data-variant="backdrop"] {
+    --ag-text-field-height: #{t.token("text-field-backdrop-height")};
+    color: t.$onBackdrop;
+  }
+  &[data-compact] {
+    --ag-text-field-height: #{t.token("text-field-compact-height")};
+    --ag-text-field-icon-size: #{t.token("text-field-compact-icon-size")};
+  }
+  &:has(.ag-text-field__input:disabled) {
+    opacity: t.$disabledOpacity;
+    cursor: not-allowed;
+  }
+  &[hidden] {
+    display: none !important;
+  }
+}
+
+@mixin control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  min-inline-size: 0;
+  min-block-size: var(--ag-text-field-height);
+  padding-inline: t.token("text-field-padding-inline");
+  border: 1px solid t.token("keyline");
+  background: t.$paper;
+  box-shadow: inset 0 3px 4px t.$surface;
+}
+
+@mixin input {
+  flex: 1 1 0%;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: calc(var(--ag-text-field-height) - 2px);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: t.$bodyTextSize;
+  line-height: 1.2;
+  box-shadow: none;
+
+  // The containing control draws a focus outline around the complete field.
+  &:focus-visible {
+    outline: none;
+  }
+  &::placeholder {
+    color: t.token("field-hint");
+    font-style: italic;
+    opacity: 1;
+  }
+  &:disabled {
+    cursor: not-allowed;
+  }
+  // Remove only the redundant search glyph; retain native clearing and number controls.
+  &::-webkit-search-decoration {
+    -webkit-appearance: none;
+  }
+}
+
+@mixin label {
+  position: absolute;
+  inset-inline-start: var(--ag-text-field-label-inset);
+  inset-inline-end: calc(
+    #{t.token("text-field-padding-inline")} + var(
+        --ag-text-field-trailing-space
+      ) + var(--ag-text-field-status-space)
+  );
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: t.$bodyTextSize;
+  font-style: italic;
+  line-height: 1.2;
+  color: t.token("field-hint");
+  cursor: text;
+}
+
+@mixin caption {
+  margin: 3px 0 0;
+  padding-inline: t.token("text-field-padding-inline");
+  font-size: t.$captionTextSize;
+  line-height: 1.2;
+  text-align: end;
+  overflow-wrap: anywhere;
+  color: t.$onSurfaceAlt;
+  &[hidden] {
+    display: none !important;
+  }
+}
+
+@mixin styles {
+  .ag-text-field {
+    @include text-field;
+  }
+  .ag-text-field__control {
+    @include control;
+  }
+  .ag-text-field__input {
+    @include input;
+  }
+  .ag-text-field__label {
+    @include label;
+  }
+  .ag-text-field__hint,
+  .ag-text-field__error {
+    @include caption;
+  }
+
+  .ag-text-field__leading,
+  .ag-text-field__trailing {
+    --icon-size: var(--ag-text-field-icon-size);
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    &[hidden] {
+      display: none !important;
+    }
+  }
+  .ag-text-field__status {
+    @include icon.icon;
+    inline-size: var(--ag-text-field-icon-size);
+    block-size: var(--ag-text-field-icon-size);
+    display: none;
+    pointer-events: none;
+  }
+
+  .ag-text-field:has(.ag-text-field__leading:not([hidden]))
+    .ag-text-field__control {
+    padding-inline-start: calc(#{t.token("text-field-padding-inline")} / 2);
+  }
+  .ag-text-field:where([data-status="success"], [data-status="error"], :has(.ag-text-field__input:is([aria-invalid="true"], :user-invalid))):has(.ag-text-field__status:not([hidden])) {
+    --ag-text-field-status-space: calc(var(--ag-text-field-icon-size) + 8px);
+  }
+
+  .ag-text-field__control:has(> .ag-text-field__input:focus-visible) {
+    outline: 2px solid t.$ctrlText;
+    outline-offset: 0;
+  }
+
+  .ag-text-field:has(.ag-text-field__input:placeholder-shown:not(:focus))
+    > .ag-text-field__hint {
+    display: none;
+  }
+  // Show the label as a placeholder in every variant, including after form reset.
+  .ag-text-field:has(.ag-text-field__input:not(:placeholder-shown))
+    .ag-text-field__label {
+    // Retain the accessible name without drawing it over entered text.
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .ag-text-field:where([data-variant="backdrop"]) {
+    .ag-text-field__control {
+      background: color-mix(in srgb, #{t.$paper} 15%, transparent);
+      border-color: t.$onBackdrop;
+      box-shadow: none;
+    }
+    .ag-text-field__label,
+    .ag-text-field__hint {
+      color: t.$onBackdrop;
+    }
+    .ag-text-field__label {
+      font-style: normal;
+    }
+    .ag-text-field__control:has(> .ag-text-field__input:focus-visible) {
+      outline-color: t.$onBackdrop;
+    }
+  }
+  .ag-text-field:where([data-status="success"]) {
+    .ag-text-field__control {
+      border-color: t.$success;
+    }
+    .ag-text-field__hint {
+      color: t.$success;
+    }
+    .ag-text-field__status {
+      @include icon.glyph("check");
+      display: inline-block;
+      color: t.$success;
+    }
+  }
+  .ag-text-field:where([data-status="error"], :has(.ag-text-field__input:is([aria-invalid="true"], :user-invalid))) {
+    .ag-text-field__control {
+      border-color: t.$error;
+    }
+    .ag-text-field__control:has(> .ag-text-field__input:focus-visible) {
+      outline-color: t.$error;
+    }
+    > .ag-text-field__hint {
+      display: none;
+    }
+    .ag-text-field__status {
+      @include icon.glyph("alert-circle");
+      display: inline-block;
+      color: t.$error;
+    }
+  }
+  .ag-text-field__error {
+    color: t.$error;
+  }
+
+  @media (forced-colors: active) {
+    .ag-text-field {
+      color: FieldText;
+      .ag-text-field__control {
+        background: Field;
+        border: 1px solid ButtonText;
+        box-shadow: none;
+      }
+      .ag-text-field__label,
+      .ag-text-field__hint,
+      .ag-text-field__error,
+      .ag-text-field__status {
+        color: FieldText;
+      }
+      .ag-text-field__control:has(> .ag-text-field__input:focus-visible) {
+        outline-color: Highlight;
+      }
+    }
+  }
+}
