@@ -181,14 +181,16 @@ Use `ag-article` on a semantic article or content container. Its direct headings
 
 The recipe uses Afterglow's mobile type ramp, including heading weights and letter spacing. Headings `h1`–`h5` follow the design; `h6` uses bold body size. Content blocks are bounded by `--max-line-width`. Default padding is `16px` vertically and `24px` horizontally, controlled by `--article-padding-block` and `--article-padding-inline`. Typography rules target direct children so nested controls and components retain their own styles. Use heading levels that fit the document hierarchy.
 
-`ag-card-content` is a compact content treatment with optional overline, title, body and actions. It can stand alone with a surface class or sit inside another container:
+`ag-card-content` is a single content layout with optional overline, title, body and actions. Title and body share an `ag-card-content__main` section. It has no background or shadow of its own; it can stand alone with a surface class or sit inside another container:
 
 ```html
 <article class="ag-card-content ag-paper" aria-labelledby="note-title">
   <p class="ag-card-content__overline">Notebook</p>
-  <h2 class="ag-card-content__title" id="note-title">An idea to revisit</h2>
-  <div class="ag-card-content__body">
-    <p>A short description of the note.</p>
+  <div class="ag-card-content__main">
+    <h2 class="ag-card-content__title" id="note-title">An idea to revisit</h2>
+    <div class="ag-card-content__body">
+      <p>A short description of the note.</p>
+    </div>
   </div>
   <footer class="ag-card-content__actions">
     <button type="button" class="ag-button" data-variant="flat">Open</button>
@@ -196,7 +198,13 @@ The recipe uses Afterglow's mobile type ramp, including heading weights and lett
 </article>
 ```
 
-Children must be direct descendants. Omit any unused region; width and height follow the available space and content. The title has the visual size of Afterglow's third heading level, regardless of its semantic heading tag. Text regions have `16px` horizontal padding, so avoid adding another padded card-body wrapper unless you want extra inset. **Present / Article** and **Present / Card Content** show these recipes.
+Overline, main content and actions are direct children of the card; title and body are direct children of `ag-card-content__main`. When updating older markup, move the existing title and body into this new main-content wrapper. Omit unused regions or hide them with `hidden`; a main section or action row with no visible children also disappears. If you omit the title, omit its `aria-labelledby` reference too.
+
+In Storybook, visibility follows the text: clear `overlineText`, `title`, `textContent`, `actionOneLabel` or `actionTwoLabel` to omit that element. Whitespace-only text is also treated as empty. The main section and action row disappear when both of their text values are empty. When rendering native HTML in your application, apply the same check before including each region.
+
+The card uses `8px` vertical padding and `4px` between sections. The body has `6px` vertical margins within the main section. The overline and main section have `16px` horizontal padding; action labels align with them through the buttons' padding. The title has a `2px` optical adjustment toward the inline start and uses Afterglow's third heading size and light weight. The body uses the smaller body size, and actions use bold smaller body text. Use the heading tag that fits your document hierarchy. Shared grid, typography and surface tokens supply the base styles.
+
+Width and height follow the available space and content; the default Storybook sample is `311px` wide. Text and actions wrap in narrower containers. Compose existing `ag-button` elements for any actions and attach ordinary click handlers or use links for navigation; no behaviour helper or Web Component is required. For selective styles, load `present` for the content, `interact` for the buttons and `frame` if adding a surface class. **Present / Card Content** provides editable text controls, optional-content examples and responsive layouts; **Present / Article** demonstrates longer-form content.
 
 ## Avatars
 

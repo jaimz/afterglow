@@ -239,9 +239,23 @@ it("scopes article typography without restyling headings in embedded components"
 
 it("lets card content determine height and composes existing surface colours", () => {
   const card = fixture(
-    `<article class="ag-card-content ag-paper" style="width:344px"><p class="ag-card-content__overline">Overline</p><h2 class="ag-card-content__title">Card title</h2><div class="ag-card-content__body"><p>Description</p></div><footer class="ag-card-content__actions"><button type="button" class="ag-button" data-variant="flat">Open</button></footer></article>`
+    `<article class="ag-card-content ag-paper" style="width:311px"><p class="ag-card-content__overline">Overline</p><div class="ag-card-content__main"><h2 class="ag-card-content__title">Card title</h2><div class="ag-card-content__body"><p>Description</p></div></div><footer class="ag-card-content__actions"><button type="button" class="ag-button" data-variant="flat">Open</button></footer></article>`
   );
+  const overline = card.querySelector(".ag-card-content__overline");
+  const main = card.querySelector(".ag-card-content__main");
+  const title = card.querySelector("h2");
+  const body = card.querySelector(".ag-card-content__body");
+  const actions = card.querySelector(".ag-card-content__actions");
+  const button = card.querySelector("button");
   const height = bounds(card).height;
+  expect(bounds(overline).top - bounds(card).top).to.equal(8);
+  expect(bounds(main).top - bounds(overline).bottom).to.equal(4);
+  expect(bounds(body).top - bounds(title).bottom).to.equal(6);
+  expect(bounds(actions).top - bounds(main).bottom).to.equal(4);
+  expect(bounds(card).bottom - bounds(actions).bottom).to.equal(8);
+  expect(bounds(title).left - bounds(card).left).to.equal(14);
+  expect(style(button).fontWeight).to.equal("700");
+  expect(parseFloat(style(button).fontSize)).to.be.closeTo(16 / 1.2, 0.02);
   expect(style(card).backgroundColor).to.equal("rgb(255, 255, 255)");
   expect(parseFloat(style(card.querySelector("h2")).fontSize)).to.be.closeTo(
     16 * 1.2 ** 3,
@@ -250,7 +264,16 @@ it("lets card content determine height and composes existing surface colours", (
   card.querySelector(".ag-card-content__body p").textContent =
     "A longer description that wraps across several lines. ".repeat(10);
   expect(bounds(card).height).to.be.greaterThan(height);
+  card.style.width = "180px";
+  button.textContent = "A very long action label that must fit inside the card";
   expect(card.scrollWidth).to.equal(card.clientWidth);
+  title.hidden = true;
+  body.hidden = true;
+  expect(style(main).display).to.equal("none");
+  expect(bounds(actions).top - bounds(overline).bottom).to.equal(4);
+  button.hidden = true;
+  expect(style(actions).display).to.equal("none");
+  expect(bounds(card).height).to.equal(bounds(overline).height + 16);
 });
 
 const application = () =>

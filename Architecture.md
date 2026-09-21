@@ -66,6 +66,8 @@ The `interact/text-field` recipe retains native input editing, types, validation
 
 ## Compatibility
 
+Card content groups its title and body inside `ag-card-content__main`, between the optional overline and action row. The body has 6px vertical margins, while sections use the shared 4px spacing token. It remains a native HTML/CSS recipe and composes existing buttons and surfaces. Update earlier flat card-content markup by wrapping its title and body in the main section.
+
 Slider endpoint-label markup (`ag-slider__labels` and `ag-slider__label`) has been replaced by transient value tooltips. Remove that old decorative markup when updating consumers.
 
 The complete `ag/css` and `ag/scss` entry points, existing `.ag-*` classes, data attributes, helper exports and CSS custom properties remain available. Previous flat Sass modules forward their original public members and retain their previous CSS side effects. New consumers can use category entries or pure modules as documented in [Usage.md](Usage.md#scss-mixins).
