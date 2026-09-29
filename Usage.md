@@ -9,6 +9,7 @@ This guide describes the current consumer API. New components and changes to exi
 - [Frames and typography](#frames-and-typography)
 - [Application and content layouts](#application-and-content-layouts)
 - [Articles and card content](#articles-and-card-content)
+- [Images](#images)
 - [Avatars](#avatars)
 - [Icons](#icons)
 - [Buttons](#buttons)
@@ -66,6 +67,7 @@ Recipes are grouped by their purpose. **Frame** arranges and contains other elem
 | Frames and typography                       | Backgrounds, colour, depth and type styles                                               | Nothing required                                                                                             |
 | Application, master-detail and card layouts | Responsive arrangement of semantic regions                                               | Your application chooses which regions to render or hide                                                     |
 | Articles and card content                   | Scoped headings, body text, content spacing and action layout                            | Nothing required                                                                                             |
+| Images | Native image URLs, alternative text, captions and responsive sizing | `enhanceImage` synchronizes the optional blurred backlight |
 | Avatars                                     | Photo, blank and static-initials variants, shapes and sizes                              | `enhanceAvatar` derives initials from `name`, fits letters and handles photo fallback                        |
 | Icons                                       | Feather glyphs, inherited colour and configurable size                                  | Nothing required                                                                                             |
 | Buttons                                     | Appearance, focus, activation and native form actions                                    | Your application's action handlers                                                                           |
@@ -117,7 +119,9 @@ These surface classes supply appearance. Add one of the layout recipes below whe
 }
 ```
 
-Use `ag-body` for body text, `ag-caption` for captions and `ag-h1` through `ag-h5` for heading styles. Choose actual heading elements for the document hierarchy; a class does not add heading semantics. The default font stack prefers Lato, with system fallbacks. Supply Lato from your application if you want that typeface. The Avatar recipe separately bundles Comfortaa for its initials treatment.
+Use `ag-body` for body text, `ag-caption` for captions and `ag-h1` through `ag-h5` for heading styles. Choose actual heading elements for the document hierarchy; a class does not add heading semantics. Afterglow bundles Lato WOFF2 fonts with explicit weight mappings: 100 Hairline, 200 Thin, 300 Light, 400 Regular, 500 Medium, 600 Semibold, 700 Bold, 800 Heavy and 900 Black, including italics. No installed font or external font service is required. The Avatar recipe separately bundles Comfortaa for its initials treatment.
+
+The full stylesheet and shared theme include the font declarations. When serving compiled CSS directly, keep `assets/lato/` beside `afterglow.css`; bundlers can resolve these URLs for you. Faces load only when used, with system fallbacks displayed while loading (`font-display: swap`). Override `--body-font-stack` and `--title-font-stack` to use your own typeface. Pure Sass mixins remain free of CSS output: load `foundation/theme` for the default theme and fonts, or `foundation/fonts` for the fonts alone. Bundled fonts include their SIL Open Font Licence.
 
 ## Application and content layouts
 
@@ -205,6 +209,78 @@ In Storybook, visibility follows the text: clear `overlineText`, `title`, `textC
 The card uses `8px` vertical padding and `4px` between sections. The body has `6px` vertical margins within the main section. The overline and main section have `16px` horizontal padding; action labels align with them through the buttons' padding. The title has a `2px` optical adjustment toward the inline start and uses Afterglow's third heading size and light weight. The body uses the smaller body size, and actions use bold smaller body text. Use the heading tag that fits your document hierarchy. Shared grid, typography and surface tokens supply the base styles.
 
 Width and height follow the available space and content; the default Storybook sample is `311px` wide. Text and actions wrap in narrower containers. Compose existing `ag-button` elements for any actions and attach ordinary click handlers or use links for navigation; no behaviour helper or Web Component is required. For selective styles, load `present` for the content, `interact` for the buttons and `frame` if adding a surface class. **Present / Card Content** provides editable text controls, optional-content examples and responsive layouts; **Present / Article** demonstrates longer-form content.
+
+## Images
+
+`ag-image` belongs to **Present**. Use a native `figure`, `img` and optional `figcaption`. Assign the image URL through the image's `src` attribute. The image fills its frame with `object-fit: cover`; meaningful alternative text belongs in `alt`, independently of the visible title.
+
+```html
+<figure id="destination-photo" class="ag-image" data-backlight>
+  <img class="ag-image__picture" src="/photos/lake.jpg"
+       alt="Trees reflected in a lake under an evening sky.">
+  <figcaption class="ag-image__caption">
+    <p class="ag-image__overline">Vancouver</p>
+    <h3 class="ag-image__title">Canada</h3>
+  </figcaption>
+</figure>
+```
+
+Omit the title or overline when its text is empty, and omit the caption when both are empty. Storybook's `title` and `overlineText` controls do this automatically, including whitespace-only values. Use the heading level appropriate to your page; the title's visual styling is independent of its tag. The radial scrim appears only with visible caption content. Long captions wrap and can scroll inside the image if necessary.
+
+### Backlight and URL changes
+
+The image and caption need no JavaScript. The optional `enhanceImage` helper creates a decorative blurred copy and keeps it synchronized with the loaded image:
+
+```ts
+import { enhanceImage } from "ag";
+
+const photo = enhanceImage(document.querySelector<HTMLElement>("#destination-photo")!);
+photo.imageUrl = "/photos/forest.jpg";
+photo.backlight = false;
+photo.update({ imageUrl: "/photos/coast.jpg", backlight: true });
+photo.image.alt = "Waves breaking against a rocky coast.";
+
+// When removing the view:
+photo.destroy();
+```
+
+Pass `imageUrl` and `backlight` in the initial options if preferred. Omitted options preserve the authored source and `data-backlight` flag. Backlight is enabled by the presence of `data-backlight` or by setting `backlight: true`; remove the attribute or set the property to `false` to disable it. A missing flag leaves it off. The default Storybook example enables it.
+
+| Member | Purpose |
+| ------ | ------- |
+| `image` | Native image for `alt`, `loading`, `srcset`, `sizes` and other image attributes |
+| `imageUrl` | Read or assign `src`; assignment clears `srcset`/`sizes`, and an empty string removes the source |
+| `backlight` | Read or set the boolean backlight flag |
+| `update(options?)` | Apply optional settings or refresh from the loaded image |
+| `destroy()` | Remove the generated copy and release observers/listeners; preserve the main image and caption |
+
+Native changes to `src`, `srcset` and `sizes` are observed. The helper copies the successfully loaded `currentSrc`, so responsive source selection is retained. Empty or failed sources hide the backlight until a valid image loads. The copy has empty alternative text, is hidden from assistive technology and does not intercept pointer input. No canvas or pixel sampling is used. Repeated enhancement returns the existing controller. If a decorative copy was authored in the markup, the helper reuses it and restores its original attributes on cleanup.
+
+For static HTML without a helper, place a second image before the main image, using the same URL:
+
+```html
+<img class="ag-image__backlight" src="/photos/lake.jpg"
+     alt="" aria-hidden="true" draggable="false">
+```
+
+Keep `data-backlight` on the figure. In this mode your application must update both URLs and handle failures itself. Without backlight, keep only the main image and caption.
+
+### Image sizing and theme
+
+The default frame is `328 × 170px`, capped at its container's width. Override the figure's `inline-size` and `--image-aspect-ratio` for another size or shape. The corners use an `8px` radius. The caption sits at the bottom with a light H3 title and a smaller, partially transparent overline. Keep space around the frame for the blur; an ancestor with clipped overflow will cut it off.
+
+| CSS token | Default |
+| --------- | ------- |
+| `--image-width` | `328px` |
+| `--image-aspect-ratio` | `328 / 170` |
+| `--image-radius` | `8px` |
+| `--image-backlight-blur` | `16px` |
+| `--image-caption-color` | `#f9f9f6` |
+| `--image-shadow` | Two subtle elevation shadows |
+
+Set `--image-position` (for example `center top`) to adjust the crop for both images. Shared typography tokens control text sizing. In forced-colour mode, the glow is hidden and the caption uses system colours. Load `present/image.classes` for this recipe alone, or use the pure `image.image` mixin from `present/image.mixins` with the shared theme.
+
+**Present / Image** includes URL and text controls, backlight toggling, caption options, responsive layouts, live URL changes and a native HTML example. The bundled photograph is only sample content; consumers provide their own URL.
 
 ## Avatars
 

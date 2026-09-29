@@ -49,7 +49,7 @@ it("keeps theme defaults and native hidden when loading individual categories", 
       "ag-chip",
     ],
     indicate: ["ag-notification", "ag-progress", "ag-progress__bar"],
-    present: ["ag-article", "ag-card-content", "ag-icon"],
+    present: ["ag-article", "ag-card-content", "ag-icon", "ag-image"],
   };
   for (const [category, classes] of Object.entries(categories)) {
     const frame = document.createElement("iframe");

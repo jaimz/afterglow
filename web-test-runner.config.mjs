@@ -3,6 +3,7 @@ import { playwrightLauncher } from "@web/test-runner-playwright";
 import { compile } from "sass";
 import { readFileSync, readdirSync } from "node:fs";
 const featherFiles = new Set(readdirSync("src/styles/assets/feather"));
+const latoFiles = new Set(readdirSync("src/styles/assets/lato"));
 const css = compile("src/styles/afterglow.scss").css;
 const categoryStyles = new Map(
   ["frame", "indicate", "interact", "present"].map((category) => [
@@ -24,6 +25,15 @@ export default {
           return { body: css, type: "css" };
         if (categoryStyles.has(context.path))
           return { body: categoryStyles.get(context.path), type: "css" };
+        if (
+          context.path.startsWith("/assets/lato/") &&
+          context.path.endsWith(".woff2") &&
+          latoFiles.has(context.path.slice("/assets/lato/".length))
+        )
+          return {
+            body: readFileSync(`src/styles${context.path}`),
+            type: "font/woff2",
+          };
         if (
           context.path.startsWith("/assets/feather/") &&
           context.path.endsWith(".svg") &&

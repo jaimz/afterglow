@@ -1,4 +1,5 @@
 @use "tokens" as t;
+@use "fonts";
 
 // This is the only module that emits the default theme.
 :where(:root) {

@@ -8,7 +8,7 @@ Afterglow groups styles and components by their purpose. Native HTML supplies se
 | `frame`      | Arrange and contain other elements      | Background, surface, panel, paper, application grid, master-detail, structural card, dialog |
 | `indicate`   | Reflect changing or transient state     | Notification, linear/circular/staged progress and status colours                              |
 | `interact`   | Accept user input                       | Button, FAB, removable chips, checkbox, radio, switch, slider, textarea, text field, navigation links        |
-| `present`    | Display lasting content                 | Article typography, card content, avatars and reusable icons                                 |
+| `present`    | Display lasting content                 | Article typography, card content, avatars, images and reusable icons                                 |
 
 Choose a component's category by its primary purpose. A notification remains in `indicate` even though it contains a dismiss button; that button is an interaction within a status presentation. A structural card belongs to `frame`, while its optional text treatment belongs to `present`.
 
@@ -50,6 +50,8 @@ Generic layout mixins use logical dimensions and honour their gap arguments. Mot
 
 Asset URLs remain in the root `_assets.scss` module so both Vite's source import and the standalone CSS build can resolve the same exported files. The build copies `assets/` beside `afterglow.css`; do not move the CSS away from that directory when serving it directly.
 
+The shared `foundation/theme` loads `foundation/fonts` once per compilation. It declares bundled Lato WOFF2 faces for weights 100–900, normal and italic, with explicit mappings and no `local()` source. This avoids platform-dependent weight matching against installed fonts. Pure token and mixin modules still emit no CSS; custom compositions can load `foundation/fonts` independently. Font files and their licence live in `assets/lato/`.
+
 The reusable `present/icon` recipe applies Feather SVG masks to native elements. It inherits colour, uses the `icon-size` token and composes with existing control child-spacing classes. `_assets.scss` forwards the generated root `_feather.scss` URL map. Run `bun run build:icons` after changing the supplied files; the style tests detect a stale catalogue. Pure icon mixins can emit a selected subset of names or style a consumer selector. Existing component-specific assets remain available for their established visual treatments.
 
 The `indicate/progress` recipe retains native `progress` value/max semantics and label association. CSS styles the browser fill and track; `:indeterminate` drives a decorative animated segment on the wrapper. No helper, duplicate ARIA values or percentage custom property is needed. The full recipe includes reduced-motion, error, RTL and forced-colour treatments.
@@ -63,6 +65,8 @@ The `interact/chip` recipe composes native text, an optional leading icon or a c
 The `interact/slider` recipe uses one native range input for a single value, or two inputs with `data-range` for an interval. `enhanceSlider` owns the fill, unnumbered marks and temporary value bubbles. Native inputs retain values, submission, keyboard focus and thumb dragging; the helper coordinates shared bounds, prevents crossing and handles track clicks for the pair. Keep each handle's accessible name distinct and preserve its DOM order.
 
 The `interact/text-field` recipe retains native input editing, types, validation and form participation. CSS owns standard/backdrop treatments, an independent `data-compact` size flag, placeholder-style labels, optional icon slots and status glyphs. Every variant has a full border and shows its label inside the empty input, preserving the accessible name when populated. `enhanceTextField` optionally adds inline native/custom validation, persistent application errors and reset/cleanup handling; it does not replace native values or events. The helper owns its generated error description and restores externally supplied validation on cleanup.
+
+The `present/image` recipe composes a native image and optional caption. `enhanceImage` synchronizes an inaccessible decorative copy with the successfully loaded `currentSrc`, avoiding canvas sampling and retaining native responsive source selection. Image URLs remain native `src` values, and title/overline presence is determined by supplied text. The backlight is opt-in through `data-backlight`.
 
 ## Compatibility
 
@@ -85,6 +89,7 @@ The **Afterglow** page of the **Mobile** Figma file remains the visual authority
 | Textarea                  | [TextArea 143:107](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=143-107)     |
 | Article headings and body | [Type Ramp Mobile 115:4](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=115-4) |
 | Navigation links          | [Menu Item 217:1](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=217-1)        |
+| Image | [Image 252:288](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=252-288) |
 | Card content              | [Card content 235:17](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=235-17)   |
 | Floating action button    | [FAB 284:1](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=284-1)              |
 | Avatar                    | [Avatar 204:112](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=204-112)       |

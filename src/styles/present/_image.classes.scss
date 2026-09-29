@@ -1,0 +1,5 @@
+@use "../foundation/theme";
+@use "image.mixins" as recipe;
+.ag-image {
+  @include recipe.image;
+}

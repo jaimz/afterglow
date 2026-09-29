@@ -1,0 +1,108 @@
+@use "../foundation/tokens" as t;
+@use "../foundation/typography.mixins" as type;
+
+// The figure stays unclipped so the decorative backlight can extend beyond it.
+@mixin image {
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  inline-size: t.token("image-width");
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  aspect-ratio: t.token("image-aspect-ratio");
+  margin: 0;
+  border-radius: t.token("image-radius");
+  font-family: t.$bodyFontStack;
+
+  > .ag-image__picture {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    object-position: var(--image-position, center);
+    border-radius: inherit;
+    background: t.$surface;
+    box-shadow: t.token("image-shadow");
+  }
+  > .ag-image__backlight {
+    position: absolute;
+    z-index: -1;
+    inset-inline: 6px;
+    inset-block-start: 8px;
+    inline-size: calc(100% - 12px);
+    block-size: calc(100% + 4px);
+    object-fit: cover;
+    object-position: var(--image-position, center);
+    border-radius: inherit;
+    filter: blur(#{t.token("image-backlight-blur")});
+    pointer-events: none;
+    user-select: none;
+  }
+  &:not([data-backlight]) > .ag-image__backlight,
+  > [hidden] {
+    display: none;
+  }
+
+  // A radial scrim provides contrast only when there is visible caption content.
+  &::after {
+    content: none;
+  }
+  // Keep the direct caption check separate so removal invalidates the scrim in Firefox.
+  &:has(> .ag-image__caption:not([hidden])):has(> .ag-image__caption
+      > :not([hidden]):not(:empty))::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      ellipse 82.62% 307.57% at 17.38% 87.06%,
+      rgba(0, 0, 0, 0.4),
+      transparent 68.18%
+    );
+    pointer-events: none;
+  }
+  > .ag-image__caption {
+    position: absolute;
+    z-index: 1;
+    inset-inline: 24px 16px;
+    inset-block-end: 4px;
+    max-block-size: calc(100% - 8px);
+    overflow: auto;
+    overflow-wrap: anywhere;
+    color: t.token("image-caption-color");
+    > .ag-image__overline {
+      margin: 0;
+      margin-inline-start: 2px;
+      font-size: t.$captionTextSize;
+      line-height: normal;
+      opacity: 0.75;
+    }
+    > .ag-image__title {
+      @include type.headline(3);
+      margin: 0;
+      color: inherit;
+    }
+    > :is([hidden], :empty) {
+      display: none;
+    }
+  }
+  > .ag-image__caption:not(:has(> :not([hidden]):not(:empty))) {
+    display: none;
+  }
+  &[hidden] {
+    display: none;
+  }
+  @media (forced-colors: active) {
+    > .ag-image__backlight,
+    &::after {
+      display: none;
+    }
+    > .ag-image__caption {
+      background: Canvas;
+      color: CanvasText;
+      > .ag-image__overline {
+        opacity: 1;
+      }
+    }
+  }
+}

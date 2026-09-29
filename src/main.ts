@@ -24,3 +24,5 @@ export type {
 } from "./behaviors/notification";
 export { enhanceAvatar, getAvatarInitials } from "./behaviors/avatar";
 export type { AvatarController, AvatarOptions } from "./behaviors/avatar";
+export { enhanceImage } from "./behaviors/image";
+export type { ImageController, ImageOptions } from "./behaviors/image";

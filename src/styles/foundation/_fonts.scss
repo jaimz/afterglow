@@ -1,0 +1,35 @@
+@use "../assets";
+
+// Explicit webfont faces avoid platform-dependent matching of installed Lato
+// fonts. Do not add local() sources: older releases can select Hairline for 300.
+// Browsers fetch only the weights and styles used by the page.
+@each $weight, $face in (
+  100: "Hairline",
+  200: "Thin",
+  300: "Light",
+  400: "Regular",
+  500: "Medium",
+  600: "Semibold",
+  700: "Bold",
+  800: "Heavy",
+  900: "Black"
+) {
+  @each $style in (normal, italic) {
+    $file: $face;
+    @if $style == italic {
+      @if $weight == 400 {
+        $file: "Italic";
+      } @else {
+        $file: "#{$face}Italic";
+      }
+    }
+
+    @font-face {
+      font-family: "Lato";
+      src: url("#{assets.$lato-font-path}/Lato-#{$file}.woff2") format("woff2");
+      font-weight: $weight;
+      font-style: $style;
+      font-display: swap;
+    }
+  }
+}
