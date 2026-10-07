@@ -1,0 +1,4 @@
+@use "../foundation/theme";
+@use "tag.mixins" as tag;
+
+@include tag.styles;

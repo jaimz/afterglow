@@ -1,0 +1,86 @@
+@use "../foundation/tokens" as t;
+
+// Use a span for annotation or a native link/button for an application action.
+@mixin tag {
+  display: inline-flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-inline-size: min(#{t.token("tag-min-width")}, 100%);
+  max-inline-size: 100%;
+  min-block-size: t.token("tag-height");
+  margin: 0;
+  padding: 5px t.token("tag-padding-inline");
+  border: 0;
+  border-radius: t.token("tag-radius");
+  appearance: none;
+  background: t.$ctrlFillSolid;
+  color: t.$onCtrlFillSolid;
+  font-family: t.$bodyFontStack;
+  font-size: t.$captionTextSize;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 14px;
+  text-align: center;
+  text-decoration: none;
+  text-shadow: none;
+  vertical-align: middle;
+
+  &[data-variant="backdrop"] {
+    background: t.$onBackdrop;
+    color: t.$onSurface;
+  }
+
+  &:is(button, a[href]) {
+    cursor: pointer;
+  }
+  &:focus-visible {
+    outline: 2px solid t.$ctrlText;
+    outline-offset: 2px;
+    &[data-variant="backdrop"] {
+      outline-color: t.$onBackdrop;
+    }
+  }
+  &:disabled {
+    opacity: t.$disabledOpacity;
+    cursor: default;
+  }
+
+  @media (forced-colors: active) {
+    &,
+    &[data-variant] {
+      background: Canvas;
+      color: CanvasText;
+      outline: 1px solid CanvasText;
+      outline-offset: -1px;
+      &:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+      }
+      &:disabled {
+        opacity: 1;
+        color: GrayText;
+        outline-color: GrayText;
+      }
+    }
+  }
+  &[hidden] {
+    display: none !important;
+  }
+}
+
+@mixin styles {
+  .ag-tag {
+    @include tag;
+  }
+  .ag-tag__label {
+    min-inline-size: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .ag-tag > [hidden] {
+    display: none !important;
+  }
+}

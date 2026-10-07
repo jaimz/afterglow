@@ -8,7 +8,7 @@ Afterglow groups styles and components by their purpose. Native HTML supplies se
 | `frame`      | Arrange and contain other elements      | Background, surface, panel, paper, application grid, master-detail, structural card, dialog |
 | `indicate`   | Reflect changing or transient state     | Notification, linear/circular/staged progress and status colours                              |
 | `interact`   | Accept user input                       | Button, FAB, removable chips, checkbox, radio, switch, slider, textarea, text field, navigation links        |
-| `present`    | Display lasting content                 | Article typography, card content, avatars, images and reusable icons                                 |
+| `present`    | Display lasting content                 | Article typography, card content, avatars, images, category tags and reusable icons                                 |
 
 Choose a component's category by its primary purpose. A notification remains in `indicate` even though it contains a dismiss button; that button is an interaction within a status presentation. A structural card belongs to `frame`, while its optional text treatment belongs to `present`.
 
@@ -68,6 +68,8 @@ The `interact/text-field` recipe retains native input editing, types, validation
 
 The `present/image` recipe composes a native image and optional caption. `enhanceImage` synchronizes an inaccessible decorative copy with the successfully loaded `currentSrc`, avoiding canvas sampling and retaining native responsive source selection. Image URLs remain native `src` values, and title/overline presence is determined by supplied text. The backlight is opt-in through `data-backlight`.
 
+The `present/tag` recipe styles compact category annotations with default and backdrop appearances. Tags have no selected state. Static annotations use spans; native links/buttons can supply application actions. Applied filter tags may compose with a text field as siblings of its input, with hidden form inputs carrying their values. Applications own filtering and token creation/removal; the recipe does not introduce an editable composite control.
+
 ## Compatibility
 
 Card content groups its title and body inside `ag-card-content__main`, between the optional overline and action row. The body has 6px vertical margins, while sections use the shared 4px spacing token. It remains a native HTML/CSS recipe and composes existing buttons and surfaces. Update earlier flat card-content markup by wrapping its title and body in the main section.
@@ -98,6 +100,7 @@ The **Afterglow** page of the **Mobile** Figma file remains the visual authority
 | Staged progress           | [Staged Progress 146:168](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=146-168) |
 | Slider                    | [Slider 147:2](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=147-2)          |
 | Chip                      | [Chip 151:12](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=151-12)           |
+| Tag                       | [Tag 309:0](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=309-0)               |
 | Text field                | [TextField 143:33](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=143-33)     |
 
 The application grid, master-detail arrangement and structural card are flexible layout recipes inspired by Tai. Their widths, responsive breakpoint and composition rules are library choices, not assertions that Figma specifies a complete responsive application shell. They use existing Afterglow surfaces. Figma's fixed sample dimensions become content-driven sizing where needed: textareas have a minimum height, cards grow with content, and navigation labels can wrap.

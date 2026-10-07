@@ -2,6 +2,10 @@
 @use "sass:list";
 
 $defaults: (
+  "tag-height": 24px,
+  "tag-min-width": 64px,
+  "tag-padding-inline": 16px,
+  "tag-radius": 12px,
   "image-width": 328px,
   "image-aspect-ratio": list.slash(328, 170),
   "image-radius": 8px,

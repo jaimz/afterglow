@@ -12,6 +12,7 @@ This guide describes the current consumer API. New components and changes to exi
 - [Images](#images)
 - [Avatars](#avatars)
 - [Icons](#icons)
+- [Tags](#tags)
 - [Buttons](#buttons)
 - [Chips](#chips)
 - [Textareas](#textareas)
@@ -70,6 +71,7 @@ Recipes are grouped by their purpose. **Frame** arranges and contains other elem
 | Images | Native image URLs, alternative text, captions and responsive sizing | `enhanceImage` synchronizes the optional blurred backlight |
 | Avatars                                     | Photo, blank and static-initials variants, shapes and sizes                              | `enhanceAvatar` derives initials from `name`, fits letters and handles photo fallback                        |
 | Icons                                       | Feather glyphs, inherited colour and configurable size                                  | Nothing required                                                                                             |
+| Tags                                        | Compact category annotations and applied filter tokens, with default/backdrop appearances | Your application manages the filters; no helper required |
 | Buttons                                     | Appearance, focus, activation and native form actions                                    | Your application's action handlers                                                                           |
 | Chips                                       | Five visual variants, optional leading icons or circular avatars and a native remove button | Your application handles removal; `enhanceAvatar` supplies automatic initials and photo fallback             |
 | Textareas                                   | Labels, editing, resizing, validation, disabled/read-only states and form participation  | Nothing required                                                                                             |
@@ -485,6 +487,40 @@ The full stylesheet and the `present` category include the catalogue. Use `prese
 ```
 
 `icon.glyph("name")` changes the image on a selector that already includes `icon.icon`. Unknown names in Sass are compile errors. **Present / Icon** demonstrates sizing, colour and composition; **Interact / Button / With Icons** shows common button arrangements.
+
+## Tags
+
+Tags annotate content with a category or display an applied filter. Use a plain `span`:
+
+```html
+<span class="ag-tag"><span class="ag-tag__label">Design</span></span>
+<span class="ag-tag" data-variant="backdrop">
+  <span class="ag-tag__label">Research</span>
+</span>
+```
+
+There are two appearances: default and backdrop. Both use their full-strength fill; tags have no separate selected state or selection flag.
+
+Tags can sit alongside an input inside an existing text field's control wrapper. A native input cannot contain HTML, so the tags and input are siblings. Hidden inputs carry the applied filter values when submitting a form:
+
+```html
+<label for="note-search">Search notes</label>
+<div class="ag-text-field">
+  <div class="ag-text-field__control" style="flex-wrap:wrap;padding-block:8px">
+    <span class="ag-tag"><span class="ag-tag__label">Design</span></span>
+    <input type="hidden" name="category" value="design">
+    <input class="ag-text-field__input" id="note-search" name="query"
+      type="search" placeholder="Search…" autocomplete="off"
+      style="flex:1 1 120px;min-block-size:24px">
+  </div>
+</div>
+```
+
+Read filter values with `new FormData(form).getAll("category")`. Tag creation, removal and search results belong to the application; keep any hidden inputs in sync with the displayed tags. The **Filter Field** story demonstrates applied filters with editable text. Use `ag-tag` on an anchor for category navigation, or a `button type="button"` for an action. Plain annotations are not interactive or keyboard-focusable.
+
+Tags are at least `24px` high and `64px` wide, grow with their text and stay within their container. The `ag-tag__label` child truncates long labels with an ellipsis without removing their accessible text. Lay out collections with wrapping flex/grid and a gap. RTL, keyboard focus, native button disabled/hidden and forced-colour states are supported. No icon, close button or Web Component is required.
+
+Size tokens are `--tag-height`, `--tag-min-width`, `--tag-padding-inline` and `--tag-radius`. Typography uses the body font and caption size. Default colours use `--ctrl-fill-solid` and `--on-ctrl-fill-solid`; backdrop colours use `--onBackdrop` and `--onSurface`. Load `present/tag.classes` for this recipe alone, or compose the pure `tag`/`styles` mixins from `present/tag.mixins` with the shared theme. A composed text field also needs the `interact` styles.
 
 ## Buttons
 
