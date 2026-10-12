@@ -563,6 +563,8 @@ Use a separate native button recipe for the circular `56 × 56px` floating actio
 
 The add icon is included with the stylesheet. You can supply your own decorative image with `class="ag-fab__icon"` and `alt=""`; the icon box is `24 × 24px`. Use native `disabled` when unavailable. The application owns the action and placement; the class does not pin the button to a screen corner. **Interact / FAB** shows native activation and the disabled state.
 
+The fill uses `--ctrl-fill-solid` at 60% opacity with background blur, a cyan inner glow and a soft drop shadow. Its appearance therefore changes with the surface behind it. The 1px inside stroke overlays the glow; it does not reduce the button or icon dimensions. `--fab-border`, `--fab-inner-glow` and `--fab-blur` control these details. The Storybook **background** control and **Surfaces** story compare dark, panel and backdrop surfaces; these are preview settings, not additional FAB variants.
+
 ## Chips
 
 A chip represents an item such as a location, category or person. Use a native container with an optional remove button:

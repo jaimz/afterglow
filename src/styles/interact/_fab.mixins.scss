@@ -4,6 +4,7 @@
 // Floating action button, including its translucent fill and add icon.
 @mixin button {
   appearance: none;
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -12,7 +13,7 @@
   block-size: 56px;
   flex: 0 0 auto;
   padding: 0;
-  border: 1px solid t.token("fab-border");
+  border: 0;
   border-radius: 50%;
   background: color-mix(in srgb, #{t.$ctrlFillSolid} 60%, transparent);
   color: t.$onCtrlFillSolid;
@@ -20,6 +21,17 @@
     inset 0 1px 3px t.token("fab-inner-glow");
   backdrop-filter: blur(#{t.token("fab-blur")});
   cursor: pointer;
+  // Overlay the inside stroke after the fill and inner glow. A CSS border would
+  // inset the glow's clipping edge by 1px and leave a separate outer ring.
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    box-sizing: border-box;
+    border: 1px solid t.token("fab-border");
+    border-radius: inherit;
+    pointer-events: none;
+  }
   &:hover:not(:disabled) {
     background: color-mix(in srgb, #{t.$ctrlFillSolidHi} 60%, transparent);
   }
@@ -37,8 +49,21 @@
   @media (forced-colors: active) {
     background: ButtonFace;
     color: ButtonText;
-    border-color: ButtonText;
     box-shadow: none;
+    backdrop-filter: none;
+    &::after {
+      border-color: ButtonText;
+    }
+    &:is(:hover, :active):not(:disabled) {
+      background: ButtonFace;
+    }
+    &:disabled {
+      opacity: 1;
+      color: GrayText;
+      &::after {
+        border-color: GrayText;
+      }
+    }
     &:focus-visible {
       outline-color: Highlight;
     }
@@ -60,6 +85,6 @@
     }
   }
   .ag-fab[hidden] {
-    display: none;
+    display: none !important;
   }
 }

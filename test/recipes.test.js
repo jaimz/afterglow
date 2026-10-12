@@ -191,6 +191,12 @@ it("makes the FAB a native 56px button with keyboard and disabled behaviour", as
   expect(bounds(button).width).to.equal(56);
   expect(bounds(button).height).to.equal(56);
   expect(bounds(button.firstElementChild).width).to.equal(24);
+  expect(bounds(button.firstElementChild).left - bounds(button).left).to.equal(16);
+  expect(style(button).borderTopWidth).to.equal("0px");
+  const rim = getComputedStyle(button, "::after");
+  expect(rim.borderTopWidth).to.equal("1px");
+  expect(rim.borderTopColor).to.equal("rgba(224, 224, 224, 0.19)");
+  expect(rim.pointerEvents).to.equal("none");
   let clicks = 0;
   button.addEventListener("click", () => clicks++);
   root.querySelector("#before").focus();
