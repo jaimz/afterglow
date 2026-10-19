@@ -9,6 +9,7 @@
     display: inline-flex;
     outline: none;
     font-family: #{t.$bodyFontStack};
+    text-shadow: none;
     line-height: #{t.$lineHeight};
     cursor: pointer;
     background: #{t.$ctrlFill};
@@ -30,7 +31,7 @@
   }
 
   .ag-button[data-dangerous] {
-    color: #{t.$error};
+    color: #{t.$danger};
   }
 
   .ag-button:disabled,
@@ -53,10 +54,6 @@
     background: #{t.$ctrlFillHi};
   }
 
-  .ag-button[data-variant="flat"][data-dangerous] {
-    color: #{t.$error};
-  }
-
   .ag-button[data-variant="flat"]:disabled,
   .ag-button[data-variant="flat"]:disabled:hover {
     opacity: #{t.$disabledOpacity};
@@ -77,16 +74,18 @@
     background: #{t.$ctrlFillSolidLo};
   }
 
-  .ag-button[data-variant="primary"][data-dangerous] {
-    background: #{t.$error};
-    color: #{t.$onError};
-  }
-
   .ag-button[data-variant="primary"]:disabled,
   .ag-button[data-variant="primary"]:disabled:hover {
     opacity: #{t.$disabledOpacity};
     background: #{t.$ctrlFillSolid};
     cursor: default;
+  }
+
+  // Keep the danger treatment through hover, activation and disabled states.
+  .ag-button[data-variant="primary"][data-dangerous],
+  .ag-button[data-variant="primary"][data-dangerous]:disabled:hover {
+    background: #{t.$danger};
+    color: #{t.$onDanger};
   }
 
   .ag-button[data-variant="outline"] {
@@ -99,11 +98,6 @@
 
   .ag-button[data-variant="outline"]:active {
     background: #{t.$ctrlFillActive};
-  }
-
-  .ag-button[data-variant="outline"][data-dangerous] {
-    border-color: #{t.$error};
-    color: #{t.$error};
   }
 
   .ag-button[data-variant="outline"]:disabled,

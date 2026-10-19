@@ -16,7 +16,7 @@ export default {
     isDisabled: { control: "boolean" },
     isAutoFocused: { control: "boolean" },
     ariaLabel: { control: "text" },
-    isDangerous: { control: "boolean" },
+    dangerous: { control: "boolean" },
     onClick: {
       action: "clicked",
       table: {
@@ -32,6 +32,7 @@ export const Default: any = Template.bind({});
 Default.args = {
   label: "Button Text",
   variant: "default",
+  dangerous: false,
   onClick: action("clicked"),
 } as ButtonArgs;
 
@@ -52,6 +53,25 @@ Flat.args = {
   ...Default.args,
   variant: "flat",
 };
+
+export const Dangerous = () => {
+  const root = element(
+    `<section style="display:flex;gap:16px;padding:32px;flex-wrap:wrap"></section>`
+  );
+  for (const variant of ["default", "flat", "outline", "primary"]) {
+    root.append(createButton({ label: "Delete", variant, dangerous: true }));
+    root.append(
+      createButton({
+        label: "Delete",
+        variant,
+        dangerous: true,
+        isDisabled: true,
+      })
+    );
+  }
+  return root;
+};
+Dangerous.parameters = { controls: { disable: true } };
 
 export const WithIcons = () => {
   const root =

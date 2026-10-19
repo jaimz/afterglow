@@ -13,18 +13,21 @@
 }
 
 @mixin surface {
+  text-shadow: none;
   background: #{t.$surface};
   color: #{t.$onSurface};
   box-shadow: #{t.$elevationShadow};
 }
 
 @mixin panel {
+  text-shadow: none;
   background: #{t.$panel};
   color: #{t.$onPanel};
   box-shadow: #{t.$elevationShadow};
 }
 
 @mixin paper {
+  text-shadow: none;
   background: #{t.$paper};
   color: #{t.$onPaper};
   box-shadow: #{t.$elevationShadow};

@@ -7,6 +7,7 @@
   gap: t.$frame-gridType;
   box-sizing: border-box;
   min-inline-size: 0;
+  text-shadow: none;
   font-family: t.$bodyFontStack;
   color: t.$onSurface;
   padding-block: t.$frame-gridY;
@@ -25,7 +26,7 @@
   // Title and body form one section, with spacing supplied by the body's margins.
   > .ag-card-content__main {
     > .ag-card-content__title {
-      @include type.headline(3);
+      @include type.headline(2);
       margin: 0;
 
       // Optical adjustment
@@ -34,7 +35,7 @@
     }
     > .ag-card-content__body {
       margin: 6px 0;
-      font-size: t.$body2TextSize;
+      font-size: t.$bodyTextSize;
       line-height: normal;
       > p {
         margin-block: 0 t.$frame-gridY;
@@ -48,6 +49,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: end;
     min-inline-size: 0;
     margin: 0;
     padding-inline-end: calc(#{t.$frame-gridX} * 2);

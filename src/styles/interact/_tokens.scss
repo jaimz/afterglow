@@ -1,5 +1,7 @@
 // Definitions only. The shared registry validates and declares these tokens.
 $defaults: (
+  "danger": #cf3558,
+  "on-danger": #f3eee6,
   "ctrl-border": rgba(110, 163, 176, 0.6),
   "ctrl-fill":
     radial-gradient(

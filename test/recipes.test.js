@@ -1,8 +1,11 @@
+import { createButton } from "../src/interact/Button/fixtures/createButton.ts";
 import { expect } from "@esm-bundle/chai";
 import { sendKeys, sendMouse, setViewport } from "@web/test-runner-commands";
 
 let root;
 const style = (element) => getComputedStyle(element);
+const bodySize = () =>
+  parseFloat(style(root).getPropertyValue("--body-text-size"));
 const bounds = (element) => element.getBoundingClientRect();
 const settle = () =>
   new Promise((resolve) =>
@@ -109,13 +112,16 @@ it("matches the textarea treatment and floats its label after property writes an
   expect(style(input).backgroundColor).to.equal("rgb(255, 255, 255)");
   expect(style(input).borderTopColor).to.equal("rgba(94, 140, 151, 0.5)");
   expect(style(input).paddingTop).to.equal("16px");
-  expect(style(label).fontSize).to.equal("16px");
+  expect(parseFloat(style(label).fontSize)).to.equal(bodySize());
   input.value = "Programmatically populated";
   await settle();
-  expect(parseFloat(style(label).fontSize)).to.be.closeTo(16 / 1.2, 0.02);
+  expect(parseFloat(style(label).fontSize)).to.be.closeTo(
+    bodySize() / 1.2,
+    0.02
+  );
   expect(parseFloat(style(input).paddingTop)).to.be.greaterThan(40);
   form.reset();
-  expect(style(label).fontSize).to.equal("16px");
+  expect(parseFloat(style(label).fontSize)).to.equal(bodySize());
 });
 
 it("respects native read-only and disabled textarea behaviour", async () => {
@@ -191,7 +197,9 @@ it("makes the FAB a native 56px button with keyboard and disabled behaviour", as
   expect(bounds(button).width).to.equal(56);
   expect(bounds(button).height).to.equal(56);
   expect(bounds(button.firstElementChild).width).to.equal(24);
-  expect(bounds(button.firstElementChild).left - bounds(button).left).to.equal(16);
+  expect(bounds(button.firstElementChild).left - bounds(button).left).to.equal(
+    16
+  );
   expect(style(button).borderTopWidth).to.equal("0px");
   const rim = getComputedStyle(button, "::after");
   expect(rim.borderTopWidth).to.equal("1px");
@@ -233,14 +241,18 @@ it("scopes article typography without restyling headings in embedded components"
   const article = root.querySelector("article");
   expect(style(article.firstElementChild).fontWeight).to.equal("300");
   expect(parseFloat(style(article.firstElementChild).fontSize)).to.be.closeTo(
-    16 * 1.2 ** 5,
-    0.02
+    bodySize() * 1.2 ** 5,
+    0.05
   );
-  expect(style(article.querySelector("p")).lineHeight).to.equal("24px");
+  expect(parseFloat(style(article.querySelector("p")).lineHeight)).to.equal(
+    bodySize() * 1.5
+  );
   expect(style(root.querySelector("#embedded")).fontWeight).to.equal(
     style(root.querySelector("#outside")).fontWeight
   );
-  expect(style(article.querySelector("textarea")).fontSize).to.equal("16px");
+  expect(
+    parseFloat(style(article.querySelector("textarea")).fontSize)
+  ).to.equal(bodySize());
 });
 
 it("lets card content determine height and composes existing surface colours", () => {
@@ -261,10 +273,13 @@ it("lets card content determine height and composes existing surface colours", (
   expect(bounds(card).bottom - bounds(actions).bottom).to.equal(8);
   expect(bounds(title).left - bounds(card).left).to.equal(14);
   expect(style(button).fontWeight).to.equal("700");
-  expect(parseFloat(style(button).fontSize)).to.be.closeTo(16 / 1.2, 0.02);
+  expect(parseFloat(style(button).fontSize)).to.be.closeTo(
+    bodySize() / 1.2,
+    0.02
+  );
   expect(style(card).backgroundColor).to.equal("rgb(255, 255, 255)");
   expect(parseFloat(style(card.querySelector("h2")).fontSize)).to.be.closeTo(
-    16 * 1.2 ** 3,
+    bodySize() * 1.2 ** 4,
     0.02
   );
   card.querySelector(".ag-card-content__body p").textContent =
@@ -349,4 +364,69 @@ it("preserves hidden on all new top-level recipes", () => {
     const element = fixture(`<div class="${className}" hidden></div>`);
     expect(style(element).display, className).to.equal("none");
   }
+});
+
+it("contains backdrop text shadows at surfaces and cards, including nested backdrops", () => {
+  const backdrop = fixture(`<section class="ag-background">
+    <h2>Backdrop heading</h2><p>Backdrop <span>text</span></p>
+    ${["ag-surface", "ag-panel", "ag-paper", "ag-card", "ag-card-content"]
+      .map(
+        (name) =>
+          `<div class="${name}"><p>Surface <span>text</span></p><section class="ag-background"><p>Nested backdrop</p></section></div>`
+      )
+      .join("")}
+  </section>`);
+  expect(style(backdrop.querySelector("h2")).textShadow).not.to.equal("none");
+  expect(style(backdrop.querySelector("p span")).textShadow).not.to.equal(
+    "none"
+  );
+  for (const surface of backdrop.querySelectorAll(":scope > div")) {
+    expect(
+      style(surface.querySelector("p span")).textShadow,
+      surface.className
+    ).to.equal("none");
+    expect(
+      style(surface.querySelector(":scope > .ag-background > p")).textShadow
+    ).not.to.equal("none");
+  }
+});
+
+it("uses an independent danger colour for every button variant and keeps native disabling", async () => {
+  root.style.setProperty("--error", "rgb(1, 2, 3)");
+  root.style.setProperty("--danger", "rgb(180, 30, 60)");
+  root.style.setProperty("--on-danger", "rgb(255, 255, 255)");
+  for (const variant of ["default", "flat", "outline", "primary"]) {
+    const button = createButton({ variant, dangerous: true });
+    root.append(button);
+    const assertDanger = () => {
+      expect(style(button).color, variant).to.equal(
+        variant === "primary" ? "rgb(255, 255, 255)" : "rgb(180, 30, 60)"
+      );
+      if (variant === "primary")
+        expect(style(button).backgroundColor).to.equal("rgb(180, 30, 60)");
+    };
+    assertDanger();
+    const box = bounds(button);
+    await sendMouse({ type: "move", position: [box.x + 5, box.y + 5] });
+    assertDanger();
+    await sendMouse({ type: "down" });
+    assertDanger();
+    await sendMouse({ type: "up" });
+    button.disabled = true;
+    assertDanger();
+    expect(style(button).opacity).to.equal("0.5");
+    let clicked = false;
+    button.onclick = () => {
+      clicked = true;
+    };
+    button.click();
+    expect(clicked).to.equal(false);
+    button.disabled = false;
+    button.toggleAttribute("data-dangerous", false);
+    expect(style(button).color).not.to.equal("rgb(180, 30, 60)");
+    button.remove();
+  }
+  expect(
+    createButton({ dangerous: false }).hasAttribute("data-dangerous")
+  ).to.equal(false);
 });

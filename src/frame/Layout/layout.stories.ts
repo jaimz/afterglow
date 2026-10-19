@@ -27,9 +27,19 @@ export const MasterDetail = () =>
 
 export const Card = () =>
   element(`<section class="ag-background ag-body" style="height:auto;box-sizing:border-box;padding:24px">
-  <article class="ag-card ag-panel" style="max-width:480px">
-    <header class="ag-card__header"><h2 class="ag-h3" style="margin:0">A useful frame</h2></header>
-    <div class="ag-card__body"><p style="margin:0">The card arranges a header, content and actions. Its colours and elevation come from the existing panel class.</p></div>
-    <footer class="ag-card__footer"><button class="ag-button" type="button">Cancel</button><button class="ag-button" type="button" data-variant="primary">Continue</button></footer>
+  <article class="ag-card ag-panel" aria-labelledby="layout-card-title" style="max-width:480px">
+    <div class="ag-card-content">
+      <p class="ag-card-content__overline">Notebook</p>
+      <div class="ag-card-content__main">
+        <h2 class="ag-card-content__title" id="layout-card-title">A useful frame</h2>
+        <div class="ag-card-content__body">
+          <p>The Card frames a Card Content child, which supplies the typography, spacing and actions. The panel class supplies the surface and elevation.</p>
+        </div>
+      </div>
+      <footer class="ag-card-content__actions">
+        <button class="ag-button" type="button" data-variant="flat">Cancel</button>
+        <button class="ag-button" type="button" data-variant="flat">Continue</button>
+      </footer>
+    </div>
   </article>
 </section>`);

@@ -10,7 +10,7 @@ $defaults: (
     "Segoe UI",
     sans-serif,
   ),
-  "body-text-size": 16px,
+  "body-text-size": 14px,
   "line-height": 1.5,
   "max-line-width": 72ch,
   "text-scale": 1.2,
@@ -35,7 +35,7 @@ $defaults: (
 
 $derived: (
   "body2-text-size": calc(var(--body-text-size) / var(--text-scale)),
-  "caption-text-size": calc(var(--body2-text-size) / var(--text-scale)),
+  "caption-text-size": calc(var(--body-text-size) / var(--text-scale)),
   "h1-text-size": calc(var(--h2-text-size) * var(--text-scale)),
   "h2-text-size": calc(var(--h3-text-size) * var(--text-scale)),
   "h3-text-size": calc(var(--h4-text-size) * var(--text-scale)),

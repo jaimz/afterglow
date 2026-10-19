@@ -101,6 +101,8 @@ Apply frame classes to containers with the semantics your page needs:
 | `ag-panel`      | Panel colour, foreground and shadow                                         |
 | `ag-paper`      | Paper colour, foreground and shadow                                         |
 
+Backdrop text shadows apply to text on `ag-background`, including headings and paragraphs. Cards, Card Content, buttons and the `ag-surface`, `ag-panel` and `ag-paper` surfaces reset the inherited text shadow. For a custom container with its own background, set `text-shadow: none` on that container.
+
 These surface classes supply appearance. Add one of the layout recipes below when you want Afterglow to arrange regions, or use your own application layout. Percentage heights need a containing block with an appropriate height.
 
 ```html
@@ -154,19 +156,24 @@ For a list and its selected detail:
 
 `--master-width` defaults to `240px`. The auxiliary region spans both columns. Set `data-orientation="vertical"` on `ag-master-detail` to stack the regions inside a narrow desktop view; they also stack automatically at the same `48rem` viewport breakpoint. Your application owns selection and detail rendering.
 
-A structural card arranges a header, body and footer without choosing a background:
+A structural card wraps a Card Content child. The content recipe supplies typography, spacing and actions; a separate surface class supplies the background and elevation:
 
 ```html
-<article class="ag-card ag-panel">
-  <header class="ag-card__header"><h2 class="ag-h3">Card title</h2></header>
-  <div class="ag-card__body">Card body</div>
-  <footer class="ag-card__footer">
-    <button type="button" class="ag-button">Open</button>
-  </footer>
+<article class="ag-card ag-panel" aria-labelledby="card-title">
+  <div class="ag-card-content">
+    <p class="ag-card-content__overline">Notebook</p>
+    <div class="ag-card-content__main">
+      <h2 class="ag-card-content__title" id="card-title">Card title</h2>
+      <div class="ag-card-content__body"><p>Card body</p></div>
+    </div>
+    <footer class="ag-card-content__actions">
+      <button type="button" class="ag-button" data-variant="flat">Open</button>
+    </footer>
+  </div>
 </article>
 ```
 
-Each region has `16px` padding by default; footer actions wrap and align to the end. Regions are optional. Compose `ag-panel`, `ag-paper` or another surface class separately. **Frame / Layouts** in Storybook demonstrates all three layouts using Afterglow's existing palette.
+Place `ag-card-content` directly inside `ag-card` so the content supplies its own padding. Omit unused content sections as described below. Compose `ag-panel`, `ag-paper` or another surface class separately. **Frame / Layouts** in Storybook demonstrates all three layouts using Afterglow's existing palette.
 
 ## Articles and card content
 
@@ -208,7 +215,7 @@ Overline, main content and actions are direct children of the card; title and bo
 
 In Storybook, visibility follows the text: clear `overlineText`, `title`, `textContent`, `actionOneLabel` or `actionTwoLabel` to omit that element. Whitespace-only text is also treated as empty. The main section and action row disappear when both of their text values are empty. When rendering native HTML in your application, apply the same check before including each region.
 
-The card uses `8px` vertical padding and `4px` between sections. The body has `6px` vertical margins within the main section. The overline and main section have `16px` horizontal padding; action labels align with them through the buttons' padding. The title has a `2px` optical adjustment toward the inline start and uses Afterglow's third heading size and light weight. The body uses the smaller body size, and actions use bold smaller body text. Use the heading tag that fits your document hierarchy. Shared grid, typography and surface tokens supply the base styles.
+The card uses `8px` vertical padding and `4px` between sections. The body has `6px` vertical margins within the main section. The overline and main section have `16px` horizontal padding; action labels align with them through the buttons' padding. The title has a `2px` optical adjustment toward the inline start and uses Afterglow's second heading size and light weight. The body uses the body size, and actions use bold smaller body text. Use the heading tag that fits your document hierarchy. Shared grid, typography and surface tokens supply the base styles.
 
 Width and height follow the available space and content; the default Storybook sample is `311px` wide. Text and actions wrap in narrower containers. Compose existing `ag-button` elements for any actions and attach ordinary click handlers or use links for navigation; no behaviour helper or Web Component is required. For selective styles, load `present` for the content, `interact` for the buttons and `frame` if adding a surface class. **Present / Card Content** provides editable text controls, optional-content examples and responsive layouts; **Present / Article** demonstrates longer-form content.
 
@@ -536,7 +543,7 @@ Size tokens are `--tag-height`, `--tag-min-width`, `--tag-padding-inline` and `-
 <a href="/settings" class="ag-button">Settings</a>
 ```
 
-`data-variant` accepts `default` (also used when omitted), `primary`, `outline` or `flat`. Add `data-dangerous` for destructive actions; remove the attribute to turn it off. `data-dangerous="false"` still has the attribute and therefore still applies the style.
+`data-variant` accepts `default` (also used when omitted), `primary`, `outline` or `flat`. Add `data-dangerous` for destructive actions; remove the attribute to turn it off. `data-dangerous="false"` still has the attribute and therefore still applies the style. In Storybook, the boolean control is `dangerous`. For native HTML rendered from a boolean, use `button.toggleAttribute("data-dangerous", dangerous)`. Default, flat and outlined buttons use danger-coloured text; primary buttons use a danger background with contrasting text. The `--danger` token initially matches error red (`#cf3558`) but can be themed independently; `--on-danger` controls text on a dangerous primary button. Disabled buttons retain the danger treatment with reduced opacity.
 
 Use explicit button types: `button` for application actions, `submit` for form submission and `reset` for native reset. Use an anchor with `href` for navigation. The native `disabled` attribute applies to buttons, not anchors; `aria-disabled` alone does not disable a link.
 
