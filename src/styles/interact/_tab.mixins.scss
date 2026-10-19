@@ -1,0 +1,81 @@
+@use "../foundation/tokens" as t;
+
+// A native button; selection is owned by the tabbed-view behaviour or the caller.
+@mixin tab {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  inline-size: t.token("tab-width");
+  padding: calc(#{t.$frame-gridY} * 2) calc(#{t.$frame-gridX} * 2);
+  border: 0;
+  border-block-end: 2px solid transparent;
+  background: transparent;
+  color: t.$onSurface;
+  font-family: t.$bodyFontStack;
+  font-size: t.token("tab-text-size");
+  font-weight: 400;
+  line-height: t.$lineHeight;
+  text-align: center;
+  text-shadow: none;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  &[aria-selected="true"] {
+    border-block-end-color: t.$ctrlText;
+  }
+  &:hover:not(:disabled):not([aria-disabled="true"]) {
+    background: t.token("selection-fill");
+  }
+  &:focus-visible {
+    outline: 2px solid t.$ctrlText;
+    outline-offset: -4px;
+  }
+  &:is(:disabled, [aria-disabled="true"]) {
+    opacity: t.$disabledOpacity;
+    cursor: default;
+  }
+  &[hidden] {
+    display: none !important;
+  }
+  @media (forced-colors: active) {
+    &[aria-selected="true"] {
+      border-block-end-color: Highlight;
+    }
+    &:focus-visible {
+      outline-color: Highlight;
+    }
+    &:is(:disabled, [aria-disabled="true"]) {
+      color: GrayText;
+    }
+  }
+}
+
+// Center tabs when they fit; allow horizontal scrolling without clipping the start.
+@mixin strip {
+  display: flex;
+  align-items: stretch;
+  gap: t.token("tab-strip-gap");
+  min-inline-size: 0;
+  overflow-x: auto;
+  background: t.$paper;
+  border-block-end: 1px solid t.token("keyline");
+  > .ag-tab:nth-child(1 of .ag-tab:not([hidden])) {
+    margin-inline-start: auto;
+  }
+  > .ag-tab:nth-last-child(1 of .ag-tab:not([hidden])) {
+    margin-inline-end: auto;
+  }
+  &[hidden] {
+    display: none !important;
+  }
+}
+
+@mixin styles {
+  .ag-tab {
+    @include tab;
+  }
+  .ag-tab-strip {
+    @include strip;
+  }
+}

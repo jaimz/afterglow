@@ -26,3 +26,8 @@ export { enhanceAvatar, getAvatarInitials } from "./behaviors/avatar";
 export type { AvatarController, AvatarOptions } from "./behaviors/avatar";
 export { enhanceImage } from "./behaviors/image";
 export type { ImageController, ImageOptions } from "./behaviors/image";
+export { enhanceTabbedView } from "./behaviors/tabbed-view";
+export type {
+  TabbedViewController,
+  TabbedViewOptions,
+} from "./behaviors/tabbed-view";

@@ -1,0 +1,5 @@
+@use "../foundation/theme";
+@use "tabbed-view.mixins" as recipe;
+.ag-tabbed-view {
+  @include recipe.view;
+}

@@ -91,6 +91,7 @@ The **Afterglow** page of the **Mobile** Figma file remains the visual authority
 | Textarea                  | [TextArea 143:107](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=143-107)     |
 | Article headings and body | [Type Ramp Mobile 115:4](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=115-4) |
 | Navigation links          | [Menu Item 217:1](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=217-1)        |
+| Tabbed view, strip and tabs | [Tabbed View 19:1157](https://www.figma.com/design/7Hz5rGL1JRLfouCckw8FIq/AFMaster?node-id=19-1157), [Tab Strip 18:1129](https://www.figma.com/design/7Hz5rGL1JRLfouCckw8FIq/AFMaster?node-id=18-1129), [Tab 19:1137](https://www.figma.com/design/7Hz5rGL1JRLfouCckw8FIq/AFMaster?node-id=19-1137) |
 | Menu item | [Menu Item 25:1195](https://www.figma.com/design/7Hz5rGL1JRLfouCckw8FIq/AFMaster?node-id=25-1195) |
 | Breadcrumb | [Navigation path 5249:493](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=5249-493) |
 | Image | [Image 252:288](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=252-288) |

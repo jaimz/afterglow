@@ -1,0 +1,30 @@
+@use "../foundation/tokens" as t;
+
+// Height is consumer-owned; panels can hold any HTML or child component.
+@mixin view {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  min-block-size: 0;
+  background: t.$panel;
+  color: t.$onSurface;
+  text-shadow: none;
+  box-shadow: t.token("tabbed-view-shadow");
+  > .ag-tab-strip {
+    flex: 0 0 auto;
+  }
+  > .ag-tabbed-view__panel {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    min-block-size: 0;
+    overflow: auto;
+    &:focus-visible {
+      outline: 2px solid t.$ctrlText;
+      outline-offset: -2px;
+    }
+  }
+  &[hidden],
+  > .ag-tabbed-view__panel[hidden] {
+    display: none !important;
+  }
+}

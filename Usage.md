@@ -8,6 +8,7 @@ This guide describes the current consumer API. New components and changes to exi
 - [Choose the behaviour you need](#choose-the-behaviour-you-need)
 - [Frames and typography](#frames-and-typography)
 - [Application and content layouts](#application-and-content-layouts)
+- [Tabbed views](#tabbed-views)
 - [Articles and card content](#articles-and-card-content)
 - [Images](#images)
 - [Avatars](#avatars)
@@ -175,6 +176,72 @@ A structural card wraps a Card Content child. The content recipe supplies typogr
 ```
 
 Place `ag-card-content` directly inside `ag-card` so the content supplies its own padding. Omit unused content sections as described below. Compose `ag-panel`, `ag-paper` or another surface class separately. **Frame / Layouts** in Storybook demonstrates all three layouts using Afterglow's existing palette.
+
+## Tabbed views
+
+A Tabbed View combines the `ag-tabbed-view` frame, an `ag-tab-strip`, native `button.ag-tab` controls, and one panel per tab. Panels can contain any HTML, Afterglow component, custom element or nested tabbed view. The helper hides inactive panels without removing or recreating their children, so input values and component state are preserved.
+
+```html
+<section class="ag-tabbed-view" id="document-views">
+  <div class="ag-tab-strip" aria-label="Document sections">
+    <button type="button" class="ag-tab" aria-controls="document-overview">
+      Overview
+    </button>
+    <button type="button" class="ag-tab" aria-controls="document-notes">
+      Notes
+    </button>
+  </div>
+  <section class="ag-tabbed-view__panel" id="document-overview">
+    <article class="ag-article">
+      <h2>Document overview</h2>
+      <p>Put the related content or component here.</p>
+    </article>
+  </section>
+  <section class="ag-tabbed-view__panel" id="document-notes">
+    <label class="ag-body">Notes
+      <textarea class="ag-textarea" placeholder="Write a note…"></textarea>
+    </label>
+  </section>
+</section>
+```
+
+```ts
+import { enhanceTabbedView } from "ag";
+
+const root = document.querySelector<HTMLElement>("#document-views")!;
+const view = enhanceTabbedView(root, {
+  selectedPanelId: "document-overview", // Optional initial selection.
+  activation: "automatic",             // Or "manual".
+});
+
+view.select("document-notes");
+view.select("document-overview", { focus: true });
+console.log(view.selectedPanelId);
+
+root.addEventListener("ag-tab-change", event => {
+  if (event.target !== root) return; // Ignore nested views' bubbling events.
+  const { panelId, previousPanelId } = (event as CustomEvent).detail;
+  console.log(previousPanelId, "→", panelId);
+});
+
+// After adding/removing tab-panel pairs or hiding/disabling tab buttons:
+view.refresh();
+
+// When disposing the containing UI:
+view.destroy();
+```
+
+The strip and panels must be direct children of the view; tab buttons must be direct children of the strip. Each tab's `aria-controls` must reference exactly one direct panel with a unique document-wide ID, and every panel must have one tab. Supply a meaningful `aria-label` or `aria-labelledby` on the strip; the helper defaults to “Related views” if neither is present. It supplies tab/tablist/tabpanel roles, tab IDs when missing, panel labels, roving tab focus and selected/hidden state. Use native `disabled` to make a tab unavailable, or `hidden` to omit it. The helper also honours `aria-disabled="true"`.
+
+Initial selection uses `selectedPanelId`, then an enabled tab marked `aria-selected="true"`, then the first available tab. An explicitly requested missing or unavailable initial panel throws an error. `select()` returns `false` for missing, hidden or disabled targets; it otherwise selects without moving focus unless `{ focus: true }` is passed or focus is on the previous tab or inside its panel. In those cases, focus moves to the newly selected tab. If your code hides or removes a focused tab before calling `refresh()`, the browser may already have blurred it; explicitly select the replacement with `{ focus: true }` when it should receive focus.
+
+Arrow Left/Right move between available tabs and wrap, reversing in RTL; Home/End focus the first/last available tab. In the default automatic mode, this also changes the panel. Manual mode moves focus only until Enter, Space or click activates the tab. Tab leaves the strip for the active panel, which is keyboard-focusable by default. A consumer-supplied panel `tabindex` is preserved.
+
+`ag-tab-change` bubbles from the view after a selection changes, with `{ panelId, previousPanelId }`. Initial setup and selecting the already-active panel do not emit it. `refresh()` synchronously reconciles DOM changes, retaining the current tab where possible or selecting the first available tab. If none are available, all panels are hidden and `selectedPanelId` is `null`. Changes are not automatically observed; call `refresh()` after updating the tab structure or availability. `destroy()` restores the attributes the helper managed, removes its listeners and allows re-enhancement; it does not reset child content. Repeated enhancement returns the existing controller and retains its original options.
+
+The view uses the existing panel and paper colours with a surface shadow. The design defaults are `--tab-width: 150px`, `--tab-text-size: 16px`, `--tab-strip-gap: 15px`, and `--tabbed-view-shadow: 0 4px 16px rgba(0, 0, 0, 0.25)`. Tabs have a 2px selection underline and 16px padding. The strip centres tabs when they fit and scrolls horizontally when they do not. Long labels wrap within the tab width. The view takes its available width and grows with content; set a height in your application's CSS if panels should scroll internally. The frame adds no panel padding, so child components retain control of their layout.
+
+Import `frame` for the view, `interact` for the strip and tabs, and any categories needed by panel content. Without enhancement, panels remain ordinary visible HTML unless you author `hidden` yourself; the helper is needed for tab switching and keyboard semantics. If your framework manages tab behaviour, it can use these same classes and supply the ARIA, focus and hidden states itself. **Frame / Tabbed View** includes editable labels, manual activation, disabled tabs, narrow/RTL layouts, nested views and programmatic selection. **Interact / Tab** and **Interact / Tab Strip** demonstrate the constituent controls.
 
 ## Articles and card content
 
