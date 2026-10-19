@@ -1,0 +1,109 @@
+@use "../foundation/tokens" as t;
+
+// Apply to a native button, link or summary; the containing menu owns behaviour.
+@mixin item {
+  display: flex;
+  align-items: center;
+  gap: t.$frame-gridX;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: t.token("menu-item-min-height");
+  padding: t.token("menu-item-padding-block") calc(#{t.$frame-gridX} * 2);
+  border: 0;
+  border-radius: calc(#{t.$frame-gridType} * 2);
+  background: transparent;
+  color: t.$onSurface;
+  font-family: t.$bodyFontStack;
+  font-size: t.token("menu-item-text-size");
+  font-weight: 400;
+  line-height: t.$lineHeight;
+  text-align: start;
+  text-decoration: none;
+  text-shadow: none;
+  cursor: pointer;
+  list-style: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+  &::marker {
+    content: "";
+  }
+
+  &:hover:not(:disabled):not([aria-disabled="true"]) {
+    background: t.token("selection-fill");
+  }
+  &:is([data-selected], [aria-current]:not([aria-current="false"]), [aria-pressed="true"], [aria-checked="true"]) {
+    background: t.token("selection-fill");
+    border-radius: t.$frame-gridType;
+    color: t.$ctrlText;
+    line-height: normal;
+  }
+  &:focus-visible {
+    outline: 2px solid t.$ctrlText;
+    outline-offset: -2px;
+  }
+  &:is(:disabled, [aria-disabled="true"]) {
+    opacity: t.$disabledOpacity;
+    cursor: default;
+  }
+  &[hidden] {
+    display: none !important;
+  }
+
+  @media (forced-colors: active) {
+    &:is([data-selected], [aria-current]:not([aria-current="false"]), [aria-pressed="true"], [aria-checked="true"]) {
+      outline: 1px solid Highlight;
+      outline-offset: -1px;
+      color: Highlight;
+    }
+    &:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: -3px;
+    }
+    &:is(:disabled, [aria-disabled="true"]) {
+      color: GrayText;
+    }
+  }
+}
+
+// Emit the reusable row and its optional content slots.
+@mixin styles {
+  :where([dir="rtl"]) {
+    --ag-menu-item-direction: -1;
+  }
+  :where([dir="ltr"]) {
+    --ag-menu-item-direction: 1;
+  }
+
+  .ag-menu-item {
+    @include item;
+  }
+  .ag-menu-item__label {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
+  }
+  .ag-menu-item > .ag-menu-item__leader {
+    flex: 0 0 auto;
+    inline-size: t.token("menu-item-icon-size");
+    block-size: t.token("menu-item-icon-size");
+  }
+  .ag-menu-item > :is(.ag-menu-item__submenu, .ag-menu-item__child-menu) {
+    flex: 0 0 auto;
+    inline-size: t.token("menu-item-submenu-icon-size");
+    block-size: t.token("menu-item-submenu-icon-size");
+    transform: scaleX(var(--ag-menu-item-direction, 1));
+  }
+  .ag-menu-item:dir(rtl)
+    > :is(.ag-menu-item__submenu, .ag-menu-item__child-menu) {
+    transform: scaleX(-1);
+  }
+  .ag-menu-item[aria-expanded="true"] > .ag-menu-item__child-menu,
+  details[open]
+    > .ag-menu-item
+    > :is(.ag-menu-item__submenu, .ag-menu-item__child-menu) {
+    transform: rotate(90deg);
+  }
+}

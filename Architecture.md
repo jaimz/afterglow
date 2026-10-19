@@ -7,7 +7,7 @@ Afterglow groups styles and components by their purpose. Native HTML supplies se
 | `foundation` | Shared primitives and composition tools | Type scale, token registry, theme boundaries, generic layout and motion mixins              |
 | `frame`      | Arrange and contain other elements      | Background, surface, panel, paper, application grid, master-detail, structural card, dialog |
 | `indicate`   | Reflect changing or transient state     | Notification, linear/circular/staged progress and status colours                              |
-| `interact`   | Accept user input                       | Button, FAB, removable chips, checkbox, radio, switch, slider, textarea, text field, breadcrumb, navigation links        |
+| `interact`   | Accept user input                       | Button, FAB, removable chips, checkbox, radio, switch, slider, textarea, text field, menu item, breadcrumb, navigation links        |
 | `present`    | Display lasting content                 | Article typography, card content, avatars, images, category tags and reusable icons                                 |
 
 Choose a component's category by its primary purpose. A notification remains in `indicate` even though it contains a dismiss button; that button is an interaction within a status presentation. A structural card belongs to `frame`, while its optional text treatment belongs to `present`.
@@ -91,6 +91,7 @@ The **Afterglow** page of the **Mobile** Figma file remains the visual authority
 | Textarea                  | [TextArea 143:107](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=143-107)     |
 | Article headings and body | [Type Ramp Mobile 115:4](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=115-4) |
 | Navigation links          | [Menu Item 217:1](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=217-1)        |
+| Menu item | [Menu Item 25:1195](https://www.figma.com/design/7Hz5rGL1JRLfouCckw8FIq/AFMaster?node-id=25-1195) |
 | Breadcrumb | [Navigation path 5249:493](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=5249-493) |
 | Image | [Image 252:288](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=252-288) |
 | Card content              | [Card content 235:17](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=235-17)   |
