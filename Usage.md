@@ -816,6 +816,40 @@ Colours reuse paper, surface, keyline, field-hint, on-surface, backdrop, success
 
 ## Navigation
 
+Use `ag-breadcrumb` for a path from an ancestor location to the current page. Each crumb has a label and may contain an icon. This is native HTML and CSS; no JavaScript helper or Web Component is required.
+
+```html
+<nav class="ag-breadcrumb" aria-label="Breadcrumb">
+  <ol class="ag-breadcrumb__list" role="list">
+    <li class="ag-breadcrumb__item">
+      <a class="ag-breadcrumb__link" href="/">
+        <span class="ag-icon" data-icon="home" aria-hidden="true"></span>
+        <span class="ag-breadcrumb__label">Home</span>
+      </a>
+    </li>
+    <li class="ag-breadcrumb__item">
+      <a class="ag-breadcrumb__link" href="/library">
+        <span class="ag-breadcrumb__label">Library</span>
+      </a>
+    </li>
+    <li class="ag-breadcrumb__item">
+      <span class="ag-breadcrumb__link" aria-current="page">
+        <span class="ag-icon" data-icon="file-text" aria-hidden="true"></span>
+        <span class="ag-breadcrumb__label">The Vikings</span>
+      </span>
+    </li>
+  </ol>
+</nav>
+```
+
+Use real URLs on ancestor links. Mark only the current crumb with `aria-current="page"`; it can be a plain `span` or an anchor if you want it to remain a link. Ancestor labels are bold and the current label is regular. Keep `role="list"` on the ordered list to preserve list announcements in browsers that suppress them when markers are removed. Give each breadcrumb landmark a meaningful, distinct accessible name if there is more than one on a page.
+
+Omit the icon element for a text-only crumb. Use the shared `ag-icon` recipe with any existing Feather `data-icon` name. The visible label supplies the accessible name, so icons are decorative. Chevron separators are added automatically between visible items and are not announced by screen readers. Hide the whole `li` to hide a crumb. A single crumb has no separator.
+
+The path wraps between crumbs, keeping each separator with the following item; long labels wrap without being truncated. `dir="rtl"` reverses the flow and chevrons. Add `data-variant="backdrop"` to the `nav` when placing it directly on `ag-background`.
+
+The defaults are `--breadcrumb-text-size: 12px`, `--breadcrumb-icon-size: 18px` and `--breadcrumb-icon-gap: 6px`. At the default 18px size, the shared Feather icons and chevron separators have a 1.5px rendered stroke (scaled from their 24px viewBox and 2-unit stroke). Changing the icon size scales the stroke proportionally. Vertical padding and spacing between crumbs use the shared grid tokens. Foreground colours use `--onSurfaceAlt` and `--onBackdrop`. For selective styles, import `interact` for the breadcrumb and `present` for Feather icons. **Interact / Breadcrumb** includes editable items, text-only and icon examples, backdrop styling, a single crumb, wrapping and right-to-left layouts.
+
 Use real links inside a labelled navigation landmark. Apply the menu-item classes as follows:
 
 ```html

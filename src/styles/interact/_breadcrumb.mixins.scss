@@ -1,0 +1,118 @@
+@use "../foundation/tokens" as t;
+@use "../present/icon.mixins" as icon;
+
+// A labelled nav containing an ordered list of ancestor links and a current item.
+@mixin styles {
+  // Inherit direction through wrappers, including browsers with incomplete :dir().
+  :where([dir="rtl"]) {
+    --ag-breadcrumb-chevron-direction: -1;
+  }
+  :where([dir="ltr"]) {
+    --ag-breadcrumb-chevron-direction: 1;
+  }
+
+  .ag-breadcrumb {
+    min-inline-size: 0;
+    font-family: t.$bodyFontStack;
+    font-size: t.token("breadcrumb-text-size");
+    line-height: t.$lineHeight;
+    color: t.$onSurfaceAlt;
+    padding-block: t.$frame-gridY;
+
+    &[data-variant="backdrop"] {
+      color: t.$onBackdrop;
+    }
+  }
+
+  .ag-breadcrumb__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: t.$frame-gridY t.$frame-gridX;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .ag-breadcrumb__item {
+    display: flex;
+    align-items: center;
+    gap: t.$frame-gridX;
+    min-inline-size: 0;
+    max-inline-size: 100%;
+  }
+
+  // Empty generated content keeps separators out of the accessible label.
+  // Attach each separator to the following crumb so they wrap together.
+  .ag-breadcrumb__item:not([hidden])
+    ~ .ag-breadcrumb__item:not([hidden])::before {
+    content: "";
+  }
+
+  .ag-breadcrumb__item::before {
+    flex: 0 0 auto;
+    inline-size: t.token("breadcrumb-icon-size");
+    block-size: t.token("breadcrumb-icon-size");
+    background: currentColor;
+    // Reuse the shared Feather glyph; 18px scales its stroke to 1.5px.
+    -webkit-mask: none center / contain no-repeat;
+    mask: none center / contain no-repeat;
+    @include icon.glyph("chevron-right");
+    transform: scaleX(var(--ag-breadcrumb-chevron-direction, 1));
+  }
+
+  .ag-breadcrumb__item:dir(rtl)::before {
+    transform: scaleX(-1);
+  }
+
+  .ag-breadcrumb__link {
+    display: inline-flex;
+    align-items: center;
+    gap: t.token("breadcrumb-icon-gap");
+    min-inline-size: 0;
+    color: inherit;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: t.$frame-gridType;
+
+    &[href]:hover {
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+    }
+
+    &:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
+
+    &[aria-current="page"] {
+      font-weight: 400;
+    }
+
+    > .ag-icon {
+      flex: 0 0 auto;
+      inline-size: t.token("breadcrumb-icon-size");
+      block-size: t.token("breadcrumb-icon-size");
+    }
+  }
+
+  .ag-breadcrumb__label {
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
+  }
+
+  :is(.ag-breadcrumb, .ag-breadcrumb__item, .ag-breadcrumb__link)[hidden] {
+    display: none !important;
+  }
+
+  @media (forced-colors: active) {
+    .ag-breadcrumb__item::before {
+      background: CanvasText;
+      forced-color-adjust: none;
+    }
+    .ag-breadcrumb__link[href] {
+      color: LinkText;
+    }
+  }
+}
