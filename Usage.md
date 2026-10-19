@@ -19,6 +19,7 @@ This guide describes the current consumer API. New components and changes to exi
 - [Textareas](#textareas)
 - [Text fields](#text-fields)
 - [Menu items](#menu-items)
+- [Pop-up menus](#pop-up-menus)
 - [Navigation](#navigation)
 - [Checkboxes](#checkboxes)
 - [Radios and radio groups](#radios-and-radio-groups)
@@ -929,6 +930,68 @@ For application-controlled submenus, use a button with `aria-expanded` and `aria
 This recipe does not introduce `role="menu"` or `role="menuitem"`. Ordinary action lists and navigation can use native elements. If a containing widget uses ARIA menu roles, it must also supply the corresponding focus management and keyboard interactions. The recipe supports `aria-checked="true"` styling for such widgets, but does not implement those behaviours.
 
 Import `interact` for the item and `present` for its shared icons. The optional pure Sass entry is `interact/menu-item.mixins`: `item` styles a custom element selector, and `styles` emits the complete recipe with its content slots. Theme hooks include `--menu-item-text-size`, `--menu-item-min-height`, `--menu-item-padding-block`, `--menu-item-icon-size` and `--menu-item-submenu-icon-size`, alongside the existing grid, `--selection-fill`, `--ctrlText` and `--onSurface` tokens. **Interact / Menu Item** demonstrates editable content, selection, disabled actions, native navigation, working submenus, long labels and RTL.
+
+## Pop-up menus
+
+Use `ag-popup-menu` on a native `popover="auto"` containing existing `ag-menu-item` buttons or links. The browser puts the menu in its top layer, beyond clipping ancestors, and handles outside-click and Escape dismissal. The menu uses the panel surface, keyline, rounded corners and an elevation shadow; menu items retain their existing icon slots, selected, hover and disabled treatments.
+
+```html
+<button type="button" class="ag-button" id="document-actions"
+        popovertarget="document-menu">Document actions</button>
+<div class="ag-popup-menu" id="document-menu" popover="auto">
+  <button type="button" class="ag-menu-item" data-action="duplicate">
+    <span class="ag-icon ag-menu-item__leader" data-icon="copy" aria-hidden="true"></span>
+    <span class="ag-menu-item__label">Duplicate</span>
+  </button>
+  <hr class="ag-popup-menu__separator" role="separator">
+  <a class="ag-menu-item" href="/documents/archive">
+    <span class="ag-menu-item__label">Archive</span>
+  </a>
+</div>
+```
+
+```ts
+import { enhancePopupMenu } from "ag";
+
+const menu = document.querySelector<HTMLElement>("#document-menu")!;
+const popup = enhancePopupMenu(menu, {
+  trigger: document.querySelector<HTMLButtonElement>("#document-actions")!,
+  placement: "bottom-start", // Also "bottom-end" or "inline-end".
+  closeOnSelect: true,       // Default; false keeps choices open.
+});
+
+menu.addEventListener("ag-menu-select", event => {
+  const selection = event as CustomEvent<{ item: HTMLElement }>;
+  if (selection.detail.item.dataset.action === "duplicate") {
+    // Duplicate the document here.
+  }
+  // event.preventDefault() keeps this selection open.
+});
+
+popup.show();        // Opens and focuses the first item.
+popup.show("last");  // Or "none" to retain the current focus.
+popup.hide();        // Closes and returns focus to its trigger.
+popup.hide({ restoreFocus: false });
+console.log(popup.isOpen);
+popup.refresh();     // After adding/removing items or changing their roles.
+popup.destroy();     // When disposing the containing UI.
+```
+
+Each menu has one native button trigger and a unique document-wide ID. The helper can generate missing menu/trigger IDs and set `popovertarget`. It assigns menu/menuitem roles and names an unlabelled menu from its trigger; provide `aria-label` or `aria-labelledby` to override that name. Actions remain native buttons and destinations remain links. There is no Web Component and no duplication of item content. Use ordinary `click` handlers or `ag-menu-select` for application actions; the helper does not execute actions or change checkbox/radio state for you.
+
+**Keyboard:** Enter/Space activates the trigger and focuses the first item. Down/Up on a top-level trigger opens at the first/last item. Within a menu, Up/Down wrap, Home/End jump, and typing a label prefix moves focus. Enter/Space activate an item. Escape uses native popover dismissal and focus return. Tab/Shift+Tab close the menu chain and continue outside it from the root trigger. Native `disabled` items are skipped; `aria-disabled="true"` items remain discoverable with arrow keys but cannot activate. Empty menus focus their labelled container.
+
+By default an item selection closes its whole menu chain and returns focus to the root trigger, unless the action has already moved focus elsewhere, for example into a dialog. The bubbling, cancelable `ag-menu-select` event has `detail: { item }`. Cancel it to keep that selection open, or set `closeOnSelect: false` for persistent choices. Native links still navigate; cancel their native `click` event if your application owns navigation. For checkbox/radio choices, supply `role="menuitemcheckbox"` or `role="menuitemradio"`, manage `aria-checked` in your application handler, and manage radio exclusivity yourself. Those states use the existing menu-item selection styling. Keep inputs, sliders and other composite controls outside an action menu.
+
+**Submenus:** Put the submenu popover inside its parent menu, as a sibling after its triggering menu item. Use a button with `popovertarget` and the existing trailing `ag-menu-item__submenu` chevron, then call `enhancePopupMenu` for that submenu with its own trigger, `placement: "inline-end"` and optionally `openOnHover: true`. Enhance parents before children, and destroy children before parents. Right Arrow enters a submenu and Left Arrow returns to its trigger; these directions reverse in RTL. Hover opening preserves keyboard focus and has a short close delay so the pointer can cross the gap. Click/touch and keyboard activation remain available. Submenu actions bubble through the parent; filter `event.target === menu` if a handler should process only its own selections. Inline `details`/`summary` child menus remain a separate pattern.
+
+**Placement and sizing:** CSS anchor positioning places the menu relative to its invoker, with automatic alternatives on either side and a preference for more vertical space. `bottom-start`/`bottom-end` follow text direction; `inline-end` places a submenu to the right in LTR or left in RTL. The helper supplies measured placement, flipping and viewport clamping when CSS anchors are unavailable, and updates this fallback on scroll/resize. Menus have a default width of 240px, shrink for narrow viewports, and scroll vertically when needed. Their theme hooks are `--popup-menu-width`, `--popup-menu-padding` (4px), `--popup-menu-gap` (8px), and `--popup-menu-shadow`, alongside existing surface and menu-item tokens. No dimmed backdrop or focus trap is added.
+
+`refresh()` updates item roles and fallback positioning without recreating content; removed items have their managed attributes restored. `destroy()` closes the menu, removes helper listeners/observers and restores authored attributes and inline style properties. Dispose children first. Repeated enhancement returns the existing controller and options. The helper requires native Popover API support; it does not install a visibility or top-layer polyfill.
+
+Import `interact` for menus and items, and `present` when using icons. The selective `interact/popup-menu.classes` entry includes menu-item styles. The pure `interact/popup-menu.mixins` module exposes `menu` and `styles`; include the menu-item recipe separately when composing pure mixins.
+
+The **Interact / Popup Menu** stories demonstrate actions, persistent choices, nested menus, scrolling, clipped containers and RTL. **Native Popover** demonstrates HTML/CSS alone: `popovertarget` still opens and dismisses the popover, native Tab visits its links, and supported CSS anchors position it. Without the helper, it remains ordinary navigation rather than an ARIA action menu; menu arrow navigation, automatic close-on-selection and the positioning fallback are not provided.
 
 ## Navigation
 

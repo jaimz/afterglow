@@ -1,0 +1,5 @@
+@use "../foundation/theme";
+@use "menu-item.classes";
+@use "popup-menu.mixins" as recipe;
+
+@include recipe.styles;

@@ -1,5 +1,9 @@
 // Definitions only. The shared registry validates and declares these tokens.
 $defaults: (
+  "popup-menu-width": 240px,
+  "popup-menu-padding": 4px,
+  "popup-menu-gap": 8px,
+  "popup-menu-shadow": 0 4px 16px rgba(0, 0, 0, 0.25),
   "tab-width": 150px,
   "tab-text-size": 16px,
   "tab-strip-gap": 15px,

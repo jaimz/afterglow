@@ -31,3 +31,5 @@ export type {
   TabbedViewController,
   TabbedViewOptions,
 } from "./behaviors/tabbed-view";
+export { enhancePopupMenu } from "./behaviors/popup-menu";
+export type { PopupMenuController, PopupMenuOptions } from "./behaviors/popup-menu";

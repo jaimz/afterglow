@@ -70,6 +70,8 @@ The `present/image` recipe composes a native image and optional caption. `enhanc
 
 The `present/tag` recipe styles compact category annotations with default and backdrop appearances. Tags have no selected state. Static annotations use spans; native links/buttons can supply application actions. Applied filter tags may compose with a text field as siblings of its input, with hidden form inputs carrying their values. Applications own filtering and token creation/removal; the recipe does not introduce an editable composite control.
 
+The `interact/popup-menu` recipe composes existing menu items inside native auto popovers. The platform owns the top layer, light dismissal and Escape; `enhancePopupMenu` adds action-menu semantics, keyboard focus, typeahead, selection events and optional nested hover menus. CSS anchors handle placement, with a measured positioning fallback when unavailable. Items remain native buttons/links and application handlers own commands and checked states. It introduces no custom element or modal focus trap.
+
 ## Compatibility
 
 Card content groups its title and body inside `ag-card-content__main`, between the optional overline and action row. The body has 6px vertical margins, while sections use the shared 4px spacing token. It remains a native HTML/CSS recipe and composes existing buttons and surfaces. Update earlier flat card-content markup by wrapping its title and body in the main section.

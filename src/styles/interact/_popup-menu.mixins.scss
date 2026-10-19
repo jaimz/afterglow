@@ -1,0 +1,87 @@
+@use "../foundation/tokens" as t;
+
+// The browser owns display and the top layer; never override its closed state.
+@mixin menu {
+  box-sizing: border-box;
+  position: fixed;
+  inset: auto;
+  margin: t.token("popup-menu-gap") 0;
+  padding: t.token("popup-menu-padding");
+  inline-size: t.token("popup-menu-width");
+  max-inline-size: calc(100vw - 16px);
+  max-block-size: calc(100dvh - 16px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid t.token("keyline");
+  border-radius: 8px;
+  background: t.$panel;
+  color: t.$onSurface;
+  box-shadow: t.token("popup-menu-shadow");
+  text-shadow: none;
+
+  // Declarative popovertarget supplies an implicit anchor. The helper also names
+  // it explicitly so programmatic opening works on older Popover implementations.
+  @supports (position-area: block-end span-inline-end) {
+    position-area: block-end span-inline-end;
+    justify-self: start;
+    align-self: start;
+    position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline,
+      --ag-popup-below, --ag-popup-above;
+    position-try-order: most-block-size;
+    max-block-size: min(
+      calc(100% - 2 * #{t.token("popup-menu-gap")}),
+      calc(100dvh - 16px)
+    );
+    &[data-placement="bottom-end"] {
+      position-area: block-end span-inline-start;
+      justify-self: end;
+    }
+    &[data-placement="inline-end"] {
+      position-area: inline-end span-block-end;
+      margin: 0 t.token("popup-menu-gap");
+    }
+  }
+  // If neither side fits horizontally, use the viewport width around the anchor.
+  @at-root {
+    @position-try --ag-popup-below {
+      position-area: block-end span-all;
+      justify-self: safe anchor-center;
+      align-self: start;
+      margin: #{t.token("popup-menu-gap")} 0;
+    }
+    @position-try --ag-popup-above {
+      position-area: block-start span-all;
+      justify-self: safe anchor-center;
+      align-self: end;
+      margin: #{t.token("popup-menu-gap")} 0;
+    }
+  }
+  &[data-position-fallback] {
+    position-area: none;
+    margin: 0;
+    max-block-size: var(--ag-popup-max-height, calc(100dvh - 16px));
+    left: var(--ag-popup-left, 8px);
+    top: var(--ag-popup-top, 8px);
+  }
+  &[hidden] {
+    display: none !important;
+  }
+  &:focus-visible {
+    outline: 2px solid t.$ctrlText;
+  }
+  // Popovers are non-modal: do not dim or block the rest of the application.
+  &::backdrop {
+    background: transparent;
+  }
+}
+
+@mixin styles {
+  .ag-popup-menu {
+    @include menu;
+  }
+  .ag-popup-menu__separator {
+    margin: t.$frame-gridY t.$frame-gridX;
+    border: 0;
+    border-block-start: 1px solid t.token("keyline");
+  }
+}
