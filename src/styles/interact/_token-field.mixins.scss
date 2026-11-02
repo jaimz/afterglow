@@ -1,0 +1,97 @@
+@use "../foundation/tokens" as t;
+
+// Compose the shared text-field surface and avatar chip recipes without a wrapper
+// around each token: chips and the native editing input wrap as one flex row.
+@mixin styles {
+  .ag-token-field {
+    > .ag-text-field__control {
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 6px 8px;
+      cursor: text;
+      &:focus-within {
+        outline: 2px solid t.$ctrlText;
+        outline-offset: 0;
+      }
+    }
+    &[data-variant="backdrop"] > .ag-text-field__control:focus-within {
+      outline-color: t.$onBackdrop;
+    }
+    .ag-text-field__input {
+      flex: 1 1 120px;
+      inline-size: 120px;
+      min-inline-size: min(120px, 100%);
+      min-block-size: 30px;
+      // Between chips, reserve only the native input's query-sized editing space.
+      &:has(~ .ag-chip) {
+        flex: 0 1 auto;
+        inline-size: auto;
+        min-inline-size: 1ch;
+        max-inline-size: 100%;
+        &::placeholder {
+          opacity: 0;
+        }
+      }
+    }
+    &[data-compact] > .ag-text-field__control {
+      padding-block: 2px;
+    }
+    .ag-chip {
+      max-inline-size: 100%;
+    }
+    // Read-only chips keep their appearance; their remove controls are inactive.
+    &:has(.ag-text-field__input[readonly]) .ag-chip {
+      opacity: 1;
+    }
+    &:has(.ag-text-field__input:disabled) .ag-chip {
+      opacity: 1;
+    }
+  }
+  .ag-token-field__suggestions {
+    // Keep at least one row usable; otherwise try the other side of the field.
+    min-block-size: min(
+      calc(
+        #{t.token("menu-item-min-height")} + 2 * #{t.token(
+            "popup-menu-padding"
+          )} + 2px
+      ),
+      calc(100dvh - 16px)
+    );
+    inline-size: var(--ag-token-field-width, #{t.token("text-field-width")});
+    max-block-size: min(288px, calc(100% - 16px), calc(100dvh - 16px));
+  }
+  .ag-token-field__suggestions[data-position-fallback] {
+    min-block-size: 0;
+  }
+  .ag-token-field__option {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    cursor: pointer;
+    &[aria-selected="true"] {
+      background: t.token("selection-fill");
+      color: t.$ctrlText;
+    }
+  }
+  .ag-token-field__description {
+    font-size: t.$captionTextSize;
+    color: t.$onSurfaceAlt;
+    overflow-wrap: anywhere;
+  }
+  .ag-token-field__status {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  @media (forced-colors: active) {
+    .ag-token-field__option[aria-selected="true"] {
+      outline: 1px solid Highlight;
+    }
+    .ag-token-field > .ag-text-field__control:focus-within {
+      outline-color: Highlight;
+    }
+  }
+}

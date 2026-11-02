@@ -72,6 +72,8 @@ The `present/tag` recipe styles compact category annotations with default and ba
 
 The `interact/popup-menu` recipe composes existing menu items inside native auto popovers. The platform owns the top layer, light dismissal and Escape; `enhancePopupMenu` adds action-menu semantics, keyboard focus, typeahead, selection events and optional nested hover menus. CSS anchors handle placement, with a measured positioning fallback when unavailable. Items remain native buttons/links and application handlers own commands and checked states. It introduces no custom element or modal focus trap.
 
+The `interact/token-field` recipe composes the existing text-field surface, avatar chips and popup/menu-item styles. `enhanceTokenField` implements a catalogue-backed multi-value combobox with listbox suggestions filtered by case-insensitive substrings of labels and values; it keeps DOM focus in the input via `aria-activedescendant`. Selected values become chips and repeated hidden form inputs, with native disabled/reset semantics and selection-based required validation. Native popovers provide the top layer; the action-menu helper is deliberately not applied because a combobox has different keyboard and focus semantics. The helper owns generated DOM and child avatar lifecycles.
+
 ## Compatibility
 
 Card content groups its title and body inside `ag-card-content__main`, between the optional overline and action row. The body has 6px vertical margins, while sections use the shared 4px spacing token. It remains a native HTML/CSS recipe and composes existing buttons and surfaces. Update earlier flat card-content markup by wrapping its title and body in the main section.

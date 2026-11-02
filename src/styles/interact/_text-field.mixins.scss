@@ -54,6 +54,7 @@
   min-block-size: var(--ag-text-field-height);
   padding-inline: t.token("text-field-padding-inline");
   border: 1px solid t.token("keyline");
+  border-radius: 4px;
   background: t.$paper;
   box-shadow: inset 0 3px 4px t.$surface;
 }

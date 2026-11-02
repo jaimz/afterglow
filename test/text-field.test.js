@@ -85,7 +85,7 @@ it("keeps placeholder-style labels inside every field size through focus, value 
     field.toggleAttribute("data-compact", compact);
     input.blur();
     expect(control.getBoundingClientRect().height).to.equal(height);
-    expect(style(label).fontSize).to.equal("16px");
+    expect(style(label).fontSize).to.equal("14px");
     expect(style(label).clipPath).to.equal("none");
     input.focus();
     expect(label.getBoundingClientRect().top).to.be.greaterThan(

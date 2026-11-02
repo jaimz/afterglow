@@ -18,6 +18,7 @@ This guide describes the current consumer API. New components and changes to exi
 - [Chips](#chips)
 - [Textareas](#textareas)
 - [Text fields](#text-fields)
+- [Token fields](#token-fields)
 - [Menu items](#menu-items)
 - [Pop-up menus](#pop-up-menus)
 - [Navigation](#navigation)
@@ -882,6 +883,77 @@ The default width is `344px`, capped by the containing width. Override `--text-f
 Colours reuse paper, surface, keyline, field-hint, on-surface, backdrop, success and error tokens. Logical positioning supports RTL; forced-colour mode uses system colours and retains the focus outline. For selective Sass, use `interact/text-field.classes`, or include the pure `text-field.styles` mixin with the shared theme. The full **Interact** category includes this recipe.
 
 **Interact / Text Field** includes editable controls, all visual variants, native HTML, disabled/read-only and narrow RTL examples, and **Live Validation** for custom rules, server errors and reset.
+
+## Token fields
+
+A TokenField accepts multiple entries from a predefined catalogue, such as recipients in an email composer. It composes the native text-field surface, a browser popover styled with menu items, and removable avatar chips. The suggestions use **combobox/listbox** semantics so keyboard focus stays in the input while the active completion is announced. Do not apply `enhancePopupMenu` or `enhanceTextField` to the generated content; `enhanceTokenField` owns its selection, validation and lifecycle.
+
+```html
+<label class="ag-body" for="recipients-input">To:</label>
+<div class="ag-token-field ag-text-field" id="recipients-field">
+  <div class="ag-text-field__control">
+    <input class="ag-text-field__input" type="text" id="recipients-input"
+           name="recipients" autocomplete="off" placeholder="Add a recipient…">
+  </div>
+</div>
+```
+
+```ts
+import { enhanceTokenField } from "ag";
+
+const root = document.querySelector<HTMLElement>("#recipients-field")!;
+const field = enhanceTokenField(root, {
+  items: [
+    {
+      value: "ada@example.com",
+      label: "Ada Lovelace",
+      description: "ada@example.com", // Optional text in suggestions.
+      imageUrl: "/people/ada.jpg",    // Optional avatar image URL.
+    },
+    { value: "alan@example.com", label: "Alan Turing" },
+    { value: "grace@example.com", label: "Grace Hopper" },
+  ],
+  values: ["grace@example.com"], // Optional initial selection.
+  required: true,               // Optional; otherwise follows input.required.
+});
+
+root.addEventListener("ag-token-change", event => {
+  const { values, items, previousValues } = (event as CustomEvent).detail;
+  console.log(values, items, previousValues);
+});
+
+field.values;        // A copy of selected values, in chip order.
+field.selectedItems; // Copies of their catalogue entries.
+field.add("ada@example.com");
+field.remove("grace@example.com");
+field.setValues(["alan@example.com"]);
+field.clear();
+// field.setItems(newCatalogue); // Retains selections still in the catalogue.
+// field.refresh();              // Synchronise native state and the current query.
+// field.destroy();              // Dispose the containing UI.
+```
+
+Each item requires a unique, non-empty `value` and a non-empty `label`. Values identify items even when labels are identical. The label is the chip text and supplies the circular avatar's initials. An optional `imageUrl` displays a photo; missing or failed photos use the existing avatar helper's initials fallback. `description` appears only in suggestions. Labels and descriptions are rendered as text, not HTML.
+
+Typing shows **all unselected entries whose label or value contains the query**, ignoring case and trimming outer whitespace from the query. Any contiguous part can match: a surname, part of an email address, or a number within a longer label. Results keep catalogue order; long lists scroll rather than being truncated. Empty input hides the list, while Down/Up on empty input can explicitly browse the remaining catalogue. No match closes the list and announces “No matching items.” Only selecting an entry creates a chip: free text, pasted comma-separated values and duplicates are not committed automatically.
+
+The first match is highlighted. Up/Down move through results; Enter or Tab chooses the highlighted entry. Pointer selection also works. Selection inserts an avatar chip at the current editing position, clears the query and leaves the input focused immediately after the new chip. Escape dismisses without changing the query or selection. With no suggestions open, Tab moves focus normally without changing the query or selection. Shift+Tab closes the suggestions and moves focus backward without selecting a completion.
+
+Left/Right move the editing position between tokens when the caret reaches the corresponding end of the query and no text is selected. In LTR, Left moves toward earlier tokens and Right toward later tokens; these directions reverse in RTL. The same native input stays focused between the chips, where typing and choosing a suggestion inserts a new token in place. Navigation stops at the first/last position and does not change selected values or emit a change event. Within query text, arrow movement, Shift selection, modified shortcuts and IME composition remain native.
+
+Click the space between tokens, before the first token or after the last token to place the editor there. In wrapped fields, the clicked row determines the position; RTL fields follow the same writing order as keyboard navigation. Any draft query moves with the editor, with the caret at the end of its text. Clicking inside the input retains native text positioning and selection; chip remove buttons still remove their token.
+
+Backspace at the start of the query immediately removes the preceding token; Delete at the end removes the succeeding token. Neither action requires focusing a remove button, and both keep the editor at the deletion position. When text is selected or the caret is inside the query, deletion edits the text normally. Each chip also has an accessible remove button: while it is focused, Backspace/Delete remove its chip, Left/Right move between remove buttons (reversed in RTL), Escape returns to the input, and Enter/Space activate native removal. These buttons remain reachable with Tab. Removing a chip makes that value available in future searches.
+
+`ag-token-change` bubbles after selected values change and includes `{ values, items, previousValues }`. It fires for user actions, programmatic changes and a form reset that changes selection, but not initial setup or a no-op. `add()`/`remove()` return whether a change occurred; adding an unknown/duplicate value returns `false`. `add()` appends at the end; `setValues()` replaces the selection and rejects unknown or duplicate values atomically. Both place the editor after the resulting selection, as does form reset. `remove()` preserves the editing position relative to surviving tokens. `setItems()` validates the replacement catalogue, updates retained chip labels/photos and removes selections that no longer exist, preserving the position among surviving tokens. Returned arrays/entries are copies. Programmatic methods can update a disabled/read-only field; these flags prevent user editing.
+
+**Forms:** The input's original `name` (or `options.name`) becomes the name of repeated generated hidden inputs containing selected values. Read them with `new FormData(form).getAll("recipients")`. Uncommitted query text is not submitted. `required` means at least one selected entry, regardless of query text; the helper manages the input's custom validity. Native `disabled` excludes generated values from submission; `readonly` retains them but prevents additions/removals. Set these states on the input. Native form reset restores the initial selected values still present in the current catalogue and restores the input's default query. A canceled reset makes no change. The field name and required setting are captured at enhancement time.
+
+**Composition:** Import both `interact` and `present` styles, or the complete stylesheet. The selective `interact/token-field.classes` entry includes text-field, chip, menu-item and popup styles; also load `present/avatar.classes` and `present/icon.classes`. The pure `interact/token-field.mixins` module provides `styles` for the composition only; include its constituent recipes when using pure mixins. Provide the native input's accessible name with a real label or ARIA label. The input must be a direct child of the direct `ag-text-field__control` inside the root; the helper arranges generated chips before and after it to reflect the editing position. It manages the input's `size` attribute for a compact editing space between tokens and restores the authored attribute on cleanup. Use an external label rather than the text-field's overlaid placeholder label.
+
+The shared field has 4px corners and grows to wrap chips. It uses the standard text-field width token; override the root width for a wider recipient field. `data-variant="backdrop"` and `data-compact` are supported; compact fields retain enough height for the existing 28px circular avatars. Suggestions follow the whole field's width, use native CSS anchor placement where supported, and have measured placement otherwise. The list uses the browser's top layer so it can extend beyond a clipped container. Native Popover API support is required.
+
+`destroy()` closes the list, removes generated chips, hidden fields and status output, disposes each avatar, removes listeners/observers and restores managed input attributes and original custom validity. It leaves the authored input and its current query intact. Repeated enhancement returns the existing controller. Without enhancement the markup is an ordinary text input; catalogue enforcement and token submission require the helper. **Interact / Token Field** includes empty and preselected fields, image/initials avatars, compact/backdrop styles, narrow/RTL layouts, read-only/disabled states and a working form example.
 
 ## Menu items
 
