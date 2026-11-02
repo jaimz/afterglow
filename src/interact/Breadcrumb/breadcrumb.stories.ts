@@ -1,4 +1,5 @@
 import { element, escapeHTML } from "../../stories/fixtures";
+import { enhanceBreadcrumb } from "../../behaviors/breadcrumb";
 
 interface Crumb {
   label: string;
@@ -12,13 +13,13 @@ interface BreadcrumbArgs {
 }
 
 const exampleItems: Crumb[] = [
-  { label: "Home", href: "#home", icon: "home" },
-  { label: "The Vikings", icon: "file-text" },
+  { label: "Home", href: "#home", icon: "star" },
+  { label: "Inbox", icon: "star" },
 ];
 
 /** Render native links; the final crumb marks the current location. */
 function createBreadcrumb({ items, ariaLabel, variant }: BreadcrumbArgs) {
-  return element(`<nav class="ag-breadcrumb" aria-label="${escapeHTML(
+  const root = element(`<nav class="ag-breadcrumb" aria-label="${escapeHTML(
     ariaLabel
   )}" data-variant="${variant}">
     <ol class="ag-breadcrumb__list" role="list">
@@ -42,6 +43,8 @@ function createBreadcrumb({ items, ariaLabel, variant }: BreadcrumbArgs) {
         .join("")}
     </ol>
   </nav>`);
+  enhanceBreadcrumb(root);
+  return root;
 }
 
 /** Place the transparent breadcrumb on the appropriate sample surface. */
@@ -119,7 +122,16 @@ export const Layouts = () => {
       ],
     })
   );
-  root.append(narrow, rtl);
+  const longLabel = createBreadcrumb({
+    ariaLabel: "Long location names",
+    variant: "default",
+    items: [
+      { label: "Home", href: "#home", icon: "home" },
+      { label: "Teaching resources", href: "#resources" },
+      { label: "Scandinavian history and the voyages of the Vikings", icon: "book-open" },
+    ],
+  });
+  root.append(longLabel, narrow, rtl);
   return root;
 };
 Layouts.parameters = { controls: { disable: true } };

@@ -1,5 +1,5 @@
 @use "../foundation/tokens" as t;
-@use "../present/icon.mixins" as icon;
+@use "../assets";
 
 // A labelled nav containing an ordered list of ancestor links and a current item.
 @mixin styles {
@@ -18,6 +18,7 @@
     line-height: t.$lineHeight;
     color: t.$onSurfaceAlt;
     padding-block: t.$frame-gridY;
+    overflow-x: auto;
 
     &[data-variant="backdrop"] {
       color: t.$onBackdrop;
@@ -26,7 +27,7 @@
 
   .ag-breadcrumb__list {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
     gap: t.$frame-gridY t.$frame-gridX;
     list-style: none;
@@ -35,15 +36,15 @@
   }
 
   .ag-breadcrumb__item {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     gap: t.$frame-gridX;
     min-inline-size: 0;
-    max-inline-size: 100%;
   }
 
   // Empty generated content keeps separators out of the accessible label.
-  // Attach each separator to the following crumb so they wrap together.
+  // Attach each separator to the following crumb.
   .ag-breadcrumb__item:not([hidden])
     ~ .ag-breadcrumb__item:not([hidden])::before {
     content: "";
@@ -51,13 +52,11 @@
 
   .ag-breadcrumb__item::before {
     flex: 0 0 auto;
-    inline-size: t.token("breadcrumb-icon-size");
-    block-size: t.token("breadcrumb-icon-size");
+    inline-size: t.token("breadcrumb-separator-size");
+    block-size: t.token("breadcrumb-separator-size");
     background: currentColor;
-    // Reuse the shared Feather glyph; 18px scales its stroke to 1.5px.
-    -webkit-mask: none center / contain no-repeat;
-    mask: none center / contain no-repeat;
-    @include icon.glyph("chevron-right");
+    -webkit-mask: assets.$breadcrumb-chevron center / contain no-repeat;
+    mask: assets.$breadcrumb-chevron center / contain no-repeat;
     transform: scaleX(var(--ag-breadcrumb-chevron-direction, 1));
   }
 
@@ -72,7 +71,7 @@
     min-inline-size: 0;
     color: inherit;
     font: inherit;
-    font-weight: 700;
+    font-weight: 400;
     text-decoration: none;
     border-radius: t.$frame-gridType;
 
@@ -86,20 +85,33 @@
       outline-offset: 2px;
     }
 
-    &[aria-current="page"] {
-      font-weight: 400;
-    }
-
     > .ag-icon {
       flex: 0 0 auto;
       inline-size: t.token("breadcrumb-icon-size");
       block-size: t.token("breadcrumb-icon-size");
+      // Preserve the sketch's exact favourite glyph; other names use shared icons.
+      &[data-icon="star"] {
+        -webkit-mask-image: assets.$breadcrumb-star;
+        mask-image: assets.$breadcrumb-star;
+      }
     }
   }
 
   .ag-breadcrumb__label {
     min-inline-size: 0;
-    overflow-wrap: anywhere;
+    white-space: nowrap;
+  }
+
+  .ag-breadcrumb__full-label {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
 
   :is(.ag-breadcrumb, .ag-breadcrumb__item, .ag-breadcrumb__link)[hidden] {

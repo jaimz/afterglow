@@ -97,7 +97,7 @@ The **Afterglow** page of the **Mobile** Figma file remains the visual authority
 | Navigation links          | [Menu Item 217:1](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=217-1)        |
 | Tabbed view, strip and tabs | [Tabbed View 19:1157](https://www.figma.com/design/7Hz5rGL1JRLfouCckw8FIq/AFMaster?node-id=19-1157), [Tab Strip 18:1129](https://www.figma.com/design/7Hz5rGL1JRLfouCckw8FIq/AFMaster?node-id=18-1129), [Tab 19:1137](https://www.figma.com/design/7Hz5rGL1JRLfouCckw8FIq/AFMaster?node-id=19-1137) |
 | Menu item | [Menu Item 25:1195](https://www.figma.com/design/7Hz5rGL1JRLfouCckw8FIq/AFMaster?node-id=25-1195) |
-| Breadcrumb | [Navigation path 5249:493](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=5249-493) |
+| Breadcrumb | [Breadcrumb 87:13](https://www.figma.com/design/7Hz5rGL1JRLfouCckw8FIq/AFMaster?node-id=87-13), [Breadcrumb Label 87:5](https://www.figma.com/design/7Hz5rGL1JRLfouCckw8FIq/AFMaster?node-id=87-5) |
 | Image | [Image 252:288](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=252-288) |
 | Card content              | [Card content 235:17](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=235-17)   |
 | Floating action button    | [FAB 284:1](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=284-1)              |

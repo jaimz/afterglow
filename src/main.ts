@@ -1,4 +1,6 @@
 // Styles are a separate entry point; importing helpers never registers elements.
+export { enhanceBreadcrumb } from "./behaviors/breadcrumb";
+export type { BreadcrumbController } from "./behaviors/breadcrumb";
 export { enhanceSlider } from "./behaviors/slider";
 export { enhanceCircularProgress } from "./behaviors/circular-progress";
 export { enhanceStagedProgress } from "./behaviors/staged-progress";

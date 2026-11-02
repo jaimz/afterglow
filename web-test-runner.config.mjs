@@ -44,7 +44,7 @@ export default {
             type: "image/svg+xml",
           };
         if (
-          /^\/assets\/(notification\/(info|alert|success|caution|close)|navigation\/shared|button\/add|avatar\/blank)\.svg$/.test(
+          /^\/assets\/(notification\/(info|alert|success|caution|close)|navigation\/shared|breadcrumb\/(star|chevron-right)|button\/add|avatar\/blank)\.svg$/.test(
             context.path
           )
         )
