@@ -1904,6 +1904,41 @@ The helper sets `aria-readonly` and temporarily suspends `required` on read-only
 
 `enhanceControls` also supplies radio-group Home/End and directional shortcuts and clears checkbox mixed state after an uncancelled form reset. Ordinary checkbox, radio and switch interaction does not need it. For read-only decorated sliders, initialise both `enhanceControls` and `enhanceSlider`.
 
+## Shared motion
+
+Motion values live in `src/styles/foundation/_primitives.scss` and are exposed through the shared theme. Both the `foundation.motion-transition` Sass mixin and `getMotionOptions` JavaScript helper read the same tokens, based on the earlier `af-react` motion system.
+
+| Setting | Token | Default |
+| --- | --- | --- |
+| Fast | `--motionFastDuration` | 50ms |
+| Medium | `--motionMediumDuration` | 125ms |
+| Slow | `--motionSlowDuration` | 250ms |
+| Very slow | `--motionVerySlowDuration` | 1000ms |
+| Entry curve | `--motionEntryCurve` | ease-in |
+| Exit curve | `--motionExitCurve` | ease-out |
+| Entry delay | `--motionEntryDelay` | 0ms |
+| Exit delay | `--motionExitDelay` | 0ms |
+| Stagger interval | `--motionStaggerDelay` | 50ms |
+
+Use the same named speed for both phases; exit steps down one speed (`very-slow` → `slow`, `slow` → `medium`, `medium` → `fast`, `fast` → `fast`). Theme overrides may use milliseconds or fractional seconds. Both helpers disable duration and delays for reduced motion. Timings are resolved on the animated element, so local themes work.
+
+```ts
+import { getMotionOptions } from "ag";
+element.animate(keyframes, {
+  ...getMotionOptions(element, "entry", "slow"),
+  fill: "both",
+});
+// An optional fourth argument is the zero-based stagger index.
+```
+
+```scss
+@use "ag/scss/foundation/mixins" as foundation;
+.example { @include foundation.motion-transition(entry, slow, (opacity, transform)); }
+.example[data-exiting] { @include foundation.motion-transition(exit, slow, (opacity, transform)); }
+```
+
+The shorthand `motion-entry($properties...)` and `motion-exit($properties...)` use medium speed. Motion consumers own visibility and lifecycle; the shared helper only supplies timing, easing and delay. Use `--motionPush` for short offset effects; a full panel slide travels its own size.
+
 ## Themes and SCSS
 
 The stylesheet declares all public design tokens on `:root`, including colours, typography, spacing and motion. The registry in [`foundation/_tokens.scss`](src/styles/foundation/_tokens.scss) combines foundation primitives and category token maps. Component styles reference the declared variables, and your own CSS can use them without repeating fallback values:

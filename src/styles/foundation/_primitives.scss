@@ -28,8 +28,12 @@ $defaults: (
   "motionFastDuration": 50ms,
   "motionMediumDuration": 125ms,
   "motionSlowDuration": 250ms,
+  "motionVerySlowDuration": 1000ms,
   "motionEntryCurve": ease-in,
   "motionExitCurve": ease-out,
+  "motionEntryDelay": 0ms,
+  "motionExitDelay": 0ms,
+  "motionStaggerDelay": 50ms,
   "motionPush": 16px,
 );
 

@@ -1,4 +1,6 @@
 // Styles are a separate entry point; importing helpers never registers elements.
+export { getMotionOptions } from "./behaviors/motion";
+export type { MotionSpeed, MotionPhase } from "./behaviors/motion";
 export { enhanceBreadcrumb } from "./behaviors/breadcrumb";
 export type { BreadcrumbController } from "./behaviors/breadcrumb";
 export { enhanceSlider } from "./behaviors/slider";
