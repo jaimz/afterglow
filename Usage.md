@@ -1938,6 +1938,39 @@ The helper sets `aria-readonly` and temporarily suspends `required` on read-only
 
 `enhanceControls` also supplies radio-group Home/End and directional shortcuts and clears checkbox mixed state after an uncancelled form reset. Ordinary checkbox, radio and switch interaction does not need it. For read-only decorated sliders, initialise both `enhanceControls` and `enhanceSlider`.
 
+## Paginator
+
+The paginator selects a page in a finite result set. Its default variant shows page numbers with noninteractive ellipses; `prev-next` adds previous and next controls. The first and last pages remain available, with two neighbours on each side of the current page; lists of up to nine pages are shown in full.
+
+```html
+<nav id="results-pages" class="ag-paginator" aria-label="Results pages"></nav>
+```
+
+```ts
+import { enhancePaginator } from "ag";
+const root = document.querySelector<HTMLElement>("#results-pages")!;
+const paginator = enhancePaginator(root, {
+  pageCount: 12,
+  page: 7,
+  variant: "prev-next", // Omit for numbers alone.
+});
+root.addEventListener("ag-page-change", (event) => {
+  const { page } = (event as CustomEvent<{ page: number }>).detail;
+  // Load and render this page's results in your application.
+});
+paginator.update({ pageCount: 5 }); // Silently clamps the current page to 5.
+// On disposal:
+paginator.destroy();
+```
+
+`pageCount` must be a non-negative safe integer; `page` is a one-based integer clamped to the available range. Zero pages produces no numbered items and disables both previous/next controls; one page disables both as well. User activation updates state and emits one bubbling `ag-page-change` event with `{ page, pageCount }`. Activating the current page and calling `update()` do not emit events. `page` and `pageCount` on the controller are read-only. `update()` accepts any subset of the initial options, rejects invalid input before changing state, and retains focus when regenerating controls. Repeated enhancement returns the existing controller; `destroy()` restores authored content and managed attributes.
+
+The helper creates native buttons with standard Tab/Enter/Space behaviour, an ordered list, `aria-current="page"`, descriptive page labels, and a polite page-change status. Boundary controls are natively disabled. A disabled previous/next button returns keyboard focus to the current page after activation. Customize `previousLabel`, `nextLabel`, `pageLabel(page)` and `statusLabel(page, pageCount)` for localization; name the landmark using `aria-label` or `aria-labelledby`. RTL follows the inherited direction. Result loading, URL changes and focus within the result content belong to the application.
+
+CSS-only consumers can use `ag-paginator__list`, `ag-paginator__item` on real links, `aria-current="page"` on the current link, and noninteractive `ag-paginator__ellipsis` list items with `aria-hidden="true"`. The enhancement helper generates buttons for client-side paging; omit it for server-rendered links.
+
+The defaults are `--paginator-width: 347px`, `--paginator-text-size: 13.33px` and `--paginator-padding-block: 6px`. The local unmodified selected-page SVG retains the sketch's 20px circle and shadow at its native 28px export size. Current numbers longer than two digits reduce their type size to fit that circle. The layout wraps in narrow containers and keeps space for the shadow and focus indicator. Import the `interact` category or the pure `interact/paginator.mixins` recipe; no icon category is required. **Interact / Paginator** includes both Figma variants, boundary and empty states, large counts, RTL/narrow layouts, and working content pagination.
+
 ## Shared motion
 
 Motion values live in `src/styles/foundation/_primitives.scss` and are exposed through the shared theme. Both the `foundation.motion-transition` Sass mixin and `getMotionOptions` JavaScript helper read the same tokens, based on the earlier `af-react` motion system.

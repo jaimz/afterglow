@@ -1,4 +1,6 @@
 // Styles are a separate entry point; importing helpers never registers elements.
+export { enhancePaginator } from "./behaviors/paginator";
+export type { PaginatorController, PaginatorOptions } from "./behaviors/paginator";
 export { getMotionOptions } from "./behaviors/motion";
 export type { MotionSpeed, MotionPhase } from "./behaviors/motion";
 export { enhanceIndexDetail } from "./behaviors/index-detail";

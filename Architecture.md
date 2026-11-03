@@ -118,6 +118,8 @@ Shared motion follows the earlier `af-react` phase/speed model. Foundation primi
 
 Keep the existing visual defaults when reorganising code. Resolve visual questions against Figma, and keep consumer-specific theme values in consumer overrides.
 
+The `interact/paginator` recipe follows [Mobile Paginator 149:1](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=149-1), including numbered and PrevNext variants. It uses shared Lato, surface/control text tokens and the exact local selected-page artwork. The opt-in `enhancePaginator` helper generates native page buttons and bounded page windows, owns current/disabled state and focus retention, and emits `ag-page-change` for application-owned content loading. CSS can also style native server-rendered page links without enhancement.
+
 ## Adding a recipe
 
 1. Choose its category and native semantic element; document any behaviour that needs a helper.

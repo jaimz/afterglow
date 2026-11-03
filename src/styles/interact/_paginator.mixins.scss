@@ -1,0 +1,98 @@
+@use "../foundation/tokens" as t;
+@use "../assets";
+
+@mixin styles {
+  .ag-paginator {
+    inline-size: t.token("paginator-width");
+    max-inline-size: 100%;
+    min-inline-size: 0;
+    padding-block: t.token("paginator-padding-block");
+    color: t.$onSurface;
+    font-family: t.$bodyFontStack;
+    font-size: t.token("paginator-text-size");
+    text-shadow: none;
+  }
+  .ag-paginator__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: t.$frame-gridY t.$frame-gridType;
+    list-style: none;
+    margin: 0;
+    padding: 0 t.$frame-gridType;
+  }
+  .ag-paginator__item,
+  .ag-paginator__ellipsis {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    box-sizing: border-box;
+    min-inline-size: 20px;
+    block-size: 20px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    font: inherit;
+    line-height: normal;
+    color: inherit;
+    background: transparent;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .ag-paginator__item {
+    cursor: pointer;
+    // Extend the hit area without changing the compact reference geometry.
+    &::after {
+      content: "";
+      position: absolute;
+      inset-block: -6px;
+      inset-inline: -2px;
+    }
+    &:hover:not(:disabled):not([aria-disabled="true"]):not([aria-current="page"]) {
+      color: t.$ctrlText;
+      background: t.token("selection-fill");
+    }
+    &:focus-visible {
+      outline: 2px solid t.$ctrlText;
+      outline-offset: 3px;
+    }
+    &:is(:disabled, [aria-disabled="true"]) {
+      opacity: t.$disabledOpacity;
+      cursor: default;
+    }
+    &[aria-current="page"] {
+      color: t.$onCtrlFillSolid;
+      background: transparent;
+      isolation: isolate;
+      &::before {
+        content: "";
+        position: absolute;
+        z-index: -1;
+        // Unmodified 28px export includes the 20px circle and its shadow.
+        inline-size: 28px;
+        block-size: 28px;
+        inset-inline-start: calc(50% - 14px);
+        inset-block-start: calc(50% - 12px);
+        background: assets.$paginator-selected center / 28px 28px no-repeat;
+      }
+    }
+  }
+  .ag-paginator__status {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  :is(.ag-paginator, .ag-paginator__item)[hidden] { display: none !important; }
+  @media (forced-colors: active) {
+    .ag-paginator__item[aria-current="page"] {
+      color: HighlightText;
+      background: Highlight;
+      forced-color-adjust: none;
+      &::before { display: none; }
+    }
+  }
+}
