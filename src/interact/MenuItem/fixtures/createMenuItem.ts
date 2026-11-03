@@ -17,10 +17,6 @@ export function menuItemContent({
   withChildMenu = false,
 }: MenuItemArgs = {}) {
   return `${
-    withChildMenu
-      ? '<span class="ag-icon ag-menu-item__child-menu" data-icon="chevron-right" aria-hidden="true"></span>'
-      : ""
-  }${
     icon
       ? `<span class="ag-icon ag-menu-item__leader" data-icon="${escapeHTML(
           icon
@@ -29,7 +25,9 @@ export function menuItemContent({
   }
     <span class="ag-menu-item__label">${escapeHTML(label)}</span>
     ${
-      withSubmenu && !withChildMenu
+      withChildMenu
+        ? '<span class="ag-icon ag-menu-item__child-menu" data-icon="chevron-right" aria-hidden="true"></span>'
+        : withSubmenu
         ? '<span class="ag-icon ag-menu-item__submenu" data-icon="chevron-right" aria-hidden="true"></span>'
         : ""
     }`;

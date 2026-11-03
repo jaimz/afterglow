@@ -42,7 +42,7 @@ it("uses shared icons and fits selected and unselected rows to the reference geo
   expect(parseFloat(style(item).fontSize)).to.be.closeTo(13.33, 0.02);
   expect(style(item).color).to.equal("rgb(0, 118, 147)");
   expect(style(item).backgroundColor).to.equal("rgba(110, 163, 176, 0.2)");
-  expect(style(item).borderRadius).to.equal("4px");
+  expect(style(item).borderRadius).to.equal("8px");
   const leader = item.querySelector(".ag-menu-item__leader");
   const submenu = item.querySelector(".ag-menu-item__submenu");
   expect(bounds(leader).width).to.equal(16);
@@ -53,6 +53,26 @@ it("uses shared icons and fits selected and unselected rows to the reference geo
   expect(style(item).color).to.equal("rgb(83, 83, 74)");
   expect(style(item).backgroundColor).to.equal("rgba(0, 0, 0, 0)");
   expect(style(item).borderRadius).to.equal("8px");
+});
+
+it("keeps hover and every selected state identical in radius and label geometry", async () => {
+  for (const label of ["Field notes", "A longer menu label that wraps across several lines"]) {
+    const item = createMenuItem({ label, icon: "" });
+    root.replaceChildren(item);
+    const labelElement = item.querySelector(".ag-menu-item__label");
+    const geometry = () => {
+      const row = bounds(item), text = bounds(labelElement), css = style(item);
+      return { height: row.height, textY: text.y, textHeight: text.height,
+        radius: css.borderRadius, padding: css.padding, lineHeight: css.lineHeight };
+    };
+    await sendMouse({ type: "move", position: [bounds(item).x + 20, bounds(item).y + 20] });
+    const hovered = geometry();
+    for (const [attribute, value] of [["data-selected", ""], ["aria-current", "page"], ["aria-pressed", "true"], ["aria-checked", "true"]]) {
+      item.setAttribute(attribute, value);
+      expect(geometry()).to.deep.equal(hovered);
+      item.removeAttribute(attribute);
+    }
+  }
 });
 
 it("keeps keyboard action and disabling native, and reflects toggle selection", async () => {
@@ -93,19 +113,25 @@ it("composes with native links and a functioning details disclosure", async () =
   const details = root.querySelector("details");
   const summary = root.querySelector("summary");
   expect(
-    summary.firstElementChild.classList.contains("ag-menu-item__child-menu")
+    summary.lastElementChild.classList.contains("ag-menu-item__child-menu")
   ).to.equal(true);
-  expect(bounds(summary.firstElementChild).left).to.equal(
-    bounds(summary).left + 16
+  expect(bounds(summary.lastElementChild).right).to.equal(
+    bounds(summary).right - 16
   );
+  const label = summary.querySelector(".ag-menu-item__label");
+  expect(style(summary.lastElementChild).transform).to.equal("matrix(-1, 0, 0, 1, 0, 0)");
+  expect(bounds(label).left).to.equal(bounds(summary.firstElementChild).right + 8);
+  expect(bounds(label).right).to.equal(bounds(summary.lastElementChild).left - 8);
   summary.focus();
   await sendKeys({ press: "Enter" });
   expect(details.open).to.equal(true);
   expect(
     style(summary.querySelector(".ag-menu-item__child-menu")).transform
   ).to.equal("matrix(0, 1, -1, 0, 0, 0)");
+  // Make keyboard traversal independent of Safari's link-tabbing preference.
+  details.querySelector("a").tabIndex = 0;
   await sendKeys({ press: "Tab" });
-  expect(document.activeElement).to.equal(details.querySelector("a"));
+  expect(document.activeElement === details.querySelector("a")).to.equal(true);
   summary.focus();
   await sendKeys({ press: "Space" });
   expect(details.open).to.equal(false);
@@ -129,9 +155,16 @@ it("wraps labels, omits optional slots and supports inherited RTL and expanded s
   const child = createMenuItem({ withChildMenu: true, withSubmenu: true });
   root.append(child);
   const childChevron = child.querySelector(".ag-menu-item__child-menu");
-  expect(child.firstElementChild).to.equal(childChevron);
+  expect(child.lastElementChild).to.equal(childChevron);
   expect(child.querySelector(".ag-menu-item__submenu")).to.equal(null);
-  expect(bounds(childChevron).right).to.equal(bounds(child).right - 16);
+  expect(bounds(childChevron).left).to.equal(bounds(child).left + 16);
+  expect(style(childChevron).transform).to.equal("matrix(1, 0, 0, 1, 0, 0)");
+  const childLabel = child.querySelector(".ag-menu-item__label");
+  expect(bounds(childLabel).left).to.equal(bounds(childChevron).right + 8);
+  expect(bounds(childLabel).right).to.equal(bounds(child.firstElementChild).left - 8);
+  // Older authored markup also gets the new trailing disclosure placement.
+  child.prepend(childChevron);
+  expect(bounds(childChevron).left).to.equal(bounds(child).left + 16);
   child.setAttribute("aria-expanded", "true");
   expect(style(childChevron).transform).to.equal("matrix(0, 1, -1, 0, 0, 0)");
   const textOnly = createMenuItem({ icon: "", label: "Text only" });

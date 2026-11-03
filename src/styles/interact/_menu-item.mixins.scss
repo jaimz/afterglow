@@ -36,9 +36,7 @@
   }
   &:is([data-selected], [aria-current]:not([aria-current="false"]), [aria-pressed="true"], [aria-checked="true"]) {
     background: t.token("selection-fill");
-    border-radius: t.$frame-gridType;
     color: t.$ctrlText;
-    line-height: normal;
   }
   &:focus-visible {
     outline: 2px solid t.$ctrlText;
@@ -91,6 +89,8 @@
     block-size: t.token("menu-item-icon-size");
   }
   .ag-menu-item > :is(.ag-menu-item__submenu, .ag-menu-item__child-menu) {
+    // Keep disclosure trailing even for older markup with this slot first.
+    order: 1;
     flex: 0 0 auto;
     inline-size: t.token("menu-item-submenu-icon-size");
     block-size: t.token("menu-item-submenu-icon-size");
@@ -99,6 +99,12 @@
   .ag-menu-item:dir(rtl)
     > :is(.ag-menu-item__submenu, .ag-menu-item__child-menu) {
     transform: scaleX(-1);
+  }
+  .ag-menu-item > .ag-menu-item__child-menu {
+    transform: scaleX(calc(-1 * var(--ag-menu-item-direction, 1)));
+  }
+  .ag-menu-item:dir(rtl) > .ag-menu-item__child-menu {
+    transform: scaleX(1);
   }
   .ag-menu-item[aria-expanded="true"] > .ag-menu-item__child-menu,
   details[open]

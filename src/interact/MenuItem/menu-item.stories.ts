@@ -99,7 +99,7 @@ export default {
     withChildMenu: {
       control: "boolean",
       description:
-        "Show a leading chevron for an inline child disclosure. Takes precedence over withSubmenu.",
+        "Show a trailing chevron for an inline child disclosure. Takes precedence over withSubmenu.",
     },
     withSubmenu: {
       control: "boolean",

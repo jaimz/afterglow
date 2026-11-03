@@ -1007,23 +1007,23 @@ The shared field has 4px corners and grows to wrap chips. It uses the standard t
 
 Every item needs a label. Leading icons use the shared `ag-icon` recipe; use any Feather name or omit the leading element entirely. Rows fill their container, grow to accommodate wrapping labels, and have no fixed width. The leading icon is `16px`, the optional submenu chevron is `24px`, gaps are `8px`, and padding is `12px` vertically and `16px` horizontally. The reference text size is `13.33px`; the minimum row height is `48px`.
 
-The default state is unselected, with a transparent background and surface-coloured text. Selected items use the shared selection fill, control text colour and a `4px` corner radius. For navigation, use `aria-current="page"` on the current link. For a native toggle button, use `aria-pressed="true"` (and update it on activation). `data-selected` provides the same visual treatment when selection semantics belong to another control; remove it to clear the state, rather than setting it to `"false"`. The Storybook boolean `isSelected` controls this attribute.
+The default state is unselected, with a transparent background and surface-coloured text. Selected items use the shared selection fill and control text colour. Default, hover and selected states share the same `8px` corner radius, line height and spacing so the label stays in place. For navigation, use `aria-current="page"` on the current link. For a native toggle button, use `aria-pressed="true"` (and update it on activation). `data-selected` provides the same visual treatment when selection semantics belong to another control; remove it to clear the state, rather than setting it to `"false"`. The Storybook boolean `isSelected` controls this attribute.
 
 Use native `disabled` on action buttons. `aria-disabled="true"` styles an unavailable item but does not prevent activation; your application must handle that if you use it. Links and summaries do not support native `disabled`. `hidden` removes a row from layout. Keyboard focus is visibly outlined, and Tab/Enter/Space behaviour remains native to the element you use.
 
 There are two distinct child-menu treatments:
 
 - `withSubmenu` adds a trailing `ag-menu-item__submenu` chevron to indicate a further popup menu. It keeps pointing toward the popup even when it is open. The Default story opens its popup on hover, and also supports click/keyboard activation and Escape to close.
-- `withChildMenu` adds a leading `ag-menu-item__child-menu` chevron, before the optional icon, for an inline disclosure. It turns down when expanded. The Child Menu story demonstrates this behaviour.
+- `withChildMenu` adds a trailing `ag-menu-item__child-menu` chevron after the label for an inline disclosure. The order is icon, expanding label, disclosure; the icon is optional. The closed chevron points inward toward the label (left in LTR, right in RTL) and turns down when expanded. The Child Menu story demonstrates this behaviour.
 
 These are Storybook/fixture flags; native HTML consumers include the corresponding icon slot. Use one treatment per item. If both flags are set in the fixture, `withChildMenu` takes precedence. The containing menu owns hover, popup positioning and focus behaviour. For a native inline disclosure without JavaScript:
 
 ```html
 <details>
   <summary class="ag-menu-item">
-    <span class="ag-icon ag-menu-item__child-menu" data-icon="chevron-right" aria-hidden="true"></span>
     <span class="ag-icon ag-menu-item__leader" data-icon="folder" aria-hidden="true"></span>
     <span class="ag-menu-item__label">Collections</span>
+    <span class="ag-icon ag-menu-item__child-menu" data-icon="chevron-right" aria-hidden="true"></span>
   </summary>
   <a class="ag-menu-item" href="/collections/research">
     <span class="ag-menu-item__label">Research</span>
@@ -1031,7 +1031,7 @@ These are Storybook/fixture flags; native HTML consumers include the correspondi
 </details>
 ```
 
-For application-controlled submenus, use a button with `aria-expanded` and `aria-controls`, then update the expanded state and submenu visibility together. Both chevrons mirror in right-to-left layouts; only the leading child-menu chevron turns down when expanded. Omit the chevron when the item has no children. Keep controls for nested content outside the item itself; do not nest buttons or links inside a menu-item button or link.
+For application-controlled submenus, use a button with `aria-expanded` and `aria-controls`, then update the expanded state and submenu visibility together. Both chevrons sit at the trailing edge and mirror in right-to-left layouts; only the child-menu chevron turns down when expanded. Omit the chevron when the item has no children. Keep controls for nested content outside the item itself; do not nest buttons or links inside a menu-item button or link.
 
 This recipe does not introduce `role="menu"` or `role="menuitem"`. Ordinary action lists and navigation can use native elements. If a containing widget uses ARIA menu roles, it must also supply the corresponding focus management and keyboard interactions. The recipe supports `aria-checked="true"` styling for such widgets, but does not implement those behaviours.
 
