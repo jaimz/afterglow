@@ -148,7 +148,41 @@ Opt into the application grid with `data-layout="application"`. The plain `ag-ap
 
 Regions must be direct children. On wider screens, the header spans the top, with navigation, main content and tools below it. Omit or add `hidden` to the navigation/tools region to release its column. At viewport widths of `48rem` or less, regions stack in DOM order. Set application padding and height in your CSS; the recipe does not impose scrolling or fixed positioning. The default navigation and tools widths are each `240px`, controlled by `--app-nav-width` and `--app-tools-width`, with a `16px` gap next to the main content.
 
-For a list and its selected detail:
+For a navigation index, its selected detail, and an optional inspector:
+
+```html
+<section class="ag-index-detail" aria-label="Notebook">
+  <nav class="ag-index-detail__index" aria-label="Notebooks" tabindex="0">
+    <!-- Navigation menu -->
+  </nav>
+  <section class="ag-index-detail__detail" aria-label="Notebook contents" tabindex="0">
+    <!-- Representation of the selected notebook -->
+  </section>
+  <aside class="ag-index-detail__inspector" aria-label="Inspector" tabindex="0">
+    <!-- Supplemental details for a selection within the notebook -->
+  </aside>
+</section>
+```
+
+Index-Detail updates the master-detail arrangement with three adjoining surfaces: an Index recessed by `8px`, the main Detail pane, and a white Inspector separated by a keyline. The default Index and Inspector widths follow the sketch's proportions (about `17.56%` and `22.64%`); Detail fills the remainder. Override `--index-detail-index-width` and `--index-detail-inspector-width` with percentages or fixed lengths. Omit the Inspector or add `hidden` to release its column automatically. In a stacked layout with a bounded height, Index retains its one-third share when Inspector closes; Detail receives all the released height. Index stays stable throughout the opening and closing animation.
+
+Regions must be direct children. Each pane scrolls independently when the application gives the root a bounded height; `tabindex="0"` makes scrollable regions keyboard reachable. The recipe supplies surface colours, logical corner radii and the Inspector divider, without interior padding or shadows. Add content and padding inside the panes. At a **container** width of `48rem` or less, the panes stack in Index, Detail, Inspector order; `data-orientation="vertical"` explicitly selects that arrangement at any width. RTL mirrors the columns, corners and divider. The application owns navigation and both levels of selection. CSS alone handles static layout; add `enhanceIndexDetail` for animated Inspector visibility. **Frame / Index Detail** demonstrates those interactions, an optional Inspector, narrow and RTL layouts, and the unfilled Figma sketch.
+
+```ts
+import { enhanceIndexDetail } from "ag";
+const layout = enhanceIndexDetail(root, { trigger: inspectorToggle, speed: "slow" });
+inspectorToggle.addEventListener("click", () => {
+  void layout.setInspectorOpen(!layout.inspectorOpen);
+});
+// When inspecting a selection:
+await layout.setInspectorOpen(true);
+// On disposal:
+layout.destroy();
+```
+
+The helper requires an Inspector direct child and retains its initial `hidden` state. Use `setInspectorOpen()` instead of changing `hidden` while enhanced. Inspector slides from the inline end (mirrored in RTL), or from below in a stacked layout; Detail resizes with it. The default is `slow` entry (250ms), with the next faster exit (125ms). Repeated calls reverse from the current position; their promises resolve on completion or supersession. Exit immediately makes Inspector inert and removes it from the accessibility tree, returning focus to the supplied trigger (or Detail) if needed; `hidden` is applied only after exit completes. The trigger's `aria-expanded` follows requested visibility; the application supplies its `aria-controls` and click handler. Reduced motion skips animation and delays. `refresh()` settles motion before manual layout changes. Resizing or changing orientation settles the transition; `destroy()` restores managed attributes and temporary styles while retaining requested visibility. Repeated enhancement returns the existing controller.
+
+The older master-detail recipe remains available for existing two-column views:
 
 ```html
 <section class="ag-master-detail" aria-label="Notes">

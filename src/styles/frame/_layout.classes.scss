@@ -7,6 +7,9 @@
 .ag-master-detail {
   @include layout.master-detail;
 }
+.ag-index-detail {
+  @include layout.index-detail;
+}
 .ag-card {
   @include layout.card;
 }

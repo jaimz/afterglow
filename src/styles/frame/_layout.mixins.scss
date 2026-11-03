@@ -82,6 +82,92 @@
   }
 }
 
+// The container query changes the children so this recipe can respond to its
+// own width, including inside a desktop split view, without an extra wrapper.
+@mixin -index-detail-stacked {
+  > :is(.ag-index-detail__index, .ag-index-detail__detail, .ag-index-detail__inspector) {
+    grid-column: 1 / -1;
+    margin-block-start: 0;
+    border-radius: 0;
+  }
+  > .ag-index-detail__index {
+    grid-row: 1;
+    border-start-start-radius: t.$frame-gridX;
+    border-start-end-radius: t.$frame-gridX;
+  }
+  > .ag-index-detail__detail {
+    grid-row: 2;
+  }
+  > .ag-index-detail__inspector {
+    grid-row: 3;
+    --ag-index-detail-inspector-axis: block;
+    border-inline-start: 0;
+    border-block-start: 1px solid t.token("keyline");
+  }
+}
+
+@mixin index-detail {
+  container: ag-index-detail / inline-size;
+  display: grid;
+  grid-template-columns: minmax(0, #{t.token("index-detail-index-width")}) minmax(0, 1fr) minmax(0, #{t.token("index-detail-inspector-width")});
+  // Wide panes span all rows. Stacked panes occupy one each; retaining the
+  // first track's share lets only Detail absorb the Inspector's released space.
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  min-inline-size: 0;
+  min-block-size: 0;
+  text-shadow: none;
+  &[data-inspector-motion] {
+    overflow: clip;
+  }
+
+  > :is(.ag-index-detail__index, .ag-index-detail__detail, .ag-index-detail__inspector) {
+    box-sizing: border-box;
+    min-inline-size: 0;
+    min-block-size: 0;
+    grid-row: 1 / -1;
+    overflow: auto;
+    overflow-wrap: anywhere;
+  }
+  > .ag-index-detail__index {
+    grid-column: 1;
+    margin-block-start: t.$frame-gridY;
+    border-start-start-radius: t.$frame-gridX;
+    background: t.$surface;
+    color: t.$onSurface;
+  }
+  > .ag-index-detail__detail {
+    grid-column: 2;
+    border-start-start-radius: t.$frame-gridX;
+    background: t.$panel;
+    color: t.$onPanel;
+  }
+  > .ag-index-detail__inspector {
+    --ag-index-detail-inspector-axis: inline;
+    grid-column: 3;
+    border-start-end-radius: t.$frame-gridX;
+    border-inline-start: 1px solid t.token("keyline");
+    background: t.$paper;
+    color: t.$onPaper;
+  }
+  &:where(:not(:has(> .ag-index-detail__inspector:not([hidden])))) {
+    grid-template-columns: minmax(0, #{t.token("index-detail-index-width")}) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 0fr);
+    > .ag-index-detail__detail {
+      border-start-end-radius: t.$frame-gridX;
+    }
+  }
+  &[data-orientation="vertical"] {
+    @include -index-detail-stacked;
+  }
+  @container ag-index-detail (max-width: 48rem) {
+    @include -index-detail-stacked;
+  }
+  &[hidden],
+  > [hidden] {
+    display: none !important;
+  }
+}
+
 @mixin card {
   text-shadow: none;
   display: grid;
