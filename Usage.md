@@ -1808,6 +1808,61 @@ Backgrounds reuse `--onPanelAlt`, `--error`, `--success` and `--caution`. Messag
 
 **Indicate / Notification** in Storybook includes the variant gallery, configurable example, six positions within a view, timed stacking and the native HTML example.
 
+## Popovers
+
+Use `ag-popover` for a short, contextual task or supporting information anchored to a button. It is a nonmodal dialog: the rest of the page remains interactive, with no scrim or focus trap. For action lists use Popup Menu; for warnings or tasks that require a decision use Dialog.
+
+```html
+<button id="notebook-details" type="button" class="ag-button"
+  popovertarget="notebook-popover">Notebook details</button>
+<div id="notebook-popover" class="ag-popover" popover="auto"
+  aria-labelledby="notebook-title">
+  <header class="ag-popover__header">
+    <h2 id="notebook-title" class="ag-popover__title">Field notes</h2>
+  </header>
+  <div class="ag-popover__body">
+    <p>A place for observations and things to return to.</p>
+  </div>
+  <footer class="ag-popover__footer">
+    <button type="button" class="ag-button" data-popover-close>Done</button>
+  </footer>
+</div>
+```
+
+```ts
+import { enhancePopover } from "ag";
+
+const popover = enhancePopover(document.querySelector<HTMLElement>("#notebook-popover")!, {
+  trigger: document.querySelector<HTMLButtonElement>("#notebook-details")!,
+  placement: "bottom", // top | bottom | inline-start | inline-end
+  align: "center",     // start | center | end
+});
+
+popover.show();
+popover.hide();
+popover.refresh(); // Reposition after moving the trigger without a scroll/resize.
+popover.destroy(); // Close, disconnect observers/listeners, restore managed attributes/styles.
+```
+
+The helper requires the native Popover API and supplies placement, trigger ARIA, focus handling and `data-popover-close` actions. Without it, native `popovertarget` still toggles visibility, but this recipe does not position itself beside its trigger. Mount the panel and trigger in the same document before opening; keep the trigger outside its panel. Repeated enhancement returns the original controller.
+
+Header and footer are optional. Put content in `ag-popover__body` so it can scroll while the title and actions stay visible. Provide `aria-labelledby` or `aria-label`; if neither is authored, the helper labels the panel from its `ag-popover__title` and generates an ID when needed. Use `autofocus` on the most useful control. Otherwise the panel receives focus so its title is announced. Tab navigates normally, and leaving the panel and trigger closes it without moving focus back. Escape, clicking outside, clicking the trigger again, or a `data-popover-close` button dismisses it. Explicit closing returns focus to the trigger when focus was inside the panel. `show({ focus: false })` preserves current focus; `hide({ restoreFocus: false })` suppresses the helper's focus return. The read-only `isOpen` reports native visibility, including during an exit transition.
+
+Native auto popovers replace other unrelated auto popovers. Avoid nesting these panels. Controls stay mounted when closed and selecting or editing a control does not automatically dismiss the panel. Application code owns persistence: save edits as they happen or when handling native `toggle` events, and never silently discard them on outside-click dismissal. Include a Done or Cancel button only when it clarifies the task; implement explicit cancellation in application code.
+
+Placement flips to an available side and clamps within the visual viewport, keeping the pointer aimed at the trigger. Logical sides and horizontal start/end alignment mirror in RTL. Scrolling, resizing, trigger/panel size changes and virtual-keyboard viewport changes update positioning; a trigger scrolled out of view closes its panel. On narrow screens the width is constrained and long bodies scroll. Prefer a modal/sheet for substantial tasks in compact views.
+
+| Token | Default | Purpose |
+| --- | --- | --- |
+| `--popover-width` | `320px` | Preferred panel width; constrained to available space |
+| `--popover-radius` | `12px` | Panel corner radius |
+| `--popover-gap` | `12px` | Trigger-to-panel distance in pixels (minimum 8px for the pointer) |
+| `--popover-shadow` | Two soft shadow layers | Elevation above surrounding content |
+
+Colours inherit `--panel`, `--onPanel` and `--keyline`; spacing uses `--grid-x` and `--grid-y`. The pointer uses the same panel surface. Fade/scale motion follows shared medium entry and fast exit tokens, including curves/delays, and disables for reduced motion. Browsers supporting discrete `display`/`overlay` transitions retain the panel in the top layer for exit; others dismiss immediately. Do not override the helper-owned `--ag-popover-*` positioning values or `data-side`.
+
+The pure Sass entry exposes `frame.popover-popover` and `frame.popover-styles`. **Frame / Popover** in Storybook includes information, persistent settings, editing, four placements, viewport edges, long content, narrow screens, RTL and a local theme.
+
 ## Dialogs
 
 Use a labelled native dialog. This example uses HTML invoker commands and needs no Afterglow helper:

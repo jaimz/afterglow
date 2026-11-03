@@ -120,6 +120,8 @@ Keep the existing visual defaults when reorganising code. Resolve visual questio
 
 The `interact/paginator` recipe follows [Mobile Paginator 149:1](https://www.figma.com/design/EAs4mNS5YP0qRcKfN4HGST/Mobile?node-id=149-1), including numbered and PrevNext variants. It uses shared Lato, surface/control text tokens and the exact local selected-page artwork. The opt-in `enhancePaginator` helper generates native page buttons and bounded page windows, owns current/disabled state and focus retention, and emits `ag-page-change` for application-owned content loading. CSS can also style native server-rendered page links without enhancement.
 
+The `frame/popover` recipe is an Afterglow interpretation of [Apple's popover guidance](https://developer.apple.com/design/human-interface-guidelines/popovers), with no Figma source. It uses existing panel, type, spacing and motion tokens, a small pointer, and dedicated width/radius/gap/shadow tokens. `enhancePopover` adds nonmodal dialog semantics and measured placement to native auto popovers. Measurement keeps the pointer attached across viewport clamping, side changes, RTL and visual-viewport resizing without depending on CSS anchor support. Native popovers own the top layer, Escape and outside-click dismissal; CSS discrete transitions preserve native dismissal timing while animating supported exits. Content and application state stay mounted. The helper restores managed attributes/styles on disposal and does not apply action-menu keyboard semantics or a modal focus trap.
+
 ## Adding a recipe
 
 1. Choose its category and native semantic element; document any behaviour that needs a helper.

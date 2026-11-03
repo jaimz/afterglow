@@ -1,4 +1,6 @@
 // Styles are a separate entry point; importing helpers never registers elements.
+export { enhancePopover } from "./behaviors/popover";
+export type { PopoverController, PopoverOptions, PopoverPlacement } from "./behaviors/popover";
 export { enhancePaginator } from "./behaviors/paginator";
 export type { PaginatorController, PaginatorOptions } from "./behaviors/paginator";
 export { getMotionOptions } from "./behaviors/motion";
