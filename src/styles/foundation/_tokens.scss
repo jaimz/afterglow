@@ -1,4 +1,5 @@
 @use "sass:map";
+@use "sass:string";
 @use "primitives";
 @use "../frame/tokens" as frame;
 @use "../indicate/tokens" as indicate;
@@ -20,6 +21,9 @@ $defaults: ();
     @if map.has-key($defaults, $name) {
       @error "Duplicate Afterglow token: #{$name}";
     }
+    @if string.to-lower-case($name) != $name or string.index($name, "_") {
+      @error "Token names must use lower-case dashed spelling: #{$name}";
+    }
     $defaults: map.set($defaults, $name, $value);
   }
 }
@@ -29,15 +33,19 @@ $derived: primitives.$derived;
   @if not map.has-key($defaults, $name) and not map.has-key($derived, $name) {
     @error "Unknown Afterglow token: #{$name}";
   }
+  @if map.has-key($derived, $name) {
+    $base: token(map.get($derived, $name));
+    $operator: "/";
+    @if string.slice($name, 1, 1) == "h" {
+      $operator: "*";
+    }
+    @return var(--#{$name}, calc(#{$base} #{$operator} var(--text-scale)));
+  }
   @return var(--#{$name});
 }
 
-// Recalculate derived values and apply only the supplied overrides. Base values
-// inherit from the parent theme. Explicit derived overrides win over the formula.
+// Apply only supplied overrides. Derived defaults resolve in token() where used.
 @mixin theme($overrides: ()) {
-  @each $name, $value in $derived {
-    --#{$name}: #{$value};
-  }
   @each $name, $value in $overrides {
     @if not map.has-key($defaults, $name) and not map.has-key($derived, $name) {
       @error "Unknown Afterglow token: #{$name}";
@@ -46,82 +54,78 @@ $derived: primitives.$derived;
   }
 }
 
-// Preserve the existing public Sass variable names as CSS variable references.
-$gridType: token("gridType");
-$gridX: token("gridX");
-$gridY: token("gridY");
-$body2TextSize: token("body2-text-size");
-$bodyFontStack: token("body-font-stack");
-$bodyTextSize: token("body-text-size");
-$captionTextSize: token("caption-text-size");
-$h1TextSize: token("h1-text-size");
-$h2TextSize: token("h2-text-size");
-$h3TextSize: token("h3-text-size");
-$h4TextSize: token("h4-text-size");
-$h5TextSize: token("h5-text-size");
-$lineHeight: token("line-height");
-$maxLineWidth: token("max-line-width");
-$smallCaptionTextSize: token("small-caption-text-size");
-$textScale: token("text-scale");
-$titleFontStack: token("title-font-stack");
-$typeScale: token("type-scale");
+// Sass names match their public CSS token names.
+$grid-type: token("grid-type");
+$grid-x: token("grid-x");
+$grid-y: token("grid-y");
+$body2-text-size: token("body2-text-size");
+$body-font-stack: token("body-font-stack");
+$body-text-size: token("body-text-size");
+$caption-text-size: token("caption-text-size");
+$h1-text-size: token("h1-text-size");
+$h2-text-size: token("h2-text-size");
+$h3-text-size: token("h3-text-size");
+$h4-text-size: token("h4-text-size");
+$h5-text-size: token("h5-text-size");
+$line-height: token("line-height");
+$max-line-width: token("max-line-width");
+$small-caption-text-size: token("small-caption-text-size");
+$text-scale: token("text-scale");
+$title-font-stack: token("title-font-stack");
 $backdrop: token("backdrop");
-$backdropKeyline: token("backdropKeyline");
-$backdropLight: token("backdropLight");
-$backdropTextElevation: token("backdropTextElevation");
-$elevationShadow: token("elevationShadow");
-$frame-gridType: token("grid-type");
-$frame-gridX: token("grid-x");
-$frame-gridY: token("grid-y");
-$modalScrimFill: token("modalScrimFill");
-$modalScrimFilter: token("modalScrimFilter");
-$onBackdrop: token("onBackdrop");
-$onBackdropAlt: token("onBackdropAlt");
-$onPanel: token("onPanel");
-$onPanelAlt: token("onPanelAlt");
-$onPaper: token("onPaper");
-$onPaperAlt: token("onPaperAlt");
-$onSurface: token("onSurface");
-$onSurfaceAlt: token("onSurfaceAlt");
+$backdrop-keyline: token("backdrop-keyline");
+$backdrop-light: token("backdrop-light");
+$backdrop-text-elevation: token("backdrop-text-elevation");
+$elevation-shadow: token("elevation-shadow");
+$modal-scrim-fill: token("modal-scrim-fill");
+$modal-scrim-filter: token("modal-scrim-filter");
+$on-backdrop: token("on-backdrop");
+$on-backdrop-alt: token("on-backdrop-alt");
+$on-panel: token("on-panel");
+$on-panel-alt: token("on-panel-alt");
+$on-paper: token("on-paper");
+$on-paper-alt: token("on-paper-alt");
+$on-surface: token("on-surface");
+$on-surface-alt: token("on-surface-alt");
 $panel: token("panel");
 $paper: token("paper");
 $surface: token("surface");
-$ctrlBorder: token("ctrl-border");
-$ctrlFill: token("ctrl-fill");
-$ctrlFillActive: token("ctrl-fill-active");
-$ctrlFillDark: token("ctrl-fill-dark");
-$ctrlFillHi: token("ctrl-fill-hi");
-$ctrlFillHover: token("ctrl-fill-hover");
-$ctrlFillLo: token("ctrl-fill-lo");
-$ctrlFillSolid: token("ctrl-fill-solid");
-$ctrlFillSolidDesaturate: token("ctrlFillSolidDesaturate");
-$ctrlFillSolidDesaturate40: token("ctrlFillSolidDesaturate40");
-$ctrlFillSolidHi: token("ctrl-fill-solid-hi");
-$ctrlFillSolidLo: token("ctrl-fill-solid-lo");
-$ctrlHint: token("ctrlHint");
-$ctrlHint50: token("ctrlHint50");
-$ctrlText: token("ctrlText");
-$ctrlTextDesat: token("ctrlTextDesat");
-$ctrlTextDesat40: token("ctrlTextDesat40");
-$disabledOpacity: token("disabled-opacity");
+$ctrl-border: token("ctrl-border");
+$ctrl-fill: token("ctrl-fill");
+$ctrl-fill-active: token("ctrl-fill-active");
+$ctrl-fill-dark: token("ctrl-fill-dark");
+$ctrl-fill-hi: token("ctrl-fill-hi");
+$ctrl-fill-hover: token("ctrl-fill-hover");
+$ctrl-fill-lo: token("ctrl-fill-lo");
+$ctrl-fill-solid: token("ctrl-fill-solid");
+$ctrl-fill-solid-desaturate: token("ctrl-fill-solid-desaturate");
+$ctrl-fill-solid-desaturate40: token("ctrl-fill-solid-desaturate40");
+$ctrl-fill-solid-hi: token("ctrl-fill-solid-hi");
+$ctrl-fill-solid-lo: token("ctrl-fill-solid-lo");
+$ctrl-hint: token("ctrl-hint");
+$ctrl-hint50: token("ctrl-hint50");
+$ctrl-text: token("ctrl-text");
+$ctrl-text-desat: token("ctrl-text-desat");
+$ctrl-text-desat40: token("ctrl-text-desat40");
+$disabled-opacity: token("disabled-opacity");
 $danger: token("danger");
-$onDanger: token("on-danger");
-$onCtrlFillSolid: token("on-ctrl-fill-solid");
+$on-danger: token("on-danger");
+$on-ctrl-fill-solid: token("on-ctrl-fill-solid");
 $caution: token("caution");
 $error: token("error");
-$onCaution: token("on-caution");
-$onError: token("on-error");
-$onSuccess: token("on-success");
+$on-caution: token("on-caution");
+$on-error: token("on-error");
+$on-success: token("on-success");
 $success: token("success");
-$motionFastDuration: token("motionFastDuration");
-$motionMediumDuration: token("motionMediumDuration");
-$motionSlowDuration: token("motionSlowDuration");
-$motionEntryCurve: token("motionEntryCurve");
-$motionExitCurve: token("motionExitCurve");
-$motionPush: token("motionPush");
-$notificationMessageMinWidth: token("notification-message-min-width");
-$notificationMessageMaxWidth: token("notification-message-max-width");
-$notificationOffset: token("notification-offset");
-$notificationGap: token("notification-gap");
-$notificationPaddingBlock: token("notification-padding-block");
-$notificationPaddingInline: token("notification-padding-inline");
+$motion-fast-duration: token("motion-fast-duration");
+$motion-medium-duration: token("motion-medium-duration");
+$motion-slow-duration: token("motion-slow-duration");
+$motion-entry-curve: token("motion-entry-curve");
+$motion-exit-curve: token("motion-exit-curve");
+$motion-push: token("motion-push");
+$notification-message-min-width: token("notification-message-min-width");
+$notification-message-max-width: token("notification-message-max-width");
+$notification-offset: token("notification-offset");
+$notification-gap: token("notification-gap");
+$notification-padding-block: token("notification-padding-block");
+$notification-padding-inline: token("notification-padding-inline");

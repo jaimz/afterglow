@@ -43,7 +43,7 @@ beforeEach(async () => {
   controllers = [];
   root = document.createElement("section");
   root.className = "ag-body";
-  root.style.setProperty("--motionSlowDuration", "0ms");
+  root.style.setProperty("--motion-slow-duration", "0ms");
   document.body.append(root);
   await sendMouse({ type: "move", position: [0, 0] });
 });
@@ -67,9 +67,9 @@ it("can initialize a Storybook fixture before it is mounted", async () => {
 
 it("preserves the variant colours and renders the exported icons at their specified sizes", async () => {
   const colours = {
-    default: "rgb(100, 120, 140)",
-    alert: "rgb(207, 53, 88)",
-    success: "rgb(82, 169, 106)",
+    default: "rgb(88, 109, 128)",
+    alert: "rgb(191, 43, 77)",
+    success: "rgb(50, 117, 68)",
     caution: "rgb(236, 187, 91)",
   };
   for (const [variant, colour] of Object.entries(colours)) {
@@ -79,9 +79,9 @@ it("preserves the variant colours and renders the exported icons at their specif
     const bounds = element.getBoundingClientRect();
     expect(styles.backgroundColor).to.equal(colour);
     expect(styles.color).to.equal(
-      variant === "caution" ? "rgb(83, 83, 74)" : "rgb(243, 238, 230)"
+      variant === "caution" ? "rgb(74, 74, 66)" : "rgb(243, 238, 230)"
     );
-    expect(bounds.height).to.be.closeTo(56, 0.05);
+    expect(bounds.height).to.be.closeTo(57, 0.05);
     const icon = element.querySelector(".ag-notification__icon");
     const iconBounds = icon.getBoundingClientRect();
     const width = variant === "success" ? 16 : 20;
@@ -225,7 +225,7 @@ it("keeps manual notifications open through outside clicks and Escape", async ()
 
 it("starts the timeout after entry and closes with the timeout reason", async () => {
   const { element, controller } = create({ timeout: 40 });
-  element.style.setProperty("--motionSlowDuration", "60ms");
+  element.style.setProperty("--motion-slow-duration", "60ms");
   const closed = onClose(element);
   const opening = controller.show();
   await delay(25);
@@ -274,7 +274,7 @@ it("can change a timed notification to manual and reopen during exit", async () 
   expect(controller.open).to.equal(true);
   let closes = 0;
   element.addEventListener("close", () => closes++);
-  element.style.setProperty("--motionSlowDuration", "60ms");
+  element.style.setProperty("--motion-slow-duration", "60ms");
   const hiding = controller.hide();
   await controller.show({ timeout: 0, position: "bottom-center" });
   await hiding;
@@ -321,6 +321,111 @@ it("announces message text separately from the close button and cleans up", asyn
   ).to.equal(before);
 });
 
+it("announces inside its owning modal and keeps dismissal reachable", async () => {
+  const dialog = document.createElement("dialog");
+  dialog.innerHTML = '<button type="button">Save</button>';
+  root.append(dialog);
+  const { element, controller, button } = create();
+  dialog.append(element);
+  dialog.showModal();
+  await controller.show();
+  await settle();
+  const region = dialog.querySelector(".ag-notification-announcer");
+  expect(region?.textContent).to.equal(
+    element.querySelector(".ag-notification__message").textContent
+  );
+  button.focus();
+  expect(document.activeElement).to.equal(button);
+  const closed = onClose(element);
+  button.click();
+  await closed;
+  expect(controller.open).to.equal(false);
+  dialog.close();
+});
+
+it("defers background notifications during modals, including native invokers", async () => {
+  const dialog = document.createElement("dialog");
+  dialog.innerHTML = '<button type="button">Continue</button>';
+  root.append(dialog);
+  dialog.showModal();
+  const { element, controller } = create({ timeout: 100 });
+  let closes = 0;
+  element.addEventListener("close", () => closes++);
+  await controller.show();
+  element.showPopover();
+  await delay(160);
+  expect(controller.open).to.equal(false);
+  expect(
+    document.querySelector(".ag-notification-announcer").textContent
+  ).to.equal("");
+  expect(closes).to.equal(0);
+  dialog.close();
+  await settle();
+  expect(controller.open).to.equal(true);
+  const closed = onClose(element);
+  expect((await closed).detail.reason).to.equal("timeout");
+});
+
+it("suspends visible notifications without dismissing them and cancels deferred shows", async () => {
+  const { element, controller } = create();
+  await controller.show();
+  const dialog = document.createElement("dialog");
+  dialog.innerHTML = "<button>Continue</button>";
+  root.prepend(dialog);
+  let closes = 0;
+  element.addEventListener("close", () => closes++);
+  dialog.showModal();
+  await settle();
+  expect(controller.open).to.equal(false);
+  expect(closes).to.equal(0);
+  dialog.close();
+  await settle();
+  expect(controller.open).to.equal(true);
+  dialog.showModal();
+  await settle();
+  await controller.hide();
+  expect(closes).to.equal(1);
+  dialog.close();
+  await settle();
+  expect(controller.open).to.equal(false);
+});
+
+it("handles nested modals, inert ancestors and cleanup while deferred", async () => {
+  const outer = document.createElement("dialog");
+  const inner = document.createElement("dialog");
+  outer.innerHTML = "<button>Outer</button>";
+  inner.innerHTML = "<button>Inner</button>";
+  root.append(outer);
+  outer.append(inner);
+  const { element, controller } = create();
+  outer.append(element);
+  outer.showModal();
+  await controller.show();
+  inner.showModal();
+  await settle();
+  expect(controller.open).to.equal(false);
+  inner.close();
+  await settle();
+  expect(controller.open).to.equal(true);
+  outer.close();
+  await settle();
+  expect(controller.open).to.equal(false);
+  root.append(element);
+  root.inert = true;
+  await settle();
+  expect(controller.open).to.equal(false);
+  root.inert = false;
+  await settle();
+  expect(controller.open).to.equal(true);
+  root.inert = true;
+  await settle();
+  controller.destroy();
+  root.inert = false;
+  await settle();
+  expect(controller.open).to.equal(false);
+  expect(document.querySelector(".ag-notification-announcer")).to.equal(null);
+});
+
 it("retains native HTML invoker controls and observes native closing", async () => {
   const { element, controller } = create();
   const invoker = document.createElement("button");
@@ -360,4 +465,47 @@ it("rejects invalid options without opening and keeps initialisation idempotent"
     expect(element.matches(":popover-open")).to.equal(false);
   }
   expect(element.getAttribute("popover")).to.equal("manual");
+});
+
+it("does not resurrect a dismissed message when a modal interrupts its exit", async () => {
+  const { element, controller } = create();
+  await controller.show();
+  const dialog = document.createElement("dialog");
+  dialog.innerHTML = "<button>Continue</button>";
+  root.append(dialog);
+  const closed = onClose(element);
+  const hiding = controller.hide("close-button");
+  dialog.showModal();
+  expect((await closed).detail.reason).to.equal("close-button");
+  await hiding;
+  dialog.close();
+  await settle();
+  expect(controller.open).to.equal(false);
+});
+
+it("tracks sibling modal order and permits a modal to escape an inert ancestor", async () => {
+  const first = document.createElement("dialog");
+  const second = document.createElement("dialog");
+  first.innerHTML = "<button>First</button>";
+  second.innerHTML = "<button>Second</button>";
+  root.append(first, second);
+  const { element, controller, button } = create();
+  first.append(element);
+  second.showModal();
+  first.showModal();
+  root.inert = true;
+  await controller.show();
+  await settle();
+  expect(controller.open).to.equal(true);
+  button.focus();
+  expect(document.activeElement).to.equal(button);
+  root.inert = false;
+  first.close();
+  await settle();
+  expect(controller.open).to.equal(false);
+  second.close();
+  first.showModal();
+  await settle();
+  expect(controller.open).to.equal(true);
+  first.close();
 });

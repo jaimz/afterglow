@@ -1,3 +1,5 @@
+import { getMotionOptions } from "./motion";
+
 /**
  * Adds placement, stacking, animation, announcements and optional automatic
  * dismissal to a native notification popover. Load the Afterglow styles and
@@ -8,6 +10,9 @@
  * passed to show() apply to that opening; later calls use the original defaults.
  * A positive timeout starts after entry and pauses while hovered, focused, or
  * in a hidden document. Zero keeps the notification open until dismissed.
+ * Place dialog-related notifications inside that dialog. Notifications outside
+ * the active modal (or inside inert/closed content) wait until their scope is
+ * available; their timeout starts after they are shown again.
  *
  * Listen for close events and read event.detail.reason to learn why it closed.
  * Call destroy() when disposing the view to release timers, listeners and the
@@ -55,10 +60,12 @@ export type NotificationCloseReason =
   | "native";
 
 export interface NotificationController {
+  update(options?: NotificationOptions): void;
+  refresh(): void;
   /** Native popover visibility, including while the exit animation runs. */
   readonly open: boolean;
 
-  /** Open with per-call overrides and await entry; re-showing restarts the timeout. */
+  /** Await entry, or queue while the owning scope is inert. Re-showing restarts timeout. */
   show(options?: NotificationOptions): Promise<void>;
 
   /** Await animated closing and emit close with the reason (programmatic by default). */
@@ -111,14 +118,17 @@ function restack() {
 /**
  * Enhance a notification, or return its existing controller if already set up.
  * Requires native Popover support, a message and a close button. Defaults are
- * captured on the first call; use show(options) to override them for an opening.
+ * updated by repeated enhancement/update(options); show(options) overrides one opening.
  */
 export function enhanceNotification(
   element: HTMLElement,
   options: NotificationOptions = {}
 ): NotificationController {
   const existing = controllers.get(element);
-  if (existing) return existing;
+  if (existing) {
+    existing.update(options);
+    return existing;
+  }
 
   const closeButton = element.querySelector<HTMLButtonElement>(
     "button.ag-notification__close"
@@ -175,7 +185,7 @@ export function enhanceNotification(
     return next;
   };
 
-  const defaults = settings(options, {
+  let defaults = settings(options, {
     position: (element.dataset.position || "top-right") as NotificationPosition,
     timeout: 0,
     container: null,
@@ -195,6 +205,7 @@ export function enhanceNotification(
   let visible = element.matches(":popover-open");
   let destroyed = false;
   let closing = false;
+  let closingReason: NotificationCloseReason = "programmatic";
   let entering = false;
 
   // A newer show/hide invalidates the completion of an earlier animation.
@@ -206,6 +217,35 @@ export function enhanceNotification(
   let announcementFrame = 0;
   let resumeFrame = 0;
   let previousFocus: HTMLElement | null = null;
+  let pending: Settings | null = null;
+  let modalOrder: HTMLDialogElement[] = [];
+
+  // Focus identifies the active modal, including siblings opened out of DOM order.
+  // Retain that ordering while focus is transiently on the document during close.
+  const currentModal = () => {
+    const modals = [...doc.querySelectorAll<HTMLDialogElement>("dialog:modal")];
+    modalOrder = modalOrder.filter((modal) => modals.includes(modal));
+    for (const modal of modals)
+      if (!modalOrder.includes(modal)) modalOrder.push(modal);
+    const focused =
+      doc.activeElement?.closest<HTMLDialogElement>("dialog:modal");
+    if (focused)
+      modalOrder = [...modalOrder.filter((m) => m !== focused), focused];
+    return modalOrder.at(-1);
+  };
+  const available = (next = entry.settings) => {
+    const modal = currentModal();
+    const inert = element.closest("[inert]");
+    return (
+      element.isConnected &&
+      (!next.container || next.container.isConnected) &&
+      // showModal() escapes inert ancestors, but not inert descendants or an
+      // explicitly inert modal itself.
+      (!inert || (modal && !modal.contains(inert))) &&
+      !element.closest("dialog:not([open])") &&
+      (!modal || modal.contains(element))
+    );
+  };
 
   // A persistent live region is established before its text changes. The close
   // button remains outside the announcement, and showing a toast never focuses it.
@@ -299,11 +339,9 @@ export function enhanceNotification(
 
   /** Animate from the chosen edge using theme motion tokens and reduced-motion settings. */
   const animate = (exit: boolean) => {
-    const css = getComputedStyle(element);
-    const speed =
-      css.getPropertyValue("--motionSlowDuration").trim() || "250ms";
-    const duration = parseFloat(speed) * (speed.endsWith("ms") ? 1 : 1000);
-    const push = css.getPropertyValue("--motionPush").trim() || "16px";
+    const push =
+      getComputedStyle(element).getPropertyValue("--motion-push").trim() ||
+      "16px";
     const direction = entry.settings.position.startsWith("top") ? "-1" : "1";
     const frames = [
       { opacity: 0, transform: `translateY(calc(${direction} * ${push}))` },
@@ -311,15 +349,7 @@ export function enhanceNotification(
     ];
 
     animation = element.animate(exit ? frames.reverse() : frames, {
-      duration: win.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? 0
-        : Number.isFinite(duration)
-        ? duration
-        : 250,
-      easing:
-        css
-          .getPropertyValue(exit ? "--motionExitCurve" : "--motionEntryCurve")
-          .trim() || "ease",
+      ...getMotionOptions(element, exit ? "exit" : "entry", "slow"),
       fill: "both",
     });
 
@@ -331,6 +361,10 @@ export function enhanceNotification(
     win.cancelAnimationFrame(announcementFrame);
     announcer.textContent = "";
 
+    // A body-level region is inert during showModal(), even for a toast inside it.
+    const scope = currentModal() ?? doc.body;
+    if (announcer.parentElement !== scope) scope.append(announcer);
+
     const mode = entry.settings.announcement;
     announcer.setAttribute("role", mode === "assertive" ? "alert" : "status");
     announcer.setAttribute("aria-live", mode);
@@ -339,7 +373,8 @@ export function enhanceNotification(
     // Separate clearing from repopulating so a repeated message is announced again.
     announcementFrame = win.requestAnimationFrame(() => {
       announcementFrame = win.requestAnimationFrame(() => {
-        if (visible && !destroyed) announcer.textContent = message.textContent;
+        if (visible && !destroyed && available())
+          announcer.textContent = message.textContent;
       });
     });
   };
@@ -383,7 +418,47 @@ export function enhanceNotification(
 
   const visibility = () => (doc.hidden ? pause() : resume());
 
+  /** Suspend without reporting dismissal: the message has not been dealt with. */
+  const defer = (next: Settings) => {
+    // A dismissal already in progress is final, even if a modal covers its exit.
+    if (closing) {
+      pending = null;
+      ++generation;
+      if (element.matches(":popover-open")) element.hidePopover();
+      didClose(closingReason, false);
+      return;
+    }
+    pending = next;
+    ++generation;
+    pause();
+    stopAnimation();
+    win.cancelAnimationFrame(announcementFrame);
+    announcer.textContent = "";
+    visible = false;
+    closing = false;
+    entering = false;
+    if (element.matches(":popover-open")) element.hidePopover();
+    active.delete(entry);
+    restack();
+  };
+  const syncContext = () => {
+    if (destroyed) return;
+    if (visible && !available()) defer(entry.settings);
+    else if (pending && available(pending)) {
+      const next = pending;
+      pending = null;
+      void controller.show(next);
+    }
+  };
+  const contextFocus = () => queueMicrotask(syncContext);
+  const contextObserver = new MutationObserver(syncContext);
+
   const beforetoggle = (event: Event) => {
+    if ((event as ToggleEvent).newState === "open" && !available()) {
+      event.preventDefault();
+      pending ??= defaults;
+      return;
+    }
     if ((event as ToggleEvent).newState === "open" && !visible)
       previousFocus =
         doc.activeElement instanceof HTMLElement ? doc.activeElement : null;
@@ -420,6 +495,26 @@ export function enhanceNotification(
   };
 
   const controller: NotificationController = {
+    refresh() {
+      if (!destroyed) {
+        syncContext();
+        updateView();
+        restack();
+      }
+    },
+    update(next = {}) {
+      if (destroyed) return;
+      defaults = settings(next, defaults);
+      configure(defaults);
+      if (pending) pending = defaults;
+      syncContext();
+      if (visible) {
+        clearTimer();
+        remaining = defaults.timeout;
+        resume();
+        restack();
+      }
+    },
     get open() {
       return element.matches(":popover-open");
     },
@@ -448,6 +543,11 @@ export function enhanceNotification(
           doc.activeElement instanceof HTMLElement ? doc.activeElement : null;
 
       configure(next);
+      if (!available(next)) {
+        defer(next);
+        return;
+      }
+      pending = null;
       element.showPopover();
       if (!element.matches(":popover-open")) return; // A consumer cancelled beforetoggle.
 
@@ -467,10 +567,16 @@ export function enhanceNotification(
     },
 
     async hide(reason = "programmatic") {
+      if (!destroyed && pending) {
+        pending = null;
+        didClose(reason, false);
+        return;
+      }
       if (destroyed || !element.matches(":popover-open")) return;
 
       const current = ++generation;
       closing = true;
+      closingReason = reason;
       entering = false;
       clearTimer();
       stopAnimation();
@@ -488,12 +594,15 @@ export function enhanceNotification(
       if (destroyed) return;
 
       destroyed = true;
+      pending = null;
       ++generation;
       clearTimer();
       stopAnimation();
       win.cancelAnimationFrame(announcementFrame);
       win.cancelAnimationFrame(resumeFrame);
       observer.disconnect();
+      contextObserver.disconnect();
+      doc.removeEventListener("focusin", contextFocus);
 
       element.removeEventListener("click", click);
       element.removeEventListener("pointerenter", pause);
@@ -535,6 +644,13 @@ export function enhanceNotification(
   element.addEventListener("beforetoggle", beforetoggle);
 
   doc.addEventListener("visibilitychange", visibility);
+  doc.addEventListener("focusin", contextFocus);
+  contextObserver.observe(doc, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ["open", "inert"],
+  });
   doc.addEventListener("scroll", updateView, true);
   win.addEventListener("resize", updateView);
 
@@ -548,6 +664,8 @@ export function enhanceNotification(
     announce();
     resume();
   }
+
+  syncContext();
 
   return controller;
 }

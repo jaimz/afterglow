@@ -1,11 +1,12 @@
 // Definitions only. The shared registry validates and declares these tokens.
 $defaults: (
   "caution": #ecbb5b,
-  "error": #cf3558,
-  "on-caution": #f3eee6,
+  "caution-foreground": #8f620e,
+  "error": #bf2b4d,
+  "on-caution": #4a4a42,
   "on-error": #f3eee6,
   "on-success": #f3eee6,
-  "success": #52a96a,
+  "success": #327544,
   "notification-message-min-width": 160px,
   "notification-message-max-width": 320px,
   "notification-offset": 16px,

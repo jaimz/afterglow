@@ -1,3 +1,2 @@
-// Compatibility entry for existing Sass consumers.
+// Pure typography mixins; use foundation/typography.classes for recipes.
 @forward "foundation/typography.mixins";
-@use "foundation/typography.classes";

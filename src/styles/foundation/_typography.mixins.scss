@@ -1,15 +1,15 @@
 @use "tokens" as t;
 
 @mixin body {
-  font-family: t.$bodyFontStack;
-  font-size: t.$bodyTextSize;
-  line-height: t.$lineHeight;
+  font-family: t.$body-font-stack;
+  font-size: t.$body-text-size;
+  line-height: t.$line-height;
 }
 
 @mixin caption {
-  font-family: t.$bodyFontStack;
-  font-size: t.$captionTextSize;
-  line-height: t.$lineHeight;
+  font-family: t.$body-font-stack;
+  font-size: t.$caption-text-size;
+  line-height: t.$line-height;
 }
 
 // Afterglow's mobile type ramp. Existing utility classes retain their original API;
@@ -18,9 +18,9 @@
   @if $level < 1 or $level > 6 {
     @error "Headline level must be between 1 and 6.";
   }
-  font-family: t.$titleFontStack;
+  font-family: t.$title-font-stack;
   @if $level == 6 {
-    font-size: t.$bodyTextSize;
+    font-size: t.$body-text-size;
     font-weight: 700;
   } @else {
     font-size: t.token("h#{$level}-text-size");
@@ -38,5 +38,5 @@
   } @else {
     letter-spacing: -0.008333em;
   }
-  color: t.$onSurfaceAlt;
+  color: t.$on-surface-alt;
 }

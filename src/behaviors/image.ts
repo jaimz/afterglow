@@ -25,6 +25,8 @@ export interface ImageOptions {
 }
 
 export interface ImageController {
+  /** Reconcile current DOM state immediately. */
+  refresh(): void;
   /** The native image owns alternative text, loading and responsive sources. */
   readonly image: HTMLImageElement;
   /** Read or replace src. Assignment clears srcset and sizes. */
@@ -45,7 +47,10 @@ export function enhanceImage(
   options: ImageOptions = {}
 ): ImageController {
   const existing = controllers.get(root);
-  if (existing) return existing;
+  if (existing) {
+    existing.update(options);
+    return existing;
+  }
   const image = root.querySelector<HTMLImageElement>(
     ":scope > img.ag-image__picture"
   );
@@ -123,6 +128,7 @@ export function enhanceImage(
   });
 
   const controller: ImageController = {
+    refresh: () => update(),
     image,
     get imageUrl() {
       return image.getAttribute("src") ?? "";

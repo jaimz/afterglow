@@ -2,13 +2,16 @@ export type MotionSpeed = "fast" | "medium" | "slow" | "very-slow";
 export type MotionPhase = "entry" | "exit";
 
 const durations: Record<MotionSpeed, string> = {
-  fast: "motionFastDuration",
-  medium: "motionMediumDuration",
-  slow: "motionSlowDuration",
-  "very-slow": "motionVerySlowDuration",
+  fast: "motion-fast-duration",
+  medium: "motion-medium-duration",
+  slow: "motion-slow-duration",
+  "very-slow": "motion-very-slow-duration",
 };
 const exitSpeeds: Record<MotionSpeed, MotionSpeed> = {
-  fast: "fast", medium: "fast", slow: "medium", "very-slow": "slow",
+  fast: "fast",
+  medium: "fast",
+  slow: "medium",
+  "very-slow": "slow",
 };
 
 /** CSS time values may use fractional seconds or milliseconds. */
@@ -31,8 +34,14 @@ export function getMotionOptions(
   const effectiveSpeed = phase === "exit" ? exitSpeeds[speed] : speed;
   return {
     duration: reduced ? 0 : milliseconds(read(durations[effectiveSpeed])),
-    delay: reduced ? 0 : milliseconds(read(phase === "entry" ? "motionEntryDelay" : "motionExitDelay")) +
-      Math.max(0, staggerIndex) * milliseconds(read("motionStaggerDelay")),
-    easing: read(phase === "entry" ? "motionEntryCurve" : "motionExitCurve") || "ease",
+    delay: reduced
+      ? 0
+      : milliseconds(
+          read(phase === "entry" ? "motion-entry-delay" : "motion-exit-delay")
+        ) +
+        Math.max(0, staggerIndex) * milliseconds(read("motion-stagger-delay")),
+    easing:
+      read(phase === "entry" ? "motion-entry-curve" : "motion-exit-curve") ||
+      "ease",
   };
 }

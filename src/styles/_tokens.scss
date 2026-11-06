@@ -1,3 +1,2 @@
-// Compatibility entry: retains the original token API and theme emission.
+// Pure token access; import theme explicitly to emit defaults and fonts.
 @forward "foundation/tokens";
-@use "foundation/theme";

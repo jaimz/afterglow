@@ -8,10 +8,12 @@ const flush = () =>
   new Promise((resolve) =>
     requestAnimationFrame(() => requestAnimationFrame(resolve))
   );
-const markup = (attributes = "") => `<div class="ag-text-field">
+const markup = (
+  attributes = ""
+) => `<label for="test-field">Email address</label>
+<div class="ag-text-field">
   <div class="ag-text-field__control">
-    <input class="ag-text-field__input" id="test-field" name="test" placeholder=" " aria-describedby="hint" ${attributes}>
-    <label class="ag-text-field__label" for="test-field">Email address</label>
+    <input class="ag-text-field__input" id="test-field" name="test" placeholder="you@example.com" aria-describedby="hint" ${attributes}>
     <span class="ag-text-field__status" aria-hidden="true"></span>
   </div>
   <p class="ag-text-field__hint" id="hint">Helpful information.</p>
@@ -56,9 +58,9 @@ afterEach(() => {
 it("uses native label activation, keyboard editing and FormData without a helper", async () => {
   fixture('type="email" required autocomplete="email"');
   expect(input).to.be.instanceOf(HTMLInputElement);
-  expect(input.labels[0]).to.equal(field.querySelector("label"));
+  expect(input.labels[0]).to.equal(form.querySelector("label"));
   expect(input.validity.valueMissing).to.equal(true);
-  const box = field.querySelector("label").getBoundingClientRect();
+  const box = form.querySelector("label").getBoundingClientRect();
   await sendMouse({
     type: "click",
     position: [Math.round(box.x + 5), Math.round(box.y + 5)],
@@ -70,10 +72,11 @@ it("uses native label activation, keyboard editing and FormData without a helper
   expect(input.checkValidity()).to.equal(true);
 });
 
-it("keeps placeholder-style labels inside every field size through focus, value changes and reset", () => {
+it("uses native placeholders independently of consumer labels in every field size", () => {
   fixture();
   const control = field.querySelector(".ag-text-field__control");
-  const label = field.querySelector("label");
+  const label = form.querySelector("label");
+  expect(field.contains(label)).to.equal(false);
   expect(field.getBoundingClientRect().width).to.equal(344);
   for (const [variant, compact, height] of [
     ["default", false, 48],
@@ -85,32 +88,43 @@ it("keeps placeholder-style labels inside every field size through focus, value 
     field.toggleAttribute("data-compact", compact);
     input.blur();
     expect(control.getBoundingClientRect().height).to.equal(height);
-    expect(style(label).fontSize).to.equal("14px");
-    expect(style(label).clipPath).to.equal("none");
+    expect(input.placeholder).to.equal("you@example.com");
+    expect(input.matches(":placeholder-shown")).to.equal(true);
     input.focus();
-    expect(label.getBoundingClientRect().top).to.be.greaterThan(
-      control.getBoundingClientRect().top
-    );
-    expect(label.getBoundingClientRect().bottom).to.be.lessThan(
-      control.getBoundingClientRect().bottom
-    );
+    expect(input.matches(":placeholder-shown")).to.equal(true);
     expect(style(label).clipPath).to.equal("none");
     input.value = "Populated by code";
-    expect(style(label).clipPath).to.equal("inset(50%)");
+    expect(input.matches(":placeholder-shown")).to.equal(false);
+    expect(style(label).clipPath).to.equal("none");
     expect(input.labels[0]).to.equal(label);
     expect(control.getBoundingClientRect().top).to.equal(
       field.getBoundingClientRect().top
     );
     expect(control.getBoundingClientRect().height).to.equal(height);
     input.value = "";
-    expect(style(label).clipPath).to.equal("none");
+    expect(input.matches(":placeholder-shown")).to.equal(true);
     input.value = "Reset this value";
     form.reset();
-    expect(style(label).clipPath).to.equal("none");
+    expect(input.matches(":placeholder-shown")).to.equal(true);
   }
   field.removeAttribute("data-compact");
   expect(control.getBoundingClientRect().height).to.equal(40);
-  expect(style(field).color).to.equal("rgb(232, 201, 200)");
+  expect(style(field).color).to.equal("rgb(243, 215, 214)");
+});
+
+it("preserves consumer label references and optional placeholders through validation and cleanup", () => {
+  fixture('required aria-labelledby="consumer-label"', {});
+  const label = form.querySelector("label");
+  label.id = "consumer-label";
+  input.removeAttribute("placeholder");
+  controller.validate();
+  controller.update({ value: "hello@example.com" });
+  form.reset();
+  controller.destroy();
+  expect(input.labels[0]).to.equal(label);
+  expect(input.getAttribute("aria-labelledby")).to.equal("consumer-label");
+  expect(input.hasAttribute("placeholder")).to.equal(false);
+  expect(style(label).clipPath).to.equal("none");
 });
 
 it("keeps masking, numeric constraints and native read-only/disabled behaviour", async () => {

@@ -12,7 +12,7 @@
   aspect-ratio: t.token("image-aspect-ratio");
   margin: 0;
   border-radius: t.token("image-radius");
-  font-family: t.$bodyFontStack;
+  font-family: t.$body-font-stack;
 
   > .ag-image__picture {
     display: block;
@@ -73,7 +73,7 @@
     > .ag-image__overline {
       margin: 0;
       margin-inline-start: 2px;
-      font-size: t.$captionTextSize;
+      font-size: t.$caption-text-size;
       line-height: normal;
       opacity: 0.75;
     }

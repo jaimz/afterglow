@@ -17,6 +17,7 @@ export default {
   },
   args: {
     label: "Label",
+    placeholder: "Enter a value…",
     value: "",
     hint: "Hint text",
     type: "text",
@@ -34,6 +35,11 @@ export default {
   },
   argTypes: {
     label: { control: "text" },
+    placeholder: {
+      control: "text",
+      description:
+        "Native placeholder text, independent of the consumer's label.",
+    },
     value: { control: "text" },
     hint: { control: "text" },
     type: {
@@ -78,7 +84,13 @@ export default {
 export const Default = {};
 export const Compact = { args: { compact: true } };
 export const Search = {
-  args: { type: "search", label: "Search", leadingIcon: "search", hint: "" },
+  args: {
+    type: "search",
+    label: "Search",
+    placeholder: "Search…",
+    leadingIcon: "search",
+    hint: "",
+  },
 };
 export const SearchCompact = { args: { ...Search.args, compact: true } };
 export const WithContent = { args: { value: "Text field" } };
@@ -105,12 +117,34 @@ export const WithError = {
 export const Backdrop = {
   args: {
     variant: "backdrop",
-    label: "Location…",
+    label: "Location",
+    placeholder: "Enter a location…",
     leadingIcon: "map-pin",
     hint: "",
   },
 };
 export const BackdropCompact = { args: { ...Backdrop.args, compact: true } };
+
+const externalLabelMarkup = `<section class="ag-body" style="padding:32px;display:grid;gap:8px">
+  <label for="externally-labelled-email">Email address</label>
+  <div class="ag-text-field">
+    <div class="ag-text-field__control">
+      <input class="ag-text-field__input" id="externally-labelled-email"
+             type="email" name="email" autocomplete="email"
+             placeholder="you@example.com">
+    </div>
+  </div>
+</section>`;
+
+export const ExternalLabel = {
+  render: () => element(externalLabelMarkup),
+  parameters: {
+    controls: { disable: true },
+    docs: { source: { code: externalLabelMarkup } },
+  },
+};
+
+export const WithoutPlaceholder = { args: { placeholder: "" } };
 
 export const Variants = {
   render: () => {
@@ -179,6 +213,7 @@ export const StatesAndLayouts = {
       { label: "Read only", value: "Select and copy", readOnly: true },
       {
         label: "Email",
+        placeholder: "you@example.com",
         type: "email",
         leadingIcon: "mail",
         trailingIcon: "lock",
@@ -231,6 +266,7 @@ export const LiveValidation = {
     const name = createTextField(
       {
         label: "Display name",
+        placeholder: "e.g. James",
         name: "displayName",
         hint: "Use at least three non-space characters.",
         required: true,

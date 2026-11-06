@@ -1,3 +1,5 @@
+import { assertMarkup } from "./markup";
+
 /**
  * Adds read-only behaviour, radio-group shortcuts and checkbox mixed-state reset
  * handling to native controls. Ordinary checkbox, radio and range interaction
@@ -8,7 +10,7 @@
  * form submission; the helper prevents user changes and temporarily suspends
  * required validation. Radio shortcuts use the .ag-radio-group wrapper.
  *
- * Use one controller per form or view and avoid overlapping roots. Descendant
+ * Control scopes may overlap; read-only attributes are shared until the final owner releases them. Descendant
  * additions and relevant attribute changes are observed automatically. Call
  * update() when an immediate refresh is needed, and destroy() when disposing
  * the view. See Usage.md for the native control recipes.
@@ -24,12 +26,20 @@
  */
 
 export interface ControlsController {
+  refresh(): void;
   /** Apply read-only state now, including restoring controls that became editable. */
   update(): void;
 
   /** Remove listeners and observation, and restore saved required/ARIA attributes. */
   destroy(): void;
 }
+
+interface ReadOnlyState {
+  required: boolean;
+  aria: string | null;
+  owners: Set<object>;
+}
+const readOnlyStates = new WeakMap<HTMLInputElement, ReadOnlyState>();
 
 const controllers = new WeakMap<ParentNode, ControlsController>();
 
@@ -58,15 +68,21 @@ export function enhanceControls(
 ): ControlsController {
   const existing = controllers.get(root);
   if (existing) return existing;
+  const controller = createControlScope(root);
+  controllers.set(root, controller);
+  return controller;
+}
+
+/** Independent ownership for components composing native control behaviour. */
+export function createControlScope(root: ParentNode): ControlsController {
+  assertMarkup(root);
+  const owner = {};
 
   const target = root as ParentNode & EventTarget;
   let destroyed = false;
 
   // Store the caller's values before applying temporary read-only attributes.
-  const saved = new Map<
-    HTMLInputElement,
-    { required: boolean; aria: string | null }
-  >();
+  const saved = new Map<HTMLInputElement, ReadOnlyState>();
 
   const isReadOnly = (input: HTMLInputElement) =>
     input.hasAttribute("data-readonly") ||
@@ -81,10 +97,11 @@ export function enhanceControls(
   ];
 
   /** Restore attributes when a control becomes editable, leaves the root, or is disposed. */
-  const restore = (
-    input: HTMLInputElement,
-    state: { required: boolean; aria: string | null }
-  ) => {
+  const restore = (input: HTMLInputElement, state: ReadOnlyState) => {
+    state.owners.delete(owner);
+    saved.delete(input);
+    if (state.owners.size) return;
+    readOnlyStates.delete(input);
     input.required = state.required;
     if (state.aria === null) input.removeAttribute("aria-readonly");
     else input.setAttribute("aria-readonly", state.aria);
@@ -101,11 +118,19 @@ export function enhanceControls(
     for (const input of current) {
       if (!isReadOnly(input)) continue;
 
-      if (!saved.has(input))
-        saved.set(input, {
-          required: input.required,
-          aria: input.getAttribute("aria-readonly"),
-        });
+      if (!saved.has(input)) {
+        let state = readOnlyStates.get(input);
+        if (!state) {
+          state = {
+            required: input.required,
+            aria: input.getAttribute("aria-readonly"),
+            owners: new Set(),
+          };
+          readOnlyStates.set(input, state);
+        }
+        state.owners.add(owner);
+        saved.set(input, state);
+      }
 
       // Keep submission and focus, while exempting a value the user cannot change.
       if (input.required) {
@@ -227,8 +252,16 @@ export function enhanceControls(
     attributeFilter: ["data-readonly", "required"],
   });
 
+  if (root !== ownerDocument)
+    observer.observe(ownerDocument, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["data-readonly"],
+    });
+
   const controller = {
     update,
+    refresh: update,
 
     destroy() {
       if (destroyed) return;
@@ -242,11 +275,10 @@ export function enhanceControls(
       ownerDocument.removeEventListener("reset", reset, true);
 
       for (const [input, state] of saved) restore(input, state);
-      controllers.delete(root);
+      if (controllers.get(root) === controller) controllers.delete(root);
     },
   };
 
-  controllers.set(root, controller);
   update();
 
   return controller;

@@ -1,4 +1,8 @@
-import { enhanceNotification, type NotificationPosition } from "../../main";
+import {
+  enhanceDialog,
+  enhanceNotification,
+  type NotificationPosition,
+} from "../../main";
 import { element, track } from "../../stories/fixtures";
 import {
   notificationMarkup,
@@ -86,7 +90,7 @@ Variants.parameters = { controls: { disable: true } };
 export const PositionsInAView = () => {
   const root = element(`<section class="ag-body" style="padding:24px">
     <p>Each notification is positioned within the outlined view. It stays open until dismissed.</p>
-    <div class="ag-panel" style="position:relative;box-sizing:border-box;width:100%;height:560px;min-height:320px;padding:24px;outline:1px dashed var(--onPanelAlt);resize:both;overflow:auto">
+    <div class="ag-panel" style="position:relative;box-sizing:border-box;width:100%;height:560px;min-height:320px;padding:24px;outline:1px dashed var(--on-panel-alt);resize:both;overflow:auto">
       <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding-top:220px">
         ${positions
           .map(
@@ -143,6 +147,42 @@ export const TimedAndStacked = () => {
   return root;
 };
 TimedAndStacked.parameters = { controls: { disable: true } };
+
+export const WithinAModal = () => {
+  const root = element(`<section class="ag-body" style="padding:24px">
+    <button class="ag-button" data-open>Open editor</button>
+    <dialog class="ag-dialog" aria-labelledby="notification-modal-title" style="padding:24px">
+      <h2 id="notification-modal-title">Edit details</h2>
+      <p>Save announces inside this dialog. A background update waits until the dialog closes.</p>
+      <button class="ag-button" data-save>Save</button>
+      <button class="ag-button" data-background>Queue background update</button>
+      <button class="ag-button" data-close>Done</button>
+      ${notificationMarkup("modal-saved", "success", "Details saved.")}
+    </dialog>
+    ${notificationMarkup(
+      "background-update",
+      "default",
+      "Background sync completed."
+    )}
+  </section>`);
+  const modal = track(enhanceDialog(root.querySelector("dialog")!));
+  const saved = track(
+    enhanceNotification(root.querySelector<HTMLElement>("#modal-saved")!)
+  );
+  const background = track(
+    enhanceNotification(root.querySelector<HTMLElement>("#background-update")!)
+  );
+  root.querySelector<HTMLButtonElement>("[data-open]")!.onclick = () =>
+    void modal.show();
+  root.querySelector<HTMLButtonElement>("[data-save]")!.onclick = () =>
+    void saved.show();
+  root.querySelector<HTMLButtonElement>("[data-background]")!.onclick = () =>
+    void background.show();
+  root.querySelector<HTMLButtonElement>("[data-close]")!.onclick = () =>
+    void modal.hide();
+  return root;
+};
+WithinAModal.parameters = { controls: { disable: true } };
 
 const declarativeMarkup = `<section class="ag-body" style="padding:24px">
   <p>This example uses native popover buttons without an Afterglow helper.</p>

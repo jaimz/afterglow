@@ -4,8 +4,14 @@ import { sendKeys, sendMouse, setViewport } from "@web/test-runner-commands";
 
 let root;
 const style = (element) => getComputedStyle(element);
-const bodySize = () =>
-  parseFloat(style(root).getPropertyValue("--body-text-size"));
+const bodySize = () => {
+  const probe = document.createElement("span");
+  probe.style.fontSize = "var(--body-text-size)";
+  root.append(probe);
+  const pixels = parseFloat(style(probe).fontSize);
+  probe.remove();
+  return pixels;
+};
 const bounds = (element) => element.getBoundingClientRect();
 const settle = () =>
   new Promise((resolve) =>
@@ -110,7 +116,7 @@ it("matches the textarea treatment and floats its label after property writes an
   expect(bounds(input).width).to.equal(343);
   expect(bounds(input).height).to.equal(158);
   expect(style(input).backgroundColor).to.equal("rgb(255, 255, 255)");
-  expect(style(input).borderTopColor).to.equal("rgba(94, 140, 151, 0.5)");
+  expect(style(input).borderTopColor).to.equal("rgb(94, 140, 151)");
   expect(style(input).paddingTop).to.equal("16px");
   expect(parseFloat(style(label).fontSize)).to.equal(bodySize());
   input.value = "Programmatically populated";
@@ -142,7 +148,7 @@ it("respects native read-only and disabled textarea behaviour", async () => {
 
 it("uses local colour and type tokens in new recipes", () => {
   const theme =
-    fixture(`<section class="ag-theme" style="--paper:rgb(10,20,30);--surface:rgb(40,50,60);--body-text-size:24px;--onSurfaceAlt:rgb(70,80,90)">
+    fixture(`<section class="ag-theme" style="--paper:rgb(10,20,30);--surface:rgb(40,50,60);--body-text-size:24px;--on-surface-alt:rgb(70,80,90)">
     ${field()}<article class="ag-article"><h1>Heading</h1></article>
   </section>`);
   expect(style(theme.querySelector("textarea")).backgroundColor).to.equal(
@@ -252,7 +258,9 @@ it("scopes article typography without restyling headings in embedded components"
   );
   expect(
     parseFloat(style(article.querySelector("textarea")).fontSize)
-  ).to.equal(bodySize());
+  ).to.equal(
+    Math.max(parseFloat(style(document.documentElement).fontSize), bodySize())
+  );
 });
 
 it("lets card content determine height and composes existing surface colours", () => {

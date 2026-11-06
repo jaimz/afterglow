@@ -14,6 +14,8 @@ const categoryStyles = new Map(
 const products = (process.env.WTR_BROWSERS || "chromium").split(",");
 export default {
   hostname: "127.0.0.1",
+  // Native focus and pointer tests must not compete across tabs in one browser.
+  concurrency: 1,
   files: "test/**/*.test.js",
   nodeResolve: true,
   plugins: [

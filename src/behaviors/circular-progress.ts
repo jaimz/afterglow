@@ -45,6 +45,8 @@ export interface CircularProgressOptions {
 }
 
 export interface CircularProgressController {
+  /** Reconcile current DOM state immediately. */
+  refresh(): void;
   /** Native source of value/max semantics and accessibility. */
   readonly progress: HTMLProgressElement;
 
@@ -85,7 +87,10 @@ export function enhanceCircularProgress(
   options: CircularProgressOptions = {}
 ): CircularProgressController {
   const existing = controllers.get(root);
-  if (existing) return existing;
+  if (existing) {
+    existing.update(options);
+    return existing;
+  }
 
   const progress = root.querySelector<HTMLProgressElement>("progress");
   const title = root.querySelector<HTMLElement>(".ag-circular-progress__title");
@@ -182,6 +187,7 @@ export function enhanceCircularProgress(
   });
 
   const controller: CircularProgressController = {
+    refresh: () => update(),
     progress,
 
     get title() {

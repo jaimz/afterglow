@@ -8,26 +8,27 @@
   .ag-button {
     display: inline-flex;
     outline: none;
-    font-family: #{t.$bodyFontStack};
+    font-family: #{t.$body-font-stack};
+    font-size: #{t.$body-text-size};
     text-shadow: none;
-    line-height: #{t.$lineHeight};
+    line-height: #{t.$line-height};
     cursor: pointer;
-    background: #{t.$ctrlFill};
-    color: #{t.$ctrlText};
-    border: 1px solid #{t.$ctrlBorder};
-    border-radius: #{t.$frame-gridType};
+    background: #{t.$ctrl-fill};
+    color: #{t.$ctrl-text};
+    border: 1px solid #{t.$ctrl-border};
+    border-radius: #{t.$grid-type};
   }
 
   .ag-button:hover {
-    background: #{t.$ctrlFillHover};
+    background: #{t.$ctrl-fill-hover};
   }
 
   .ag-button:active {
-    background: #{t.$ctrlFillActive};
+    background: #{t.$ctrl-fill-active};
   }
 
   .ag-button:focus-visible {
-    box-shadow: 0 2px 4px #{t.$ctrlBorder};
+    box-shadow: 0 2px 4px #{t.$ctrl-border};
   }
 
   .ag-button[data-dangerous] {
@@ -36,8 +37,8 @@
 
   .ag-button:disabled,
   .ag-button:disabled:hover {
-    opacity: #{t.$disabledOpacity};
-    background: #{t.$ctrlFillLo};
+    opacity: #{t.$disabled-opacity};
+    background: #{t.$ctrl-fill-lo};
     cursor: default;
   }
 
@@ -47,37 +48,37 @@
   }
 
   .ag-button[data-variant="flat"]:active {
-    background: #{t.$ctrlFillLo};
+    background: #{t.$ctrl-fill-lo};
   }
 
   .ag-button[data-variant="flat"]:hover {
-    background: #{t.$ctrlFillHi};
+    background: #{t.$ctrl-fill-hi};
   }
 
   .ag-button[data-variant="flat"]:disabled,
   .ag-button[data-variant="flat"]:disabled:hover {
-    opacity: #{t.$disabledOpacity};
-    background: #{t.$ctrlFillLo};
+    opacity: #{t.$disabled-opacity};
+    background: #{t.$ctrl-fill-lo};
   }
 
   .ag-button[data-variant="primary"] {
-    background: #{t.$ctrlFillSolid};
-    color: #{t.$onCtrlFillSolid};
+    background: #{t.$ctrl-fill-solid};
+    color: #{t.$on-ctrl-fill-solid};
     border-color: transparent;
   }
 
   .ag-button[data-variant="primary"]:hover {
-    background: #{t.$ctrlFillSolidHi};
+    background: #{t.$ctrl-fill-solid-hi};
   }
 
   .ag-button[data-variant="primary"]:active {
-    background: #{t.$ctrlFillSolidLo};
+    background: #{t.$ctrl-fill-solid-lo};
   }
 
   .ag-button[data-variant="primary"]:disabled,
   .ag-button[data-variant="primary"]:disabled:hover {
-    opacity: #{t.$disabledOpacity};
-    background: #{t.$ctrlFillSolid};
+    opacity: #{t.$disabled-opacity};
+    background: #{t.$ctrl-fill-solid};
     cursor: default;
   }
 
@@ -85,7 +86,7 @@
   .ag-button[data-variant="primary"][data-dangerous],
   .ag-button[data-variant="primary"][data-dangerous]:disabled:hover {
     background: #{t.$danger};
-    color: #{t.$onDanger};
+    color: #{t.$on-danger};
   }
 
   .ag-button[data-variant="outline"] {
@@ -93,16 +94,16 @@
   }
 
   .ag-button[data-variant="outline"]:hover {
-    background: #{t.$ctrlFillHover};
+    background: #{t.$ctrl-fill-hover};
   }
 
   .ag-button[data-variant="outline"]:active {
-    background: #{t.$ctrlFillActive};
+    background: #{t.$ctrl-fill-active};
   }
 
   .ag-button[data-variant="outline"]:disabled,
   .ag-button[data-variant="outline"]:disabled:hover {
-    opacity: #{t.$disabledOpacity};
+    opacity: #{t.$disabled-opacity};
   }
 
   .ag-button {
@@ -110,8 +111,10 @@
     justify-content: center;
     align-items: center;
     box-sizing: border-box;
-    white-space: nowrap;
-    max-width: 300px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    min-inline-size: 0;
+    max-inline-size: min(300px, 100%);
     line-height: normal;
     text-decoration: none;
   }
@@ -122,7 +125,7 @@
     margin-inline-start: 8px;
   }
   .ag-button:focus-visible {
-    outline: 2px solid currentColor;
+    outline: 2px solid #{t.$ctrl-text};
     outline-offset: 2px;
   }
 }

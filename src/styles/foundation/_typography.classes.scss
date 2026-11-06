@@ -11,15 +11,15 @@
 @each $level,
   $size
     in (
-      1: t.$h1TextSize,
-      2: t.$h2TextSize,
-      3: t.$h3TextSize,
-      4: t.$h4TextSize,
-      5: t.$h5TextSize
+      1: t.$h1-text-size,
+      2: t.$h2-text-size,
+      3: t.$h3-text-size,
+      4: t.$h4-text-size,
+      5: t.$h5-text-size
     )
 {
   .ag-h#{$level} {
-    font-family: t.$titleFontStack;
+    font-family: t.$title-font-stack;
     font-size: $size;
   }
 }

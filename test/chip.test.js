@@ -150,7 +150,7 @@ it("contains long text in narrow views and mirrors leading/trailing content in R
 
 it("honours theme overrides, hidden children and chips without a remove button", () => {
   const chip = fixture(chipMarkup());
-  chip.style.setProperty("--onSurfaceAlt", "rgb(12, 34, 56)");
+  chip.style.setProperty("--on-surface-alt", "rgb(12, 34, 56)");
   chip.style.setProperty("--surface", "rgb(210, 220, 230)");
   expect(getComputedStyle(chip).backgroundColor).to.equal("rgb(12, 34, 56)");
   expect(getComputedStyle(chip).color).to.equal("rgb(210, 220, 230)");

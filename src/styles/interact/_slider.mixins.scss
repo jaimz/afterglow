@@ -3,8 +3,8 @@
 
 @mixin thumb {
   box-sizing: border-box;
-  border: 1px solid t.$ctrlTextDesat;
-  background: t.$ctrlFill;
+  border: 1px solid t.$ctrl-text-desat;
+  background: t.$ctrl-fill;
   box-shadow: 0 1px 2px rgb(0 0 0 / 20%);
   block-size: var(--ag-thumb-diameter);
   inline-size: var(--ag-thumb-diameter);
@@ -18,8 +18,8 @@
   }
   .ag-slider {
     --ag-thumb-diameter: 20px;
-    --ag-track-width: calc((#{t.$gridType} - 1) * 1px);
-    --ag-slider-tooltip-fill: #{t.$onSurface};
+    --ag-track-width: calc(#{t.$grid-type} - 1px);
+    --ag-slider-tooltip-fill: #{t.$on-surface};
     --ag-slider-tooltip-color: #{t.$surface};
     display: inline-grid;
     inline-size: 100%;
@@ -33,7 +33,7 @@
     position: relative;
     isolation: isolate;
     touch-action: pan-y;
-    margin-inline: calc(#{t.$gridY} * 1px);
+    margin-inline: calc(#{t.$grid-y} * 1);
     display: grid;
     grid-template-rows: var(--ag-thumb-diameter);
     align-items: center;
@@ -87,7 +87,7 @@
       (var(--ag-thumb-diameter) - var(--ag-track-width)) / 2
     );
     block-size: var(--ag-track-width);
-    background: t.$ctrlFillSolidDesaturate40;
+    background: t.$ctrl-fill-solid-desaturate40;
     border-radius: calc(var(--ag-track-width) / 2);
     pointer-events: none;
   }
@@ -96,7 +96,7 @@
     inset-inline-start: var(--ag-slider-start, 0%);
     block-size: 100%;
     inline-size: var(--ag-slider-selection, var(--ag-slider-progress, 0%));
-    background: t.$ctrlFillSolidDesaturate;
+    background: t.$ctrl-fill-solid-desaturate;
     border-radius: inherit;
   }
   .ag-slider__marks {
@@ -110,10 +110,10 @@
     position: absolute;
     inset-inline-start: var(--ag-slider-position);
     inset-block-start: 50%;
-    inline-size: calc(#{t.$gridType} * 1px);
-    block-size: calc(#{t.$gridType} * 1px);
+    inline-size: calc(#{t.$grid-type} * 1);
+    block-size: calc(#{t.$grid-type} * 1);
     transform: translate(-50%, -50%);
-    background: t.$ctrlFillSolidDesaturate;
+    background: t.$ctrl-fill-solid-desaturate;
   }
   .ag-slider__tooltip {
     @include typography.body;
@@ -189,7 +189,7 @@
     }
   }
   .ag-slider[data-orientation="vertical"] {
-    min-block-size: calc(#{t.$gridY} * 60px);
+    min-block-size: calc(#{t.$grid-y} * 60);
     block-size: 100%;
     .ag-slider__control {
       min-block-size: inherit;
@@ -239,25 +239,25 @@
     }
   }
   .ag-slider[data-variant="backdrop"] {
-    --ag-slider-tooltip-fill: #{t.$backdropKeyline};
+    --ag-slider-tooltip-fill: #{t.$backdrop-keyline};
     --ag-slider-tooltip-color: #{t.$backdrop};
-    color: t.$onBackdrop;
+    color: t.$on-backdrop;
     .ag-slider__track {
       background: var(
         --backdrop-track,
-        color-mix(in srgb, #{t.$onBackdrop} 40%, transparent)
+        color-mix(in srgb, #{t.$on-backdrop} 40%, transparent)
       );
     }
     .ag-slider__fill,
     .ag-slider__marks > span {
-      background: t.$onBackdrop;
+      background: t.$on-backdrop;
     }
     .ag-slider__input::-webkit-slider-thumb {
-      background: t.$onBackdrop;
+      background: t.$on-backdrop;
       border-color: t.$backdrop;
     }
     .ag-slider__input::-moz-range-thumb {
-      background: t.$onBackdrop;
+      background: t.$on-backdrop;
       border-color: t.$backdrop;
     }
   }
@@ -265,7 +265,7 @@
     display: none;
   }
   .ag-slider:has(.ag-slider__input:disabled) {
-    opacity: t.$disabledOpacity;
+    opacity: t.$disabled-opacity;
     cursor: not-allowed;
   }
   .ag-slider:has(.ag-slider__input[aria-readonly="true"]) {

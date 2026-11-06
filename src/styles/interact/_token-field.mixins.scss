@@ -10,12 +10,12 @@
       padding: 6px 8px;
       cursor: text;
       &:focus-within {
-        outline: 2px solid t.$ctrlText;
+        outline: 2px solid t.$ctrl-text;
         outline-offset: 0;
       }
     }
     &[data-variant="backdrop"] > .ag-text-field__control:focus-within {
-      outline-color: t.$onBackdrop;
+      outline-color: t.$on-backdrop;
     }
     .ag-text-field__input {
       flex: 1 1 120px;
@@ -70,12 +70,12 @@
     cursor: pointer;
     &[aria-selected="true"] {
       background: t.token("selection-fill");
-      color: t.$ctrlText;
+      color: t.$ctrl-text;
     }
   }
   .ag-token-field__description {
-    font-size: t.$captionTextSize;
-    color: t.$onSurfaceAlt;
+    font-size: t.$caption-text-size;
+    color: t.$on-surface-alt;
     overflow-wrap: anywhere;
   }
   .ag-token-field__status {

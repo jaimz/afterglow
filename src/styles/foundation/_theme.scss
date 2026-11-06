@@ -6,8 +6,4 @@
   @each $name, $value in t.$defaults {
     --#{$name}: #{$value};
   }
-  @include t.theme;
-}
-:where(.ag-theme) {
-  @include t.theme;
 }

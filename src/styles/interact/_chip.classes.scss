@@ -1,3 +1,4 @@
 @use "../foundation/theme";
+@use "../present/avatar.classes";
 @use "chip.mixins" as recipe;
 @include recipe.styles;

@@ -7,8 +7,8 @@
     max-inline-size: 100%;
     min-inline-size: 0;
     padding-block: t.token("paginator-padding-block");
-    color: t.$onSurface;
-    font-family: t.$bodyFontStack;
+    color: t.$on-surface;
+    font-family: t.$body-font-stack;
     font-size: t.token("paginator-text-size");
     text-shadow: none;
   }
@@ -17,10 +17,10 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: t.$frame-gridY t.$frame-gridType;
+    gap: t.$grid-y t.$grid-type;
     list-style: none;
     margin: 0;
-    padding: 0 t.$frame-gridType;
+    padding: 0 t.$grid-type;
   }
   .ag-paginator__item,
   .ag-paginator__ellipsis {
@@ -28,8 +28,8 @@
     display: inline-grid;
     place-items: center;
     box-sizing: border-box;
-    min-inline-size: 20px;
-    block-size: 20px;
+    min-inline-size: max(20px, 1.5em);
+    min-block-size: max(20px, 1.5em);
     padding: 0;
     border: 0;
     border-radius: 50%;
@@ -50,19 +50,19 @@
       inset-inline: -2px;
     }
     &:hover:not(:disabled):not([aria-disabled="true"]):not([aria-current="page"]) {
-      color: t.$ctrlText;
+      color: t.$ctrl-text;
       background: t.token("selection-fill");
     }
     &:focus-visible {
-      outline: 2px solid t.$ctrlText;
+      outline: 2px solid t.$ctrl-text;
       outline-offset: 3px;
     }
     &:is(:disabled, [aria-disabled="true"]) {
-      opacity: t.$disabledOpacity;
+      opacity: t.$disabled-opacity;
       cursor: default;
     }
     &[aria-current="page"] {
-      color: t.$onCtrlFillSolid;
+      color: t.$on-ctrl-fill-solid;
       background: transparent;
       isolation: isolate;
       &::before {
@@ -70,11 +70,11 @@
         position: absolute;
         z-index: -1;
         // Unmodified 28px export includes the 20px circle and its shadow.
-        inline-size: 28px;
-        block-size: 28px;
-        inset-inline-start: calc(50% - 14px);
-        inset-block-start: calc(50% - 12px);
-        background: assets.$paginator-selected center / 28px 28px no-repeat;
+        inline-size: 140%;
+        block-size: 140%;
+        inset-inline-start: -20%;
+        inset-block-start: -10%;
+        background: assets.$paginator-selected center / 100% 100% no-repeat;
       }
     }
   }
@@ -86,13 +86,17 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
-  :is(.ag-paginator, .ag-paginator__item)[hidden] { display: none !important; }
+  :is(.ag-paginator, .ag-paginator__item)[hidden] {
+    display: none !important;
+  }
   @media (forced-colors: active) {
     .ag-paginator__item[aria-current="page"] {
       color: HighlightText;
       background: Highlight;
       forced-color-adjust: none;
-      &::before { display: none; }
+      &::before {
+        display: none;
+      }
     }
   }
 }

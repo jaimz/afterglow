@@ -15,7 +15,7 @@
   border: 1px solid t.token("keyline");
   border-radius: 8px;
   background: t.$panel;
-  color: t.$onSurface;
+  color: t.$on-surface;
   box-shadow: t.token("popup-menu-shadow");
   text-shadow: none;
 
@@ -67,7 +67,7 @@
     display: none !important;
   }
   &:focus-visible {
-    outline: 2px solid t.$ctrlText;
+    outline: 2px solid t.$ctrl-text;
   }
   // Popovers are non-modal: do not dim or block the rest of the application.
   &::backdrop {
@@ -80,7 +80,7 @@
     @include menu;
   }
   .ag-popup-menu__separator {
-    margin: t.$frame-gridY t.$frame-gridX;
+    margin: t.$grid-y t.$grid-x;
     border: 0;
     border-block-start: 1px solid t.token("keyline");
   }

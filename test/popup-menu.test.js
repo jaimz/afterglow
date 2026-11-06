@@ -35,7 +35,7 @@ function fixture(options = {}) {
       <hr class="ag-popup-menu__separator" role="separator">
       <button class="ag-menu-item">Rename</button>
       <a class="ag-menu-item" href="#archive">Archive</a>
-    </div><button id="next">Next</button>`;
+    </div><button id="next" tabindex="0">Next</button>`;
   const trigger = host.querySelector("button");
   const menu = host.querySelector(".ag-popup-menu");
   const controller = enhance(menu, { trigger, ...options });
@@ -80,7 +80,9 @@ it("uses native invokers, light dismissal and Escape with focus return", async (
   await click(trigger);
   await click(host.querySelector("#next"));
   expect(controller.isOpen).to.equal(false);
-  focused(host.querySelector("#next"));
+  // Outside-click focus follows the platform: Safari need not focus buttons on click.
+  expect(menu.contains(document.activeElement)).to.equal(false);
+  expect(document.activeElement === trigger).to.equal(false);
 });
 
 it("supports arrow navigation, typeahead, native activation and focusable aria-disabled items", async () => {
@@ -121,6 +123,7 @@ it("supports arrow navigation, typeahead, native activation and focusable aria-d
 it("Tab closes the whole menu and continues outside; Shift+Tab returns before the invoker", async () => {
   const before = document.createElement("button");
   before.textContent = "Before";
+  before.tabIndex = 0;
   host.before(before);
   cleanups.push(() => before.remove());
   const { trigger, controller } = fixture();
@@ -296,4 +299,63 @@ it("keeps a wide menu inside a narrow viewport with a central invoker", async ()
   await settle();
   expect(bounds(menu).left).to.be.at.least(0);
   expect(bounds(menu).right).to.be.at.most(320);
+});
+
+it("closes when application focus moves outside without stealing it back", async () => {
+  const { controller } = fixture();
+  controller.show();
+  const next = host.querySelector("#next");
+  next.focus();
+  await settle();
+  expect(controller.isOpen).to.equal(false);
+  focused(next);
+});
+
+it("allows slow diagonal pointer travel into a submenu and releases the corridor on exit", async () => {
+  await sendMouse({ type: "move", position: [0, 0] });
+  const { menu, controller, items } = fixture();
+  const sub = document.createElement("div");
+  sub.className = "ag-popup-menu";
+  sub.innerHTML =
+    '<button class="ag-menu-item">Copy</button><button class="ag-menu-item">Share</button>';
+  menu.append(sub);
+  const nested = enhance(sub, {
+    trigger: items[0],
+    placement: "inline-end",
+    openOnHover: true,
+  });
+  controller.show("none");
+  nested.show("none");
+  await settle();
+  const triggerBox = bounds(items[0]),
+    subBox = bounds(sub);
+  const originX = triggerBox.right - 30,
+    originY = triggerBox.top + triggerBox.height / 2;
+  items[0].dispatchEvent(
+    new PointerEvent("pointerleave", {
+      pointerType: "mouse",
+      clientX: originX,
+      clientY: originY,
+    })
+  );
+  for (const part of [0.15, 0.3, 0.45, 0.6]) {
+    await new Promise((resolve) => setTimeout(resolve, 110));
+    document.dispatchEvent(
+      new PointerEvent("pointermove", {
+        pointerType: "mouse",
+        clientX: originX + (subBox.left - originX) * part,
+        clientY: originY + 5 * part,
+      })
+    );
+  }
+  expect(nested.isOpen).to.equal(true);
+  document.dispatchEvent(
+    new PointerEvent("pointermove", {
+      pointerType: "mouse",
+      clientX: 0,
+      clientY: 0,
+    })
+  );
+  expect(nested.isOpen).to.equal(false);
+  expect(controller.isOpen).to.equal(true);
 });

@@ -1,13 +1,13 @@
 @use "tokens" as t;
 
-@mixin flex-row($gap: t.$frame-gridX) {
+@mixin flex-row($gap: t.$grid-x) {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: $gap;
 }
 
-@mixin flex-column($gap: t.$frame-gridY) {
+@mixin flex-column($gap: t.$grid-y) {
   display: flex;
   flex-direction: column;
   gap: $gap;

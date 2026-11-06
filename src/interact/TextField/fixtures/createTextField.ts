@@ -3,6 +3,7 @@ import { element, escapeHTML, track } from "../../../stories/fixtures";
 
 export interface TextFieldArgs {
   label: string;
+  placeholder?: string;
   value?: string;
   hint?: string;
   type?: "text" | "search" | "password" | "email" | "url" | "tel" | "number";
@@ -22,10 +23,11 @@ export interface TextFieldArgs {
 
 let nextFieldId = 0;
 
-/** Create accessible native markup; a blank placeholder lets CSS position the label. */
+/** Story-owned label layout, associated with the native input by for/id. */
 export function createTextField(
   {
     label,
+    placeholder = "",
     value = "",
     hint = "",
     type = "text",
@@ -57,7 +59,11 @@ export function createTextField(
   ]
     .filter(Boolean)
     .join(" ");
-  const root = element(`<div class="ag-text-field" data-variant="${variant}" ${
+  const root = element(`<div style="max-width:100%;min-width:0">
+    <label class="ag-body" for="${id}" style="display:block;margin-bottom:8px;color:inherit">${escapeHTML(
+    label
+  )}</label>
+    <div class="ag-text-field" data-variant="${variant}" ${
     compact ? "data-compact" : ""
   } ${status === "none" ? "" : `data-status="${status}"`}>
     <div class="ag-text-field__control">
@@ -65,17 +71,14 @@ export function createTextField(
       <input id="${id}" class="ag-text-field__input" type="${type}" name="${escapeHTML(
     name
   )}"
-        value="${escapeHTML(value)}" placeholder=" " ${
-    descriptions ? `aria-describedby="${descriptions}"` : ""
-  }
+        value="${escapeHTML(value)}" ${
+    placeholder ? `placeholder="${escapeHTML(placeholder)}"` : ""
+  } ${descriptions ? `aria-describedby="${descriptions}"` : ""}
         autocomplete="${escapeHTML(autocomplete)}"
         ${status === "error" ? 'aria-invalid="true"' : ""}
         ${disabled ? "disabled" : ""} ${readOnly ? "readonly" : ""} ${
     required ? "required" : ""
   }>
-      <label class="ag-text-field__label" for="${id}">${escapeHTML(
-    label
-  )}</label>
       ${icon(trailingIcon, "trailing")}
       ${
         showValidationIcon
@@ -97,10 +100,15 @@ export function createTextField(
           )}</p>`
         : ""
     }
-  </div>`);
+  </div></div>`);
   const input = root.querySelector("input")!;
   const controller = validation
-    ? track(enhanceTextField(root, validation))
+    ? track(
+        enhanceTextField(
+          root.querySelector<HTMLElement>(".ag-text-field")!,
+          validation
+        )
+      )
     : undefined;
   return { root, input, controller };
 }

@@ -10,13 +10,13 @@
   max-inline-size: 100%;
   min-inline-size: 0;
   vertical-align: middle;
-  color: t.$ctrlTextDesat;
+  color: t.$ctrl-text-desat;
 
   &[data-variant="error"] {
     color: t.$error;
   }
   &[data-variant="caution"] {
-    color: t.$caution;
+    color: t.token("caution-foreground");
   }
   &:where(:has(> .ag-progress__bar:indeterminate:not([hidden])))::before {
     content: "";
@@ -111,8 +111,8 @@
 @mixin label {
   display: block;
   min-inline-size: 0;
-  font-family: t.$bodyFontStack;
-  font-size: t.$captionTextSize;
+  font-family: t.$body-font-stack;
+  font-size: t.$caption-text-size;
   font-weight: 700;
   line-height: normal;
   letter-spacing: 0;

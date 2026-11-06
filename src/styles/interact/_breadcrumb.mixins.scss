@@ -13,15 +13,15 @@
 
   .ag-breadcrumb {
     min-inline-size: 0;
-    font-family: t.$bodyFontStack;
+    font-family: t.$body-font-stack;
     font-size: t.token("breadcrumb-text-size");
-    line-height: t.$lineHeight;
-    color: t.$onSurfaceAlt;
-    padding-block: t.$frame-gridY;
+    line-height: t.$line-height;
+    color: t.$on-surface-alt;
+    padding-block: t.$grid-y;
     overflow-x: auto;
 
     &[data-variant="backdrop"] {
-      color: t.$onBackdrop;
+      color: t.$on-backdrop;
     }
   }
 
@@ -29,7 +29,7 @@
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
-    gap: t.$frame-gridY t.$frame-gridX;
+    gap: t.$grid-y t.$grid-x;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -39,7 +39,7 @@
     flex: 0 0 auto;
     display: flex;
     align-items: center;
-    gap: t.$frame-gridX;
+    gap: t.$grid-x;
     min-inline-size: 0;
   }
 
@@ -73,7 +73,7 @@
     font: inherit;
     font-weight: 400;
     text-decoration: none;
-    border-radius: t.$frame-gridType;
+    border-radius: t.$grid-type;
 
     &[href]:hover {
       text-decoration: underline;

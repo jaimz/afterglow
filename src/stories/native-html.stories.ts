@@ -42,7 +42,7 @@ CSSOnly.parameters = {
 
 export const States = () => {
   const root =
-    element(`<div class="ag-body" style="display:grid;gap:24px;padding:24px;min-width:0;color:var(--onPanel,#53534a)">
+    element(`<div class="ag-body" style="display:grid;gap:24px;padding:24px;min-width:0;color:var(--on-panel,#53534a)">
     <h2>Checkbox states</h2>
     ${["default", "solid", "backdrop"]
       .map(

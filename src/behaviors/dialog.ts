@@ -1,11 +1,12 @@
+import { getMotionOptions } from "./motion";
+
 /**
  * Adds animated opening/closing and dismissal requests to a native <dialog>.
  * Load the Afterglow styles, give the dialog the .ag-dialog class and an
  * accessible label, then pass it to enhanceDialog.
  *
  * Use show() to open and hide() to close after the exit animation. Escape and
- * backdrop clicks emit a dismiss request: the application decides whether to
- * close, for example after checking for unsaved changes. Native close() and
+ * backdrop clicks close by default; cancel dismiss to protect unsaved work. Native close() and
  * forms with method="dialog" still close immediately.
  *
  * Both modal and trapFocus default to true. Non-modal dialogs can opt out of
@@ -17,12 +18,9 @@
  *
  * const dialog = document.querySelector<HTMLDialogElement>("#settings-dialog")!;
  * const modal = enhanceDialog(dialog);
- * const onDismiss = () => void modal.hide();
- * dialog.addEventListener("dismiss", onDismiss);
  * await modal.show();
  *
  * // When disposing the view:
- * dialog.removeEventListener("dismiss", onDismiss);
  * modal.destroy();
  */
 
@@ -35,13 +33,15 @@ export interface DialogOptions {
 }
 
 export interface DialogController {
+  update(options?: DialogOptions): void;
+  refresh(): void;
   /** Open with per-call options; resolves after starting the entry animation. */
   show(options?: DialogOptions): Promise<void>;
 
   /** Await animated closing and pass an optional returnValue to the native dialog. */
   hide(returnValue?: string): Promise<void>;
 
-  /** Emit dismiss and cancel requests; the application's listener decides whether to hide. */
+  /** Close after emitting dismiss and cancel, unless either event is prevented. */
   dismiss(): void;
 
   /** Stop animation, remove helper listeners, and close the native dialog immediately. */
@@ -52,14 +52,18 @@ const controllers = new WeakMap<HTMLDialogElement, DialogController>();
 
 /**
  * Enhance a native dialog, or return its existing controller if already set up.
- * Defaults are captured on the first call; show(options) overrides one opening.
+ * update(options) changes defaults; show(options) overrides one opening.
  */
 export function enhanceDialog(
   dialog: HTMLDialogElement,
   defaults: DialogOptions = {}
 ): DialogController {
   const existing = controllers.get(dialog);
-  if (existing) return existing;
+  if (existing) {
+    existing.update(defaults);
+    return existing;
+  }
+  defaults = { ...defaults };
 
   // Each new transition invalidates any older asynchronous close still in flight.
   let transition = 0;
@@ -78,7 +82,7 @@ export function enhanceDialog(
   /** Pick the entry/exit direction from the dialog's visual anchor. */
   const transform = () => {
     const push =
-      getComputedStyle(dialog).getPropertyValue("--motionPush").trim() ||
+      getComputedStyle(dialog).getPropertyValue("--motion-push").trim() ||
       "16px";
 
     switch (dialog.dataset.anchor) {
@@ -97,24 +101,13 @@ export function enhanceDialog(
 
   /** Animate with theme motion tokens, respecting the reduced-motion preference. */
   const animate = (exit: boolean) => {
-    const styles = getComputedStyle(dialog);
-    const speed =
-      styles.getPropertyValue("--motionSlowDuration").trim() || "250ms";
-    const duration = matchMedia("(prefers-reduced-motion: reduce)").matches
-      ? 0
-      : parseFloat(speed) * (speed.endsWith("ms") ? 1 : 1000);
-    const easing =
-      styles
-        .getPropertyValue(exit ? "--motionExitCurve" : "--motionEntryCurve")
-        .trim() || (exit ? "ease-out" : "ease-in");
     const frames = [
       { opacity: 0, transform: transform() },
       { opacity: 1, transform: "none" },
     ];
 
     animation = dialog.animate(exit ? frames.reverse() : frames, {
-      duration: Number.isFinite(duration) ? duration : 250,
-      easing,
+      ...getMotionOptions(dialog, exit ? "exit" : "entry", "slow"),
       fill: "both",
     });
 
@@ -170,12 +163,9 @@ export function enhanceDialog(
 
   /** Convert a native cancel into an application-owned dismissal request. */
   const cancel = (event: Event) => {
-    if (dispatchingCancel) return;
-
+    if (event.target !== dialog || dispatchingCancel) return;
     event.preventDefault();
-    dialog.dispatchEvent(
-      new Event("dismiss", { bubbles: true, cancelable: true })
-    );
+    controller.dismiss();
   };
 
   let pointerOutside = false;
@@ -204,18 +194,27 @@ export function enhanceDialog(
   };
 
   /** Clean up after any native close, including a method="dialog" form submission. */
-  const close = () => {
-    if (dialog.open) return;
+  const close = (event: Event) => {
+    if (event.target !== dialog || dialog.open) return;
 
     ++transition;
     stop();
     delete dialog.dataset.closing;
     dialog.ownerDocument.removeEventListener("focusin", keepFocus);
-    if (previousFocus?.isConnected) previousFocus.focus();
+    const focused = dialog.ownerDocument.activeElement;
+    // Native close normally restores focus. Do not override an application's
+    // explicit move to another control or a newly opened dialog.
+    if (
+      previousFocus?.isConnected &&
+      (focused === dialog.ownerDocument.body ||
+        (focused && dialog.contains(focused)))
+    )
+      previousFocus.focus();
   };
 
   /** Route supported native invoker commands through the animated lifecycle. */
   const command = (event: Event) => {
+    if (event.target !== dialog) return;
     const name = (event as Event & { command: string }).command;
     if (!["show-modal", "close", "request-close"].includes(name)) return;
 
@@ -226,6 +225,21 @@ export function enhanceDialog(
   };
 
   const controller: DialogController = {
+    update(next = {}) {
+      if (destroyed) return;
+      defaults = { ...defaults, ...next };
+      if (dialog.open) void controller.show(defaults);
+    },
+    refresh() {
+      if (
+        !destroyed &&
+        dialog.open &&
+        !modal &&
+        trapFocus &&
+        !dialog.contains(dialog.ownerDocument.activeElement)
+      )
+        (focusables()[0] ?? dialog).focus();
+    },
     async show(options = {}) {
       if (destroyed) return;
 
@@ -246,6 +260,7 @@ export function enhanceDialog(
       modal = nextModal;
       const opening = !dialog.open;
       if (opening) {
+        dialog.returnValue = "";
         if (modal) dialog.showModal();
         else dialog.show();
       }
@@ -272,19 +287,23 @@ export function enhanceDialog(
     },
 
     dismiss() {
-      dialog.dispatchEvent(
+      if (destroyed || !dialog.open) return;
+      const dismissed = dialog.dispatchEvent(
         new Event("dismiss", { bubbles: true, cancelable: true })
       );
 
       // Let callers observe cancel without recursively translating it to dismiss.
       dispatchingCancel = true;
+      let allowed = false;
       try {
-        dialog.dispatchEvent(
+        allowed = dialog.dispatchEvent(
           new Event("cancel", { bubbles: true, cancelable: true })
         );
       } finally {
         dispatchingCancel = false;
       }
+      if (dismissed && allowed && !dialog.hasAttribute("data-closing"))
+        void controller.hide();
     },
 
     destroy() {

@@ -7,7 +7,7 @@
   min-inline-size: 0;
   min-block-size: 0;
   background: t.$panel;
-  color: t.$onSurface;
+  color: t.$on-surface;
   text-shadow: none;
   box-shadow: t.token("tabbed-view-shadow");
   > .ag-tab-strip {
@@ -19,7 +19,7 @@
     min-block-size: 0;
     overflow: auto;
     &:focus-visible {
-      outline: 2px solid t.$ctrlText;
+      outline: 2px solid t.$ctrl-text;
       outline-offset: -2px;
     }
   }

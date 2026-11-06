@@ -1,3 +1,7 @@
+import { assertMarkup } from "./markup";
+
+import { createControlScope } from "./controls";
+
 /**
  * Adds fill, marks and held-value tooltips to Afterglow's native range inputs.
  * Native inputs still own their values, form submission, focus and thumb dragging.
@@ -13,7 +17,7 @@
  *
  * Listen to the native input/change events for user changes. Controller setters
  * do not emit these events; call update() after writing input properties directly.
- * Read-only sliders also need enhanceControls to prevent native interaction.
+ * Read-only behaviour is included and composed with any enclosing control scope.
  * See Usage.md for complete single-handle and two-handle markup examples.
  *
  * @example
@@ -28,6 +32,10 @@
  */
 
 export interface SliderOptions {
+  /** Set the single/lower value, without emitting user input events. */
+  value?: string | number;
+  /** Set both handles in a range slider. */
+  values?: readonly [string | number, string | number];
   /** Used by both the visible value bubble and assistive technology. */
   formatValue?: (value: string) => string;
 }
@@ -41,7 +49,8 @@ export interface SliderController {
   readonly upperInput: HTMLInputElement | undefined;
 
   /** Refresh display and ARIA after property writes; clamp a crossed lower value to the upper. */
-  update(): void;
+  update(options?: SliderOptions): void;
+  refresh(): void;
 
   /**
    * Set the single/lower value using native bounds and step, clamping to the upper
@@ -71,14 +80,19 @@ const adjustmentKeys = new Set([
 
 /**
  * Enhance an .ag-slider wrapper, or return its existing controller if already set up.
- * Options are applied on the first call. Throws if the control or input count is invalid.
+ * Supplied options are applied on every call. Throws if the control or input count is invalid.
  */
 export function enhanceSlider(
   root: HTMLElement,
   options: SliderOptions = {}
 ): SliderController {
+  assertMarkup(root);
   const existing = controllers.get(root);
-  if (existing) return existing;
+  if (existing) {
+    existing.update(options);
+    return existing;
+  }
+  options = { ...options };
 
   const inputs = Array.from(
     root.querySelectorAll<HTMLInputElement>('input[type="range"]')
@@ -98,6 +112,9 @@ export function enhanceSlider(
 
   const document = root.ownerDocument;
   const window = document.defaultView!;
+  if (options.values && !upper)
+    throw new Error("values requires a two-handle slider.");
+  const controls = createControlScope(root);
   const marks = root.querySelector<HTMLElement>(".ag-slider__marks");
 
   // Keep the caller's accessibility attributes so destroy() can restore them.
@@ -219,6 +236,11 @@ export function enhanceSlider(
         ? options.formatValue(input.value)
         : input.value;
       if (options.formatValue) input.setAttribute("aria-valuetext", value);
+      else {
+        const authored = saved[index].get("aria-valuetext");
+        if (authored == null) input.removeAttribute("aria-valuetext");
+        else input.setAttribute("aria-valuetext", authored);
+      }
       if (tips[index].textContent !== value) tips[index].textContent = value;
       tips[index].style.setProperty(
         "--ag-slider-position",
@@ -457,14 +479,29 @@ export function enhanceSlider(
     input: range,
     upperInput: upper,
 
-    update: () => update(),
+    refresh() {
+      controls.refresh();
+      update();
+    },
+    update(next = {}) {
+      if (destroyed) return;
+      if (next.values && !upper)
+        throw new Error("values requires a two-handle slider.");
+      Object.assign(options, next);
+      if (next.values) controller.setValues(...next.values);
+      else if (next.value !== undefined) controller.setValue(next.value);
+      controls.refresh();
+      update();
+    },
 
     setValue(value) {
+      if (destroyed) return;
       range.value = String(value);
       update(range);
     },
 
     setValues(lowerValue, upperValue) {
+      if (destroyed) return;
       if (!upper) throw new Error("setValues requires a two-handle slider.");
 
       update(); // Apply pending bound/step changes before native rounding.
@@ -488,6 +525,7 @@ export function enhanceSlider(
       finish();
       destroyed = true;
       observer.disconnect();
+      controls.destroy();
 
       inputs.forEach((input, index) => {
         input.removeEventListener("input", onValue, true);
@@ -517,7 +555,7 @@ export function enhanceSlider(
   };
 
   controllers.set(root, controller);
-  update();
+  controller.update(options);
 
   return controller;
 }

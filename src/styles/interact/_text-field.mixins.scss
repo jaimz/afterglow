@@ -1,42 +1,29 @@
 @use "../foundation/tokens" as t;
 @use "../present/icon.mixins" as icon;
 
-// A native input, an associated label and optional icons/messages compose a field.
+// A native input and optional icons/messages; consumers own their label layout.
 @mixin text-field {
   --ag-text-field-height: #{t.token("text-field-height")};
   --ag-text-field-icon-size: #{t.token("text-field-icon-size")};
-  --ag-text-field-label-inset: #{t.token("text-field-padding-inline")};
-  --ag-text-field-trailing-space: 0px;
-  --ag-text-field-status-space: 0px;
   position: relative;
   box-sizing: border-box;
   inline-size: t.token("text-field-width");
   max-inline-size: 100%;
   min-inline-size: 0;
-  color: t.$onSurface;
-  font-family: t.$bodyFontStack;
+  color: t.$on-surface;
+  font-family: t.$body-font-stack;
   text-shadow: none;
 
-  &:has(.ag-text-field__leading:not([hidden])) {
-    --ag-text-field-label-inset: calc(
-      #{t.token("text-field-padding-inline")} / 2 + var(
-          --ag-text-field-icon-size
-        ) + 8px
-    );
-  }
-  &:has(.ag-text-field__trailing:not([hidden])) {
-    --ag-text-field-trailing-space: calc(var(--ag-text-field-icon-size) + 8px);
-  }
   &[data-variant="backdrop"] {
     --ag-text-field-height: #{t.token("text-field-backdrop-height")};
-    color: t.$onBackdrop;
+    color: t.$on-backdrop;
   }
   &[data-compact] {
     --ag-text-field-height: #{t.token("text-field-compact-height")};
     --ag-text-field-icon-size: #{t.token("text-field-compact-icon-size")};
   }
   &:has(.ag-text-field__input:disabled) {
-    opacity: t.$disabledOpacity;
+    opacity: t.$disabled-opacity;
     cursor: not-allowed;
   }
   &[hidden] {
@@ -72,7 +59,7 @@
   background: transparent;
   color: inherit;
   font: inherit;
-  font-size: t.$bodyTextSize;
+  font-size: max(1rem, #{t.$body-text-size});
   line-height: 1.2;
   box-shadow: none;
 
@@ -94,34 +81,14 @@
   }
 }
 
-@mixin label {
-  position: absolute;
-  inset-inline-start: var(--ag-text-field-label-inset);
-  inset-inline-end: calc(
-    #{t.token("text-field-padding-inline")} + var(
-        --ag-text-field-trailing-space
-      ) + var(--ag-text-field-status-space)
-  );
-  inset-block-start: 50%;
-  transform: translateY(-50%);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: t.$bodyTextSize;
-  font-style: italic;
-  line-height: 1.2;
-  color: t.token("field-hint");
-  cursor: text;
-}
-
 @mixin caption {
   margin: 3px 0 0;
   padding-inline: t.token("text-field-padding-inline");
-  font-size: t.$captionTextSize;
+  font-size: t.$caption-text-size;
   line-height: 1.2;
   text-align: end;
   overflow-wrap: anywhere;
-  color: t.$onSurfaceAlt;
+  color: t.$on-surface-alt;
   &[hidden] {
     display: none !important;
   }
@@ -136,9 +103,6 @@
   }
   .ag-text-field__input {
     @include input;
-  }
-  .ag-text-field__label {
-    @include label;
   }
   .ag-text-field__hint,
   .ag-text-field__error {
@@ -167,12 +131,9 @@
     .ag-text-field__control {
     padding-inline-start: calc(#{t.token("text-field-padding-inline")} / 2);
   }
-  .ag-text-field:where([data-status="success"], [data-status="error"], :has(.ag-text-field__input:is([aria-invalid="true"], :user-invalid))):has(.ag-text-field__status:not([hidden])) {
-    --ag-text-field-status-space: calc(var(--ag-text-field-icon-size) + 8px);
-  }
 
   .ag-text-field__control:has(> .ag-text-field__input:focus-visible) {
-    outline: 2px solid t.$ctrlText;
+    outline: 2px solid t.$ctrl-text;
     outline-offset: 0;
   }
 
@@ -180,30 +141,21 @@
     > .ag-text-field__hint {
     display: none;
   }
-  // Show the label as a placeholder in every variant, including after form reset.
-  .ag-text-field:has(.ag-text-field__input:not(:placeholder-shown))
-    .ag-text-field__label {
-    // Retain the accessible name without drawing it over entered text.
-    inline-size: 1px;
-    block-size: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-  }
   .ag-text-field:where([data-variant="backdrop"]) {
     .ag-text-field__control {
-      background: color-mix(in srgb, #{t.$paper} 15%, transparent);
-      border-color: t.$onBackdrop;
+      background: rgb(0 0 0 / 15%);
+      border-color: t.$on-backdrop;
       box-shadow: none;
     }
-    .ag-text-field__label,
+    .ag-text-field__input::placeholder,
     .ag-text-field__hint {
-      color: t.$onBackdrop;
+      color: t.$on-backdrop;
     }
-    .ag-text-field__label {
+    .ag-text-field__input::placeholder {
       font-style: normal;
     }
     .ag-text-field__control:has(> .ag-text-field__input:focus-visible) {
-      outline-color: t.$onBackdrop;
+      outline-color: t.$on-backdrop;
     }
   }
   .ag-text-field:where([data-status="success"]) {
@@ -247,7 +199,7 @@
         border: 1px solid ButtonText;
         box-shadow: none;
       }
-      .ag-text-field__label,
+      .ag-text-field__input::placeholder,
       .ag-text-field__hint,
       .ag-text-field__error,
       .ag-text-field__status {

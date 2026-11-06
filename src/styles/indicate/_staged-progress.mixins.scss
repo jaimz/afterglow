@@ -10,10 +10,10 @@
   padding: 0;
   list-style: none;
   overflow-x: auto;
-  color: t.$ctrlTextDesat;
+  color: t.$ctrl-text-desat;
 
   &:where([data-variant="backdrop"]) {
-    color: t.$onBackdrop;
+    color: t.$on-backdrop;
   }
   &[data-orientation="vertical"] {
     flex-direction: column;

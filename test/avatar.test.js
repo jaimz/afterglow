@@ -285,8 +285,12 @@ it("replaces, clears and recovers photos through the imageUrl property", async (
   );
   const image = avatar.querySelector("img");
   await image.decode();
+  // decode() may resolve for the current image while its replacement is pending.
+  const replacementLoaded = new Promise((resolve) =>
+    image.addEventListener("load", resolve, { once: true })
+  );
   controller.imageUrl = "/src/present/Avatar/assets/circle.jpg";
-  await image.decode();
+  await replacementLoaded;
   await settle();
   expect(avatar.querySelectorAll("img").length).to.equal(1);
   expect(controller.imageUrl).to.equal("/src/present/Avatar/assets/circle.jpg");
@@ -393,7 +397,7 @@ it("fits avatars enhanced before mounting and responds to local theme sizing", a
   const letters = avatar.querySelector(".ag-avatar__initials");
   expect(rect(letters).width).to.be.at.most(40 * 0.9375 + 0.5);
   root.style.setProperty("--avatar-size", "64px");
-  root.style.setProperty("--ctrlText", "rgb(10,20,30)");
+  root.style.setProperty("--ctrl-text", "rgb(10,20,30)");
   await settle();
   expect(rect(avatar).width).to.equal(64);
   expect(style(avatar).color).to.equal("rgb(10, 20, 30)");

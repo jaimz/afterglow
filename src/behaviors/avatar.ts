@@ -43,6 +43,8 @@ export interface AvatarOptions {
 
 /** Writable avatar content, the displayed initials, and lifecycle methods. */
 export interface AvatarController {
+  /** Reconcile current DOM state immediately. */
+  refresh(): void;
   /** Read or assign the name; assignment updates data-name and the rendered avatar. */
   name: string;
 
@@ -136,7 +138,10 @@ export function enhanceAvatar(
   options: AvatarOptions = {}
 ): AvatarController {
   const existing = controllers.get(root);
-  if (existing) return existing;
+  if (existing) {
+    existing.update(options);
+    return existing;
+  }
 
   const document = root.ownerDocument;
   const view = document.defaultView;
@@ -352,6 +357,7 @@ export function enhanceAvatar(
   void document.fonts.ready.then(scheduleFit);
 
   const controller: AvatarController = {
+    refresh: () => update(),
     get name() {
       return root.dataset.name ?? "";
     },

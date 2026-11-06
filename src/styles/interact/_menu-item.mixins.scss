@@ -4,20 +4,20 @@
 @mixin item {
   display: flex;
   align-items: center;
-  gap: t.$frame-gridX;
+  gap: t.$grid-x;
   box-sizing: border-box;
   inline-size: 100%;
   min-inline-size: 0;
   min-block-size: t.token("menu-item-min-height");
-  padding: t.token("menu-item-padding-block") calc(#{t.$frame-gridX} * 2);
+  padding: t.token("menu-item-padding-block") calc(#{t.$grid-x} * 2);
   border: 0;
-  border-radius: calc(#{t.$frame-gridType} * 2);
+  border-radius: calc(#{t.$grid-type} * 2);
   background: transparent;
-  color: t.$onSurface;
-  font-family: t.$bodyFontStack;
+  color: t.$on-surface;
+  font-family: t.$body-font-stack;
   font-size: t.token("menu-item-text-size");
   font-weight: 400;
-  line-height: t.$lineHeight;
+  line-height: t.$line-height;
   text-align: start;
   text-decoration: none;
   text-shadow: none;
@@ -36,14 +36,14 @@
   }
   &:is([data-selected], [aria-current]:not([aria-current="false"]), [aria-pressed="true"], [aria-checked="true"]) {
     background: t.token("selection-fill");
-    color: t.$ctrlText;
+    color: t.$ctrl-text;
   }
   &:focus-visible {
-    outline: 2px solid t.$ctrlText;
+    outline: 2px solid t.$ctrl-text;
     outline-offset: -2px;
   }
   &:is(:disabled, [aria-disabled="true"]) {
-    opacity: t.$disabledOpacity;
+    opacity: t.$disabled-opacity;
     cursor: default;
   }
   &[hidden] {

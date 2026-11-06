@@ -159,7 +159,6 @@ export function sliderMarkup({
 export function createSlider(args: SliderArgs) {
   const root = element(sliderMarkup(args));
   track(enhanceSlider(root));
-  if (args.isReadOnly) track(enhanceControls(root));
   return root;
 }
 export interface DialogArgs {
@@ -187,7 +186,6 @@ export function createDialog({
   const controller = track(enhanceDialog(dialog, { modal, trapFocus }));
   root.querySelector("button")!.onclick = () => void controller.show();
   dialog.querySelector("button")!.onclick = () => void controller.hide();
-  dialog.addEventListener("dismiss", () => void controller.hide());
   if (!hidden) {
     const timer = setTimeout(() => {
       if (dialog.isConnected) void controller.show();

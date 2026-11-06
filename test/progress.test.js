@@ -78,14 +78,14 @@ it("uses the specified bar dimensions, caption treatment and three variant colou
   expect(bounds(component).width).to.equal(142);
   expect(bounds(progress).height).to.equal(3);
   expect(style(progress).backgroundSize).to.equal("100% 1px");
-  expect(style(component).gap).to.equal("3px");
-  expect(parseFloat(style(label).fontSize)).to.be.closeTo(11.11, 0.01);
+  expect(style(component).gap).to.equal("4px");
+  expect(parseFloat(style(label).fontSize)).to.be.closeTo(14 / 1.2, 0.02);
   expect(style(label).fontWeight).to.equal("700");
   expect(style(label).textAlign).to.equal("center");
   for (const [variant, colour] of [
-    ["default", "rgb(94, 140, 151)"],
-    ["error", "rgb(207, 53, 88)"],
-    ["caution", "rgb(236, 187, 91)"],
+    ["default", "rgb(76, 114, 125)"],
+    ["error", "rgb(191, 43, 77)"],
+    ["caution", "rgb(143, 98, 14)"],
   ]) {
     component.dataset.variant = variant;
     expect(style(component).color).to.equal(colour);
@@ -98,7 +98,7 @@ it("uses the specified bar dimensions, caption treatment and three variant colou
 it("inherits local theme values and wraps long labels without overflowing a narrow container", () => {
   root.className = "ag-theme";
   root.style.cssText =
-    "width:90px;--progress-width:100%;--progress-height:5px;--progress-label-gap:8px;--ctrlTextDesat:rgb(10,20,30);--body-text-size:20px";
+    "width:90px;--progress-width:100%;--progress-height:5px;--progress-label-gap:8px;--ctrl-text-desat:rgb(10,20,30);--body-text-size:20px";
   const { component, progress, label } = fixture(
     'value="5" max="10"',
     "Averylongfilenamethatneedstowrapwithintheavailablewidth.zip"
@@ -109,7 +109,7 @@ it("inherits local theme values and wraps long labels without overflowing a narr
   expect(component.scrollWidth).to.be.at.most(90);
   expect(style(progress).color).to.equal("rgb(10, 20, 30)");
   expect(style(component).gap).to.equal("8px");
-  expect(parseFloat(style(label).fontSize)).to.be.closeTo(20 / 1.2 ** 2, 0.01);
+  expect(parseFloat(style(label).fontSize)).to.be.closeTo(20 / 1.2, 0.02);
 });
 
 it("honours hidden on the wrapper, the label and an indeterminate bar", () => {

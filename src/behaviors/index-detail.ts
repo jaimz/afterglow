@@ -8,6 +8,7 @@ export interface IndexDetailOptions {
 }
 
 export interface IndexDetailController {
+  update(options?: IndexDetailOptions): void;
   /** Requested visibility, including during an animation. */
   readonly inspectorOpen: boolean;
   /** Resolves when this transition finishes or is superseded. */
@@ -21,17 +22,33 @@ export interface IndexDetailController {
 const controllers = new WeakMap<HTMLElement, IndexDetailController>();
 
 /** Animate the Inspector's grid track so the panel slides without squeezing its content. */
-export function enhanceIndexDetail(root: HTMLElement, options: IndexDetailOptions = {}): IndexDetailController {
+export function enhanceIndexDetail(
+  root: HTMLElement,
+  options: IndexDetailOptions = {}
+): IndexDetailController {
   const existing = controllers.get(root);
-  if (existing) return existing;
-  const inspector = root.querySelector<HTMLElement>(":scope > .ag-index-detail__inspector");
-  if (!inspector) throw new Error("Index-Detail motion requires a direct Inspector pane.");
+  if (existing) {
+    existing.update(options);
+    return existing;
+  }
+  options = { ...options };
+  if (
+    options.speed &&
+    !["fast", "medium", "slow", "very-slow"].includes(options.speed)
+  )
+    throw new Error("Unknown motion speed.");
+  const inspector = root.querySelector<HTMLElement>(
+    ":scope > .ag-index-detail__inspector"
+  );
+  if (!inspector)
+    throw new Error("Index-Detail motion requires a direct Inspector pane.");
   const panel = inspector;
   const win = root.ownerDocument.defaultView!;
   const reduced = win.matchMedia("(prefers-reduced-motion: reduce)");
   const originalInert = panel.inert;
   const originalAriaHidden = panel.getAttribute("aria-hidden");
-  const originalExpanded = options.trigger?.getAttribute("aria-expanded") ?? null;
+  const originalExpanded =
+    options.trigger?.getAttribute("aria-expanded") ?? null;
   let open = !panel.hidden;
   let animation: Animation | undefined;
   let pending = Promise.resolve();
@@ -59,7 +76,11 @@ export function enhanceIndexDetail(root: HTMLElement, options: IndexDetailOption
 
   const setInspectorOpen = (next: boolean): Promise<void> => {
     if (destroyed || next === open) return pending;
-    const vertical = win.getComputedStyle(panel).getPropertyValue("--ag-index-detail-inspector-axis").trim() === "block";
+    const vertical =
+      win
+        .getComputedStyle(panel)
+        .getPropertyValue("--ag-index-detail-inspector-axis")
+        .trim() === "block";
     const property = vertical ? "gridTemplateRows" : "gridTemplateColumns";
     // Capture the current animated grid before cancellation for smooth reversals.
     const tracks = () => {
@@ -72,7 +93,9 @@ export function enhanceIndexDetail(root: HTMLElement, options: IndexDetailOption
     open = next;
     options.trigger?.setAttribute("aria-expanded", String(open));
     if (!open && panel.contains(root.ownerDocument.activeElement)) {
-      const destination = options.trigger || root.querySelector<HTMLElement>(".ag-index-detail__detail");
+      const destination =
+        options.trigger ||
+        root.querySelector<HTMLElement>(".ag-index-detail__detail");
       if (destination) {
         const tabindex = destination.getAttribute("tabindex");
         if (tabindex === null) destination.tabIndex = -1;
@@ -82,13 +105,23 @@ export function enhanceIndexDetail(root: HTMLElement, options: IndexDetailOption
     }
     restoreAccessibility();
     panel.hidden = false;
-    const fullSize = panel.getBoundingClientRect()[vertical ? "height" : "width"];
+    const fullSize =
+      panel.getBoundingClientRect()[vertical ? "height" : "width"];
     panel.hidden = !open;
     const to = tracks();
-    const timing = getMotionOptions(root, open ? "entry" : "exit", options.speed || "slow");
-    if (!root.isConnected || !fullSize || timing.duration === 0 || !root.animate) {
+    const timing = getMotionOptions(
+      root,
+      open ? "entry" : "exit",
+      options.speed || "slow"
+    );
+    if (
+      !root.isConnected ||
+      !fullSize ||
+      timing.duration === 0 ||
+      !root.animate
+    ) {
       settle();
-      return pending = Promise.resolve();
+      return (pending = Promise.resolve());
     }
     panel.hidden = false;
     if (!open) {
@@ -104,11 +137,16 @@ export function enhanceIndexDetail(root: HTMLElement, options: IndexDetailOption
       else panel.style.removeProperty(sizeProperty);
     };
     root.setAttribute("data-inspector-motion", open ? "entry" : "exit");
-    const active = root.animate([{ [property]: from }, { [property]: to }], { ...timing, fill: "both" });
-    animation = active;
-    pending = active.finished.catch(() => undefined).then(() => {
-      if (animation === active) settle();
+    const active = root.animate([{ [property]: from }, { [property]: to }], {
+      ...timing,
+      fill: "both",
     });
+    animation = active;
+    pending = active.finished
+      .catch(() => undefined)
+      .then(() => {
+        if (animation === active) settle();
+      });
     return pending;
   };
 
@@ -117,18 +155,42 @@ export function enhanceIndexDetail(root: HTMLElement, options: IndexDetailOption
   let width = root.getBoundingClientRect().width;
   const resize = new ResizeObserver(() => {
     const currentWidth = root.getBoundingClientRect().width;
-    if (currentWidth !== width) { width = currentWidth; settle(); }
+    if (currentWidth !== width) {
+      width = currentWidth;
+      settle();
+    }
   });
   resize.observe(root);
   const attributes = new MutationObserver(() => settle());
-  attributes.observe(root, { attributes: true, attributeFilter: ["dir", "data-orientation"] });
-  const reduceMotion = () => { if (reduced.matches) settle(); };
+  attributes.observe(root, {
+    attributes: true,
+    attributeFilter: ["dir", "data-orientation"],
+  });
+  const reduceMotion = () => {
+    if (reduced.matches) settle();
+  };
   reduced.addEventListener("change", reduceMotion);
 
   const controller: IndexDetailController = {
-    get inspectorOpen() { return open; },
+    update(next = {}) {
+      if (destroyed) return;
+      if ("trigger" in next && next.trigger !== options.trigger)
+        throw new Error("Destroy Index-Detail before changing its trigger.");
+      if (
+        next.speed &&
+        !["fast", "medium", "slow", "very-slow"].includes(next.speed)
+      )
+        throw new Error("Unknown motion speed.");
+      Object.assign(options, next);
+      settle();
+    },
+    get inspectorOpen() {
+      return open;
+    },
     setInspectorOpen,
-    refresh() { if (!destroyed) settle(); },
+    refresh() {
+      if (!destroyed) settle();
+    },
     destroy() {
       if (destroyed) return;
       destroyed = true;
@@ -137,7 +199,8 @@ export function enhanceIndexDetail(root: HTMLElement, options: IndexDetailOption
       reduced.removeEventListener("change", reduceMotion);
       settle();
       if (options.trigger) {
-        if (originalExpanded === null) options.trigger.removeAttribute("aria-expanded");
+        if (originalExpanded === null)
+          options.trigger.removeAttribute("aria-expanded");
         else options.trigger.setAttribute("aria-expanded", originalExpanded);
       }
       controllers.delete(root);

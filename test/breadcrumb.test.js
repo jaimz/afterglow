@@ -59,7 +59,7 @@ it("uses native links and keyboard focus, with a non-interactive current page", 
   expect(style(current).fontWeight).to.equal("400");
   expect(style(links[0]).fontWeight).to.equal("400");
   expect(parseFloat(style(root).fontSize)).to.be.closeTo(13.33, 0.01);
-  expect(style(root).color).to.equal("rgb(100, 120, 140)");
+  expect(style(root).color).to.equal("rgb(88, 109, 128)");
   // Make this fixture independent of Safari's preference to skip links on Tab.
   for (const link of links) link.tabIndex = 0;
   links[0].focus();
@@ -110,7 +110,7 @@ it("keeps long paths on one scrollable line and mirrors separators in RTL", () =
     "matrix(-1, 0, 0, 1, 0, 0)"
   );
   root.dataset.variant = "backdrop";
-  expect(style(root).color).to.equal("rgb(232, 201, 200)");
+  expect(style(root).color).to.equal("rgb(243, 215, 214)");
 });
 
 it("truncates only labels over 24 characters in the middle, retaining full names", () => {

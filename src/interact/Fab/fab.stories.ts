@@ -8,7 +8,7 @@ interface FabArgs {
 // Background is a preview setting: the same translucent button works on each.
 function surface(background: FabArgs["background"]) {
   if (background === "dark")
-    return 'style="padding:32px;background:#242424;color:var(--onBackdropAlt)"';
+    return 'style="padding:32px;background:#242424;color:var(--on-backdrop-alt)"';
   return `class="ag-${
     background === "backdrop" ? "background" : "panel"
   }" style="padding:32px"`;

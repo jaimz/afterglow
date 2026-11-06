@@ -29,7 +29,7 @@
   overflow: hidden;
   border-radius: var(--ag-avatar-radius);
   background: t.$paper;
-  color: t.$ctrlText;
+  color: t.$ctrl-text;
   text-shadow: none;
   isolation: isolate;
 
@@ -83,13 +83,13 @@
     );
     box-shadow: t.token("avatar-shadow");
     &::after {
-      border: 0.5px solid t.$backdropLight;
+      border: 0.5px solid t.$backdrop-light;
       box-shadow: inset 0 1px 1px t.$paper;
     }
   }
   &[data-variant="flat-initials"] {
-    background: t.$ctrlFillSolidLo;
-    color: t.$onCtrlFillSolid;
+    background: t.$ctrl-fill-solid-lo;
+    color: t.$on-ctrl-fill-solid;
     box-shadow: none;
     &::after {
       display: none;

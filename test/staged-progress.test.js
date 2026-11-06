@@ -225,14 +225,14 @@ it("composes backdrop colours and keeps the entire sequence hidden when requeste
     circle.dataset.variant = "backdrop";
   controller.stages[1].error = true;
   expect(style(items[0], "::after").backgroundColor).to.equal(
-    "rgb(232, 201, 200)"
+    "rgb(243, 215, 214)"
   );
   expect(style(root.querySelector(".ag-circular-progress")).color).to.equal(
-    "rgb(232, 201, 200)"
+    "rgb(243, 215, 214)"
   );
   expect(
     style(items[1].querySelector(".ag-circular-progress__ring")).backgroundColor
-  ).to.equal("rgb(207, 53, 88)");
+  ).to.equal("rgb(191, 43, 77)");
   root.hidden = true;
   expect(root.getBoundingClientRect().width).to.equal(0);
 });

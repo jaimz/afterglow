@@ -117,7 +117,7 @@ export const SizesAndColours = () =>
       .join("")}
   </div>
   <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
-    <span style="color:var(--ctrlText)"><span class="ag-icon" data-icon="info" aria-hidden="true"></span> Information</span>
+    <span style="color:var(--ctrl-text)"><span class="ag-icon" data-icon="info" aria-hidden="true"></span> Information</span>
     <span style="color:var(--error)"><span class="ag-icon" data-icon="alert-circle" aria-hidden="true"></span> Error</span>
     <span class="ag-background" style="padding:16px"><span class="ag-icon" data-icon="moon" aria-hidden="true"></span> On a backdrop</span>
   </div>

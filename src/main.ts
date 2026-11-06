@@ -1,12 +1,24 @@
+export { validateMarkup } from "./behaviors/markup";
+export type { MarkupIssue } from "./behaviors/markup";
 // Styles are a separate entry point; importing helpers never registers elements.
 export { enhancePopover } from "./behaviors/popover";
-export type { PopoverController, PopoverOptions, PopoverPlacement } from "./behaviors/popover";
+export type {
+  PopoverController,
+  PopoverOptions,
+  PopoverPlacement,
+} from "./behaviors/popover";
 export { enhancePaginator } from "./behaviors/paginator";
-export type { PaginatorController, PaginatorOptions } from "./behaviors/paginator";
+export type {
+  PaginatorController,
+  PaginatorOptions,
+} from "./behaviors/paginator";
 export { getMotionOptions } from "./behaviors/motion";
 export type { MotionSpeed, MotionPhase } from "./behaviors/motion";
 export { enhanceIndexDetail } from "./behaviors/index-detail";
-export type { IndexDetailController, IndexDetailOptions } from "./behaviors/index-detail";
+export type {
+  IndexDetailController,
+  IndexDetailOptions,
+} from "./behaviors/index-detail";
 export { enhanceBreadcrumb } from "./behaviors/breadcrumb";
 export type { BreadcrumbController } from "./behaviors/breadcrumb";
 export { enhanceSlider } from "./behaviors/slider";
@@ -23,7 +35,10 @@ export { enhanceDialog } from "./behaviors/dialog";
 export type { DialogController, DialogOptions } from "./behaviors/dialog";
 export { enhanceControls } from "./behaviors/controls";
 export { enhanceTextField } from "./behaviors/text-field";
-export type { TextFieldController, TextFieldOptions } from "./behaviors/text-field";
+export type {
+  TextFieldController,
+  TextFieldOptions,
+} from "./behaviors/text-field";
 export type { ControlsController } from "./behaviors/controls";
 export { enhanceNotification } from "./behaviors/notification";
 export type {
@@ -42,6 +57,13 @@ export type {
   TabbedViewOptions,
 } from "./behaviors/tabbed-view";
 export { enhancePopupMenu } from "./behaviors/popup-menu";
-export type { PopupMenuController, PopupMenuOptions } from "./behaviors/popup-menu";
+export type {
+  PopupMenuController,
+  PopupMenuOptions,
+} from "./behaviors/popup-menu";
 export { enhanceTokenField } from "./behaviors/token-field";
-export type { TokenFieldController, TokenFieldOptions, TokenFieldItem } from "./behaviors/token-field";
+export type {
+  TokenFieldController,
+  TokenFieldOptions,
+  TokenFieldItem,
+} from "./behaviors/token-field";

@@ -13,8 +13,8 @@
     display: inline-flex;
     align-items: center;
     user-select: none;
-    gap: calc(#{t.$gridX} * 2px);
-    font-family: t.$bodyFontStack;
+    gap: calc(#{t.$grid-x} * 2);
+    font-family: t.$body-font-stack;
     cursor: pointer;
   }
   // Keep the actual input focusable, labelable and available to assistive technology.
@@ -38,11 +38,11 @@
     flex-shrink: 0;
     justify-content: center;
     align-items: center;
-    inline-size: calc(#{t.$gridX} * 3px);
-    block-size: calc(#{t.$gridY} * 3px);
-    border: 1px solid t.$ctrlBorder;
-    border-radius: calc(#{t.$gridType} * 1px);
-    color: t.$ctrlText;
+    inline-size: calc(#{t.$grid-x} * 3);
+    block-size: calc(#{t.$grid-y} * 3);
+    border: 1px solid t.$ctrl-border;
+    border-radius: calc(#{t.$grid-type} * 1);
+    color: t.$ctrl-text;
   }
   .ag-check__tick {
     opacity: 0;
@@ -69,37 +69,37 @@
   .ag-checkbox:is([data-variant="solid"], [data-variant="filled"]) {
     .ag-check__tick,
     .ag-check__mixed {
-      color: t.$onCtrlFillSolid;
+      color: t.$on-ctrl-fill-solid;
     }
     .ag-check__input:checked ~ .ag-check__control {
-      background: t.$ctrlFillSolid;
-      border-color: t.$ctrlFillSolid;
+      background: t.$ctrl-fill-solid;
+      border-color: t.$ctrl-fill-solid;
     }
   }
   .ag-checkbox .ag-check__input:indeterminate ~ .ag-check__control {
-    background: t.$onBackdrop;
-    border-color: t.$onBackdrop;
+    background: t.$on-backdrop;
+    border-color: t.$on-backdrop;
   }
   .ag-checkbox[data-variant="backdrop"] {
     .ag-check__control {
       color: t.$backdrop;
-      border-color: t.$backdropKeyline;
+      border-color: t.$backdrop-keyline;
     }
     .ag-check__label {
-      color: t.$onBackdrop;
+      color: t.$on-backdrop;
     }
     .ag-check__input:checked ~ .ag-check__control {
-      background: t.$onBackdrop;
-      border-color: t.$onBackdrop;
+      background: t.$on-backdrop;
+      border-color: t.$on-backdrop;
     }
   }
   .ag-radio .ag-check__control {
-    --ag-radio-diameter: calc(#{t.$gridX} * 3px);
+    --ag-radio-diameter: calc(#{t.$grid-x} * 3);
     inline-size: var(--ag-radio-diameter);
     block-size: var(--ag-radio-diameter);
     box-sizing: border-box;
     border-radius: 50%;
-    color: t.$ctrlTextDesat;
+    color: t.$ctrl-text-desat;
   }
   .ag-radio .ag-check__tick {
     inline-size: calc(var(--ag-radio-diameter) - 10px);
@@ -109,21 +109,21 @@
   }
   .ag-radio[data-variant="backdrop"] {
     .ag-check__control {
-      color: t.$onBackdrop;
-      border-color: t.$onBackdrop;
+      color: t.$on-backdrop;
+      border-color: t.$on-backdrop;
     }
     .ag-check__label {
-      color: t.$onBackdrop;
+      color: t.$on-backdrop;
     }
   }
   .ag-switch {
-    gap: calc(#{t.$gridX} * 1px);
+    gap: calc(#{t.$grid-x} * 1);
   }
   .ag-switch__track {
     --ag-switch-diameter: 20px;
     position: relative;
     box-sizing: border-box;
-    inline-size: calc((#{t.$gridX} * 4 + #{t.$gridType}) * 1px);
+    inline-size: calc(#{t.$grid-x} * 4 + #{t.$grid-type});
     flex-shrink: 0;
     &::before {
       content: "";
@@ -132,9 +132,9 @@
       transform: translateY(-50%);
       box-sizing: border-box;
       inline-size: 100%;
-      block-size: calc(#{t.$gridY} * 1px);
-      border-radius: calc(#{t.$gridY} / 2 * 1px);
-      background: t.$ctrlHint50;
+      block-size: calc(#{t.$grid-y} * 1);
+      border-radius: calc(#{t.$grid-y} / 2 * 1);
+      background: t.$ctrl-hint50;
     }
   }
   .ag-switch__thumb {
@@ -144,13 +144,13 @@
     inline-size: var(--ag-switch-diameter);
     block-size: var(--ag-switch-diameter);
     border-radius: 50%;
-    background: t.$ctrlFill;
-    border: 1px solid t.$ctrlHint50;
-    transition: inset-inline-start #{t.$motionSlowDuration} ease-out;
+    background: t.$ctrl-fill;
+    border: 1px solid t.$ctrl-hint50;
+    transition: inset-inline-start #{t.$motion-slow-duration} ease-out;
   }
   .ag-switch .ag-check__input:checked ~ .ag-switch__track .ag-switch__thumb {
-    background: t.$ctrlText;
-    border-color: t.$ctrlText;
+    background: t.$ctrl-text;
+    border-color: t.$ctrl-text;
     inset-inline-start: calc(100% - var(--ag-switch-diameter));
   }
   .ag-switch .ag-check__label {
@@ -175,22 +175,22 @@
   .ag-switch[data-variant="backdrop"] {
     .ag-switch__track::before {
       background: none;
-      border: 1px solid t.$backdropKeyline;
+      border: 1px solid t.$backdrop-keyline;
     }
     .ag-switch__thumb {
-      background: t.$backdropKeyline;
+      background: t.$backdrop-keyline;
       border: none;
     }
     .ag-check__label,
     .ag-switch__status {
-      color: t.$onBackdrop;
+      color: t.$on-backdrop;
     }
     .ag-check__input:checked ~ .ag-switch__track {
       &::before {
-        background: t.$backdropKeyline;
+        background: t.$backdrop-keyline;
       }
       .ag-switch__thumb {
-        background: t.$onBackdrop;
+        background: t.$on-backdrop;
       }
     }
   }
@@ -199,12 +199,12 @@
     outline-offset: 3px;
   }
   :is(.ag-checkbox, .ag-radio):has(> .ag-check__input:disabled) {
-    opacity: t.$disabledOpacity;
+    opacity: t.$disabled-opacity;
   }
   .ag-switch
     .ag-check__input:disabled
     ~ :is(.ag-check__label, .ag-switch__track) {
-    opacity: t.$disabledOpacity;
+    opacity: t.$disabled-opacity;
   }
   :is(.ag-checkbox, .ag-radio, .ag-switch):has(> .ag-check__input:is(:disabled, [data-readonly], [aria-readonly="true"])) {
     cursor: not-allowed;
@@ -217,16 +217,16 @@
     > legend {
       @include typography.caption;
       padding: 0;
-      margin-block-end: calc(#{t.$gridY} * 2px);
+      margin-block-end: calc(#{t.$grid-y} * 2);
     }
     &[data-variant="backdrop"] {
-      color: t.$onBackdrop;
+      color: t.$on-backdrop;
     }
   }
   .ag-radio-group__options {
     display: flex;
     flex-wrap: wrap;
-    gap: calc(#{t.$gridX} * 2px);
+    gap: calc(#{t.$grid-x} * 2);
   }
   .ag-radio-group[data-orientation="vertical"] > .ag-radio-group__options {
     flex-direction: column;

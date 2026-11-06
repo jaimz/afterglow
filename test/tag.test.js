@@ -32,11 +32,11 @@ it("matches the compact geometry and two full-strength appearances", () => {
     expect(item.getBoundingClientRect().width).to.equal(64);
     expect(item.getBoundingClientRect().height).to.equal(24);
     expect(style(item).borderRadius).to.equal("12px");
-    expect(parseFloat(style(item).fontSize)).to.be.closeTo(11.111, 0.01);
+    expect(parseFloat(style(item).fontSize)).to.be.closeTo(14 / 1.2, 0.01);
     expect(item.tabIndex).to.equal(-1);
   }
   expect(style(tags[0]).backgroundColor).to.equal("rgb(0, 118, 147)");
-  expect(style(tags[1]).backgroundColor).to.equal("rgb(232, 201, 200)");
+  expect(style(tags[1]).backgroundColor).to.equal("rgb(243, 215, 214)");
   expect(style(tags[0]).color).to.equal("rgb(243, 238, 230)");
   expect(style(tags[1]).color).to.equal("rgb(83, 83, 74)");
 });

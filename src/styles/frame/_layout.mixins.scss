@@ -3,10 +3,8 @@
 // Structural recipes inspired by Tai; palette and surface treatments are composed
 // using existing Afterglow classes. No application-specific theme is imported.
 @mixin application {
-  --ag-app-nav-size: calc(#{t.token("app-nav-width")} + #{t.$frame-gridX} * 2);
-  --ag-app-tools-size: calc(
-    #{t.token("app-tools-width")} + #{t.$frame-gridX} * 2
-  );
+  --ag-app-nav-size: calc(#{t.token("app-nav-width")} + #{t.$grid-x} * 2);
+  --ag-app-tools-size: calc(#{t.token("app-tools-width")} + #{t.$grid-x} * 2);
   display: grid;
   grid-template-areas: "header header header" "nav main tools";
   grid-template-columns: minmax(0, var(--ag-app-nav-size)) minmax(0, 1fr) minmax(
@@ -14,7 +12,7 @@
       var(--ag-app-tools-size)
     );
   grid-template-rows: auto minmax(0, 1fr);
-  row-gap: calc(#{t.$frame-gridY} * 2);
+  row-gap: calc(#{t.$grid-y} * 2);
   box-sizing: border-box;
   min-inline-size: 0;
   > * {
@@ -25,14 +23,14 @@
   }
   > .ag-appframe__nav {
     grid-area: nav;
-    margin-inline-end: calc(#{t.$frame-gridX} * 2);
+    margin-inline-end: calc(#{t.$grid-x} * 2);
   }
   > .ag-appframe__main {
     grid-area: main;
   }
   > .ag-appframe__tools {
     grid-area: tools;
-    margin-inline-start: calc(#{t.$frame-gridX} * 2);
+    margin-inline-start: calc(#{t.$grid-x} * 2);
   }
   &:not(:has(> .ag-appframe__nav:not([hidden]))) {
     --ag-app-nav-size: 0px;
@@ -54,7 +52,7 @@
 @mixin master-detail {
   display: grid;
   grid-template-columns: minmax(0, #{t.token("master-width")}) minmax(0, 1fr);
-  gap: calc(#{t.$frame-gridX} * 2);
+  gap: calc(#{t.$grid-x} * 2);
   min-inline-size: 0;
   > * {
     min-inline-size: 0;
@@ -92,8 +90,8 @@
   }
   > .ag-index-detail__index {
     grid-row: 1;
-    border-start-start-radius: t.$frame-gridX;
-    border-start-end-radius: t.$frame-gridX;
+    border-start-start-radius: t.$grid-x;
+    border-start-end-radius: t.$grid-x;
   }
   > .ag-index-detail__detail {
     grid-row: 2;
@@ -109,7 +107,10 @@
 @mixin index-detail {
   container: ag-index-detail / inline-size;
   display: grid;
-  grid-template-columns: minmax(0, #{t.token("index-detail-index-width")}) minmax(0, 1fr) minmax(0, #{t.token("index-detail-inspector-width")});
+  grid-template-columns: minmax(0, #{t.token("index-detail-index-width")}) minmax(
+      0,
+      1fr
+    ) minmax(0, #{t.token("index-detail-inspector-width")});
   // Wide panes span all rows. Stacked panes occupy one each; retaining the
   // first track's share lets only Detail absorb the Inspector's released space.
   grid-template-rows: repeat(3, minmax(0, 1fr));
@@ -130,30 +131,33 @@
   }
   > .ag-index-detail__index {
     grid-column: 1;
-    margin-block-start: t.$frame-gridY;
-    border-start-start-radius: t.$frame-gridX;
+    margin-block-start: t.$grid-y;
+    border-start-start-radius: t.$grid-x;
     background: t.$surface;
-    color: t.$onSurface;
+    color: t.$on-surface;
   }
   > .ag-index-detail__detail {
     grid-column: 2;
-    border-start-start-radius: t.$frame-gridX;
+    border-start-start-radius: t.$grid-x;
     background: t.$panel;
-    color: t.$onPanel;
+    color: t.$on-panel;
   }
   > .ag-index-detail__inspector {
     --ag-index-detail-inspector-axis: inline;
     grid-column: 3;
-    border-start-end-radius: t.$frame-gridX;
+    border-start-end-radius: t.$grid-x;
     border-inline-start: 1px solid t.token("keyline");
     background: t.$paper;
-    color: t.$onPaper;
+    color: t.$on-paper;
   }
   &:where(:not(:has(> .ag-index-detail__inspector:not([hidden])))) {
-    grid-template-columns: minmax(0, #{t.token("index-detail-index-width")}) minmax(0, 1fr);
+    grid-template-columns: minmax(0, #{t.token("index-detail-index-width")}) minmax(
+        0,
+        1fr
+      );
     grid-template-rows: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 0fr);
     > .ag-index-detail__detail {
-      border-start-end-radius: t.$frame-gridX;
+      border-start-end-radius: t.$grid-x;
     }
   }
   &[data-orientation="vertical"] {
@@ -176,7 +180,7 @@
   min-inline-size: 0;
   > :is(.ag-card__header, .ag-card__body, .ag-card__footer) {
     min-inline-size: 0;
-    padding: calc(#{t.$frame-gridY} * 2) calc(#{t.$frame-gridX} * 2);
+    padding: calc(#{t.$grid-y} * 2) calc(#{t.$grid-x} * 2);
   }
   > .ag-card__header {
     grid-row: 1;
@@ -189,6 +193,6 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
-    gap: t.$frame-gridX;
+    gap: t.$grid-x;
   }
 }

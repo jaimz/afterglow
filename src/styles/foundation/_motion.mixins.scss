@@ -2,21 +2,40 @@
 @use "sass:map";
 
 // Entry and exit share the same speed vocabulary; exits step down one speed.
-@mixin transition($phase: entry, $speed: medium, $properties: (opacity, transform)) {
-  $speeds: (fast: "motionFastDuration", medium: "motionMediumDuration", slow: "motionSlowDuration", very-slow: "motionVerySlowDuration");
-  $exits: (fast: fast, medium: fast, slow: medium, very-slow: slow);
+@mixin transition(
+  $phase: entry,
+  $speed: medium,
+  $properties: (
+    opacity,
+    transform,
+  )
+) {
+  $speeds: (
+    fast: "motion-fast-duration",
+    medium: "motion-medium-duration",
+    slow: "motion-slow-duration",
+    very-slow: "motion-very-slow-duration",
+  );
+  $exits: (
+    fast: fast,
+    medium: fast,
+    slow: medium,
+    very-slow: slow,
+  );
   @if not map.has-key($speeds, $speed) or ($phase != entry and $phase != exit) {
     @error "Unknown motion phase or speed";
   }
-  @if $phase == exit { $speed: map.get($exits, $speed); }
+  @if $phase == exit {
+    $speed: map.get($exits, $speed);
+  }
   transition-property: $properties;
   transition-duration: t.token(map.get($speeds, $speed));
   @if $phase == entry {
-    transition-timing-function: t.$motionEntryCurve;
-    transition-delay: t.token("motionEntryDelay");
+    transition-timing-function: t.$motion-entry-curve;
+    transition-delay: t.token("motion-entry-delay");
   } @else {
-    transition-timing-function: t.$motionExitCurve;
-    transition-delay: t.token("motionExitDelay");
+    transition-timing-function: t.$motion-exit-curve;
+    transition-delay: t.token("motion-exit-delay");
   }
   @media (prefers-reduced-motion: reduce) {
     transition: none;

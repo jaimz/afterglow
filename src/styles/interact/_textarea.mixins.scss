@@ -4,17 +4,18 @@
 // Native textarea, with an optional floating label.
 @mixin textarea {
   @include type.body;
+  font-size: max(1rem, #{t.$body-text-size});
   appearance: none;
   display: block;
   box-sizing: border-box;
   inline-size: 100%;
   min-inline-size: 0;
   min-block-size: t.token("textarea-min-height");
-  padding: calc(#{t.$frame-gridX} * 2);
+  padding: calc(#{t.$grid-x} * 2);
   border: 1px solid t.token("keyline");
   border-radius: 0;
   background: t.$paper;
-  color: t.$onPaper;
+  color: t.$on-paper;
   box-shadow: inset 0 3px 4px t.$surface;
   line-height: normal;
   resize: vertical;
@@ -24,7 +25,7 @@
     opacity: 1;
   }
   &:focus-visible {
-    outline: 2px solid t.$ctrlText;
+    outline: 2px solid t.$ctrl-text;
     outline-offset: 2px;
   }
   &:is(:user-invalid, [aria-invalid="true"]) {
@@ -34,7 +35,7 @@
     outline-color: t.$error;
   }
   &:disabled {
-    opacity: t.$disabledOpacity;
+    opacity: t.$disabled-opacity;
     cursor: not-allowed;
   }
   @media (forced-colors: active) {
@@ -53,27 +54,27 @@
   min-inline-size: 0;
   > .ag-textarea-field__label {
     position: absolute;
-    inset-block-start: calc(#{t.$frame-gridY} * 2 + 1px);
-    inset-inline: calc(#{t.$frame-gridX} * 2 + 1px);
+    inset-block-start: calc(#{t.$grid-y} * 2 + 1px);
+    inset-inline: calc(#{t.$grid-x} * 2 + 1px);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-family: t.$bodyFontStack;
-    font-size: t.$bodyTextSize;
+    font-family: t.$body-font-stack;
+    font-size: t.$body-text-size;
     line-height: normal;
     color: t.token("field-hint");
     cursor: text;
   }
   > .ag-textarea:is(:focus, :not(:placeholder-shown)) {
     padding-block-start: calc(
-      #{t.$frame-gridY} * 2 + #{t.$body2TextSize} * #{t.$lineHeight} + 10px
+      #{t.$grid-y} * 2 + #{t.$body2-text-size} * #{t.$line-height} + 10px
     );
     + .ag-textarea-field__label {
-      font-size: t.$body2TextSize;
+      font-size: t.$body2-text-size;
     }
   }
   > .ag-textarea:disabled + .ag-textarea-field__label {
-    opacity: t.$disabledOpacity;
+    opacity: t.$disabled-opacity;
     cursor: not-allowed;
   }
 }

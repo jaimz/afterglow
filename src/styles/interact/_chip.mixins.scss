@@ -13,7 +13,7 @@
   min-inline-size: 0;
   padding: 6px 8px;
   border-radius: 32px;
-  background: t.$onSurfaceAlt;
+  background: t.$on-surface-alt;
   color: t.$surface;
   @include typography.body;
   font-weight: 400;
@@ -31,18 +31,18 @@
   }
   &:is([data-variant="outlined"], [data-variant="avatar-outlined"]) {
     background: transparent;
-    color: t.$onSurfaceAlt;
+    color: t.$on-surface-alt;
     box-shadow: inset 0 0 0 1px currentColor;
   }
   &[data-variant="backdrop"] {
     min-block-size: 32px;
     padding-block: 1px;
-    background: t.$backdropKeyline;
-    color: t.$onSurface;
-    font-size: t.$body2TextSize;
+    background: t.$backdrop-keyline;
+    color: t.$on-surface;
+    font-size: t.$body2-text-size;
   }
   &:has(> .ag-chip__remove:disabled) {
-    opacity: t.$disabledOpacity;
+    opacity: t.$disabled-opacity;
   }
 }
 
@@ -64,7 +64,8 @@
     // top: 1px;
   }
   // Balance the two ends when only text is visible, in any appearance.
-  .ag-chip:not(:has(> :is(.ag-chip__icon, .ag-avatar, .ag-chip__remove):not([hidden]))) > .ag-chip__label {
+  .ag-chip:not(:has(> :is(.ag-chip__icon, .ag-avatar, .ag-chip__remove):not([hidden])))
+    > .ag-chip__label {
     margin-inline-end: 8px;
   }
   .ag-chip > .ag-chip__icon {

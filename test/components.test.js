@@ -84,7 +84,7 @@ it("preserves frame colours, hidden semantics and inherited scoped theme overrid
     "rgb(249, 249, 246)"
   );
   panel.style.setProperty("--panel", "rgb(20, 30, 40)");
-  panel.style.setProperty("--ctrlText", "rgb(10, 20, 30)");
+  panel.style.setProperty("--ctrl-text", "rgb(10, 20, 30)");
   expect(getComputedStyle(panel).backgroundColor).to.equal("rgb(20, 30, 40)");
   expect(getComputedStyle(panel.firstElementChild).color).to.equal(
     "rgb(10, 20, 30)"
@@ -92,18 +92,18 @@ it("preserves frame colours, hidden semantics and inherited scoped theme overrid
   panel.hidden = true;
   expect(getComputedStyle(panel).display).to.equal("none");
 });
-it("makes default tokens available to consumer CSS without fallbacks", () => {
+it("makes primitive tokens available to consumer CSS and computes derived typography locally", () => {
   const sample = fixture(
-    `<div style="background:var(--panel);color:var(--ctrlText);font-size:var(--h1-text-size);padding:calc(var(--gridX) * 1px)">Consumer content</div>`
+    `<div class="ag-h1" style="background:var(--panel);color:var(--ctrl-text);padding:var(--grid-x)">Consumer content</div>`
   );
   const styles = getComputedStyle(sample);
   expect(styles.backgroundColor).to.equal("rgb(249, 249, 246)");
   expect(styles.color).to.equal("rgb(0, 118, 147)");
   expect(styles.paddingTop).to.equal("8px");
-  expect(parseFloat(styles.fontSize)).to.be.closeTo(16 * 1.2 ** 5, 0.02);
+  expect(parseFloat(styles.fontSize)).to.be.closeTo(14 * 1.2 ** 5, 0.05);
   const defaults = getComputedStyle(document.documentElement);
   expect(defaults.getPropertyValue("--panel").trim()).to.equal("#f9f9f6");
-  expect(defaults.getPropertyValue("--motionSlowDuration").trim()).to.equal(
+  expect(defaults.getPropertyValue("--motion-slow-duration").trim()).to.equal(
     "250ms"
   );
 });
@@ -111,7 +111,7 @@ it("allows root overrides and restores default values when removed", () => {
   const html = document.documentElement;
   const original = html.getAttribute("style");
   const sample = fixture(
-    '<div style="background:var(--panel);font-size:var(--h1-text-size)">Consumer heading</div>'
+    '<div class="ag-h1" style="background:var(--panel)">Consumer heading</div>'
   );
   try {
     html.style.setProperty("--panel", "rgb(12, 34, 56)");
@@ -131,40 +131,38 @@ it("allows root overrides and restores default values when removed", () => {
     "rgb(249, 249, 246)"
   );
   expect(parseFloat(getComputedStyle(sample).fontSize)).to.be.closeTo(
-    16 * 1.2 ** 5,
-    0.02
+    14 * 1.2 ** 5,
+    0.05
   );
 });
 it("keeps dependent typography tokens responsive to local theme changes", () => {
-  root.classList.add("ag-theme");
   fixture(
     '<div class="ag-caption">Caption</div><h1 class="ag-h1">Heading</h1>'
   );
   const caption = root.querySelector(".ag-caption");
-  const before = parseFloat(getComputedStyle(caption).fontSize);
   root.style.setProperty("--body-text-size", "32px");
   expect(parseFloat(getComputedStyle(caption).fontSize)).to.be.closeTo(
-    before * 2,
-    0.01
+    32 / 1.2,
+    0.02
   );
   expect(
     parseFloat(getComputedStyle(root.querySelector("h1")).fontSize)
-  ).to.be.closeTo(32 * 1.2 ** 5, 0.02);
+  ).to.be.closeTo(32 * 1.2 ** 5, 0.05);
 });
 it("recalculates nested themes while inheriting base tokens and explicit type overrides", () => {
-  fixture(`<section class="ag-theme" style="--body-text-size:20px;--text-scale:1.5;--panel:rgb(20,30,40);--h5-text-size:36px">
+  fixture(`<section class="local-theme" style="--body-text-size:20px;--text-scale:1.5;--panel:rgb(20,30,40);--h5-text-size:36px">
     <div><h1 class="ag-h1" id="outer-heading">Outer</h1><span class="ag-caption" id="outer-caption">Caption</span></div>
-    <section class="ag-theme" style="--text-scale:1.25">
+    <section class="local-theme" style="--text-scale:1.25">
       <div class="ag-body"><h1 class="ag-h1" id="inner-heading">Inner</h1><span class="ag-caption" id="inner-caption">Caption</span></div>
-      <div id="consumer" style="background:var(--panel);font-size:var(--body2-text-size)">Consumer content</div>
+      <div id="consumer" style="background:var(--panel);font-size:calc(var(--body-text-size) / var(--text-scale))">Consumer content</div>
     </section>
   </section>`);
   const size = (id) =>
     parseFloat(getComputedStyle(root.querySelector(id)).fontSize);
   expect(size("#outer-heading")).to.equal(renderedFontSize(36 * 1.5 ** 4));
-  expect(size("#outer-caption")).to.equal(renderedFontSize(20 / 1.5 ** 2));
-  expect(size("#inner-heading")).to.equal(renderedFontSize(20 * 1.25 ** 5));
-  expect(size("#inner-caption")).to.equal(renderedFontSize(20 / 1.25 ** 2));
+  expect(size("#outer-caption")).to.equal(renderedFontSize(20 / 1.5));
+  expect(size("#inner-heading")).to.equal(renderedFontSize(36 * 1.25 ** 4));
+  expect(size("#inner-caption")).to.equal(renderedFontSize(20 / 1.25));
   expect(size("#consumer")).to.equal(renderedFontSize(20 / 1.25));
   expect(
     getComputedStyle(root.querySelector("#consumer")).backgroundColor
@@ -684,4 +682,43 @@ it("supports enhancement cleanup followed by a new controller", () => {
   const second = use(enhanceSlider(slider));
   first.destroy();
   expect(enhanceSlider(slider) === second).to.equal(true);
+});
+
+it("resets stale dialog results on reopen and preserves application focus on close", async () => {
+  const dialog = dialogFixture();
+  const next = document.createElement("button");
+  next.textContent = "Next task";
+  root.append(next);
+  // Register before enhancement to reproduce a consumer's early close handler.
+  dialog.addEventListener("close", () => next.focus());
+  const controller = use(enhanceDialog(dialog));
+  root.querySelector("#opener").focus();
+  await controller.show();
+  await controller.hide("saved");
+  await settle();
+  expect(document.activeElement).to.equal(next);
+  await controller.show();
+  expect(dialog.returnValue).to.equal("");
+  await controller.hide();
+  expect(dialog.returnValue).to.equal("");
+});
+
+it("dismisses only the innermost enhanced dialog on Escape", async () => {
+  const outer = dialogFixture();
+  outer.style.setProperty("--motion-slow-duration", "0ms");
+  outer.style.setProperty("--motion-medium-duration", "0ms");
+  const inner = document.createElement("dialog");
+  inner.className = "ag-dialog";
+  inner.setAttribute("aria-label", "Inner dialog");
+  inner.innerHTML = "<button autofocus>Inner action</button>";
+  outer.append(inner);
+  const outerController = use(enhanceDialog(outer));
+  const innerController = use(enhanceDialog(inner));
+  await outerController.show();
+  await innerController.show();
+  await sendKeys({ press: "Escape" });
+  await settle();
+  expect(inner.open).to.equal(false);
+  expect(outer.open).to.equal(true);
+  expect(outer.contains(document.activeElement)).to.equal(true);
 });

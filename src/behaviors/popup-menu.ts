@@ -1,7 +1,9 @@
+import { resolveCSSLength } from "./css-length";
+
 /**
  * Enhance an .ag-popup-menu containing native .ag-menu-item buttons or links.
  * Connect one button with popovertarget, then pass it as options.trigger.
- * Native popovers own visibility, light dismissal and Escape. This helper adds
+ * Native popovers own visibility and light dismissal. This helper adds
  * menu keyboard navigation, selection events, focus and positioning fallback.
  *
  * Place submenu popovers inside their parent menu, beside their trigger item,
@@ -21,6 +23,7 @@ export interface PopupMenuOptions {
 }
 
 export interface PopupMenuController {
+  update(options?: Partial<PopupMenuOptions>): void;
   readonly isOpen: boolean;
   /** Open and focus the first/last item, or preserve focus with "none". */
   show(focus?: "first" | "last" | "none"): void;
@@ -35,16 +38,21 @@ export interface PopupMenuController {
 const controllers = new WeakMap<HTMLElement, PopupMenuController>();
 let nextId = 0;
 
-/** Enhance one popover and invoker; repeated calls retain the original options. */
+/** Enhance one popover and invoker; repeated calls apply the supplied options. */
 export function enhancePopupMenu(
   menu: HTMLElement,
   options: PopupMenuOptions
 ): PopupMenuController {
   const existing = controllers.get(menu);
-  if (existing) return existing;
+  if (existing) {
+    existing.update(options);
+    return existing;
+  }
+  options = { ...options };
   if (typeof menu.showPopover !== "function")
     throw new Error("Popup Menu requires the browser Popover API.");
-  const { trigger, placement = "bottom-start", closeOnSelect = true } = options;
+  const { trigger } = options;
+  let { placement = "bottom-start", closeOnSelect = true } = options;
   if (trigger.ownerDocument !== menu.ownerDocument || menu.contains(trigger))
     throw new Error(
       "The menu trigger must be outside its own menu in the same document."
@@ -60,6 +68,12 @@ export function enhancePopupMenu(
   let wasOpen = false;
   let pendingFocus: "first" | "last" | "none" = "first";
   let hoverTimer: ReturnType<typeof setTimeout> | undefined;
+  let hoverMove: ((event: PointerEvent) => void) | undefined;
+  const clearHover = () => {
+    clearTimeout(hoverTimer);
+    if (hoverMove) doc.removeEventListener("pointermove", hoverMove);
+    hoverMove = undefined;
+  };
   let search = "";
   let searchedAt = 0;
   let frame = 0;
@@ -152,9 +166,7 @@ export function enhancePopupMenu(
   const position = () => {
     if (nativePosition || !isOpen() || destroyed) return;
     const rect = trigger.getBoundingClientRect();
-    const gap =
-      parseFloat(getComputedStyle(menu).getPropertyValue("--popup-menu-gap")) ||
-      8;
+    const gap = resolveCSSLength(menu, "--popup-menu-gap", 8);
     const viewport = win.visualViewport;
     const left = (viewport?.offsetLeft ?? 0) + 8;
     const top = (viewport?.offsetTop ?? 0) + 8;
@@ -243,7 +255,7 @@ export function enhancePopupMenu(
     } else if (!open) {
       wasOpen = false;
       search = "";
-      clearTimeout(hoverTimer);
+      clearHover();
       resize.disconnect();
       win.removeEventListener("resize", schedulePosition);
       doc.removeEventListener("scroll", schedulePosition, true);
@@ -260,7 +272,7 @@ export function enhancePopupMenu(
       !menu.isConnected
     )
       return;
-    clearTimeout(hoverTimer);
+    clearHover();
     if (isOpen()) {
       focusItem(focus);
       return;
@@ -273,7 +285,7 @@ export function enhancePopupMenu(
     sync();
   };
   const hide = ({ restoreFocus = true } = {}) => {
-    clearTimeout(hoverTimer);
+    clearHover();
     if (destroyed || !isOpen()) return;
     menu.hidePopover();
     sync();
@@ -337,6 +349,14 @@ export function enhancePopupMenu(
       event.defaultPrevented
     )
       return;
+    // Safari may open from a click without focusing the invoker first. Explicit
+    // Escape handling guarantees focus return rather than restoring the body.
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      hide();
+      return;
+    }
     const item = eventItem(event);
     const list = navigable();
     const index = item ? list.indexOf(item) : -1;
@@ -412,8 +432,14 @@ export function enhancePopupMenu(
       show(event.key === "ArrowUp" ? "last" : "first");
     }
   };
+  const focusOutside = () =>
+    queueMicrotask(() => {
+      if (destroyed || !isOpen() || parent()) return;
+      if (!menu.contains(doc.activeElement) && doc.activeElement !== trigger)
+        hide({ restoreFocus: false });
+    });
   const enter = (event: PointerEvent) => {
-    clearTimeout(hoverTimer);
+    clearHover();
     if (
       options.openOnHover &&
       event.pointerType === "mouse" &&
@@ -423,13 +449,72 @@ export function enhancePopupMenu(
   };
   const leave = (event: PointerEvent) => {
     if (!options.openOnHover || event.pointerType !== "mouse") return;
-    hoverTimer = setTimeout(() => {
+    clearHover();
+    const close = () => {
+      clearHover();
       // Keep keyboard focus in a submenu intact when the pointer moves away.
       if (!menu.contains(doc.activeElement)) hide({ restoreFocus: false });
-    }, 250);
+    };
+    hoverTimer = setTimeout(close, 250);
+    if (
+      event.currentTarget !== trigger ||
+      !isOpen() ||
+      !parent() ||
+      !win.matchMedia("(hover: hover)").matches
+    )
+      return;
+
+    const box = menu.getBoundingClientRect();
+    // A side-opening submenu permits diagonal travel to either near-edge corner.
+    // Keep overflow scrolling intact: use geometry rather than an overflowing bridge.
+    if (event.clientX >= box.left && event.clientX <= box.right) return;
+    const edge = event.clientX < box.left ? box.left : box.right;
+    const origin = { x: event.clientX, y: event.clientY };
+    const top = { x: edge, y: box.top - 8 };
+    const bottom = { x: edge, y: box.bottom + 8 };
+    const started = performance.now();
+    const cross = (
+      a: { x: number; y: number },
+      b: { x: number; y: number },
+      p: { x: number; y: number }
+    ) => (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
+    hoverMove = (move) => {
+      if (move.pointerType !== "mouse") return;
+      if (menu.contains(move.target as Node)) {
+        clearHover();
+        return;
+      }
+      const point = { x: move.clientX, y: move.clientY };
+      const signs = [
+        cross(origin, top, point),
+        cross(top, bottom, point),
+        cross(bottom, origin, point),
+      ];
+      const inside = !signs.some((n) => n < 0) || !signs.some((n) => n > 0);
+      if (!inside || performance.now() - started > 1000) {
+        close();
+        return;
+      }
+      clearTimeout(hoverTimer);
+      hoverTimer = setTimeout(close, 250);
+    };
+    doc.addEventListener("pointermove", hoverMove);
   };
 
   const controller: PopupMenuController = {
+    update(next = {}) {
+      if (destroyed) return;
+      if (next.trigger && next.trigger !== trigger)
+        throw new Error("Destroy the popup menu before changing its trigger.");
+      const side = next.placement ?? placement;
+      if (!["bottom-start", "bottom-end", "inline-end"].includes(side))
+        throw new Error("Unknown popup menu placement.");
+      placement = side;
+      closeOnSelect = next.closeOnSelect ?? closeOnSelect;
+      Object.assign(options, next);
+      write(menu, "data-placement", placement);
+      refresh();
+    },
     get isOpen() {
       return isOpen();
     },
@@ -440,12 +525,13 @@ export function enhancePopupMenu(
       if (destroyed) return;
       hide({ restoreFocus: menu.contains(doc.activeElement) });
       destroyed = true;
-      clearTimeout(hoverTimer);
+      clearHover();
       win.cancelAnimationFrame(frame);
       resize.disconnect();
       menu.removeEventListener("toggle", sync);
       menu.removeEventListener("click", onClick);
       menu.removeEventListener("keydown", onKeyDown);
+      doc.removeEventListener("focusin", focusOutside);
       trigger.removeEventListener("keydown", triggerKey);
       trigger.removeEventListener("click", blockDisabled, true);
       menu.removeEventListener("click", blockDisabled, true);
@@ -466,6 +552,7 @@ export function enhancePopupMenu(
   menu.addEventListener("toggle", sync);
   menu.addEventListener("click", onClick);
   menu.addEventListener("keydown", onKeyDown);
+  doc.addEventListener("focusin", focusOutside);
   trigger.addEventListener("keydown", triggerKey);
   trigger.addEventListener("click", blockDisabled, true);
   menu.addEventListener("click", blockDisabled, true);

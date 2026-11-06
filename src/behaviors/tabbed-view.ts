@@ -6,7 +6,8 @@
  *
  * Arrow keys/Home/End move between enabled tabs (respecting RTL). Automatic
  * activation is the default; manual activation waits for Enter/Space or click.
- * Call refresh() after adding/removing tabs or changing availability. destroy()
+ * DOM structure and tab availability are observed automatically. refresh()
+ * reconciles immediately; destroy()
  * removes listeners and restores authored attributes without resetting content.
  *
  * const view = enhanceTabbedView(document.querySelector("#details")!);
@@ -22,6 +23,7 @@ export interface TabbedViewOptions {
 }
 
 export interface TabbedViewController {
+  update(options?: TabbedViewOptions): void;
   /** Current panel ID, or null when there are no available tabs. */
   readonly selectedPanelId: string | null;
   /** Select an enabled panel; optionally focus its tab. Returns false if unavailable. */
@@ -39,18 +41,21 @@ interface Entry {
 const controllers = new WeakMap<HTMLElement, TabbedViewController>();
 let nextTabId = 0;
 
-/** Enhance one view. Repeated calls return its existing controller and options. */
+/** Enhance one view. Repeated calls return its existing controller and apply supplied options. */
 export function enhanceTabbedView(
   root: HTMLElement,
   options: TabbedViewOptions = {}
 ): TabbedViewController {
   const existing = controllers.get(root);
-  if (existing) return existing;
+  if (existing) {
+    existing.update(options);
+    return existing;
+  }
 
   const strip = root.querySelector<HTMLElement>(":scope > .ag-tab-strip");
   if (!strip)
     throw new Error("Tabbed View requires a direct .ag-tab-strip child.");
-  const activation = options.activation ?? "automatic";
+  let activation = options.activation ?? "automatic";
   if (activation !== "automatic" && activation !== "manual")
     throw new Error("Unknown tab activation mode.");
 
@@ -271,7 +276,27 @@ export function enhanceTabbedView(
   reconcile(true);
   strip.addEventListener("click", onClick);
   strip.addEventListener("keydown", onKeyDown);
+  const observer = new MutationObserver(() => {
+    if (!destroyed) reconcile();
+  });
+  observer.observe(root, { childList: true });
+  observer.observe(strip, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["disabled", "hidden", "aria-disabled", "aria-controls"],
+  });
   const controller: TabbedViewController = {
+    update(next = {}) {
+      if (destroyed) return;
+      const mode = next.activation ?? activation;
+      if (!["automatic", "manual"].includes(mode))
+        throw new Error("Unknown tab activation mode.");
+      activation = mode;
+      reconcile();
+      if (next.selectedPanelId !== undefined && !select(next.selectedPanelId))
+        throw new Error("Unknown or unavailable tab panel.");
+    },
     get selectedPanelId() {
       return selected?.panel.id ?? null;
     },
@@ -280,6 +305,7 @@ export function enhanceTabbedView(
     destroy() {
       if (destroyed) return;
       destroyed = true;
+      observer.disconnect();
       strip.removeEventListener("click", onClick);
       strip.removeEventListener("keydown", onKeyDown);
       for (const element of snapshots.keys()) restore(element);

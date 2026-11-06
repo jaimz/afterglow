@@ -1,7 +1,11 @@
+import { assertMarkup } from "./markup";
+
 /**
  * Optional inline validation for an .ag-text-field containing a native input.
  * Labels, icons, focus, values, password masking and submission already work
  * without this helper. Enhance only fields that need inline error messages.
+ * Set placeholder on the input and associate consumer-owned labels with its id
+ * using label[for]. The helper does not create, position or change labels.
  *
  * Native constraints and an optional synchronous validation callback determine
  * validity. Errors appear after blur or a submission attempt; subsequent typing
@@ -23,17 +27,20 @@
  */
 
 export interface TextFieldOptions {
+  value?: string;
   /** Return an error message or null. Native constraints are checked as well. */
   validation?: (input: HTMLInputElement) => string | null;
 }
 
 export interface TextFieldController {
+  /** Reconcile current DOM state immediately. */
+  refresh(): void;
   /** The native input owns its value, constraints, events and form association. */
   readonly input: HTMLInputElement;
   /** Check constraints and the callback, show feedback, and return validity. */
   validate(): boolean;
   /** Recheck programmatic changes, retaining whether feedback has been revealed. */
-  update(): void;
+  update(options?: TextFieldOptions): void;
   /** Set or clear a persistent application/server error using plain text. */
   setError(message: string | null): void;
   /** Clear interaction feedback and server errors without changing the input value. */
@@ -50,8 +57,13 @@ export function enhanceTextField(
   root: HTMLElement,
   options: TextFieldOptions = {}
 ): TextFieldController {
+  assertMarkup(root);
   const existing = controllers.get(root);
-  if (existing) return existing;
+  if (existing) {
+    existing.update(options);
+    return existing;
+  }
+  options = { ...options };
   const input = root.querySelector<HTMLInputElement>(
     "input.ag-text-field__input"
   );
@@ -104,8 +116,10 @@ export function enhanceTextField(
   };
 
   /** Reconcile custom and native validity without dispatching an invalid event. */
-  const update = () => {
+  const update = (next: TextFieldOptions = {}) => {
     if (destroyed) return;
+    Object.assign(options, next);
+    if (next.value !== undefined) input.value = next.value;
     releaseValidity();
 
     if (input.willValidate) {
@@ -184,7 +198,8 @@ export function enhanceTextField(
   };
 
   input.addEventListener("input", onInput);
-  input.addEventListener("compositionend", update);
+  const compositionEnd = () => update();
+  input.addEventListener("compositionend", compositionEnd);
   input.addEventListener("blur", onBlur);
   input.addEventListener("invalid", onInvalid);
   owner.addEventListener("submit", onSubmit, true);
@@ -224,6 +239,7 @@ export function enhanceTextField(
   });
 
   const controller: TextFieldController = {
+    refresh: () => update(),
     input,
     validate,
     update,
@@ -241,7 +257,7 @@ export function enhanceTextField(
       destroyed = true;
       observer.disconnect();
       input.removeEventListener("input", onInput);
-      input.removeEventListener("compositionend", update);
+      input.removeEventListener("compositionend", compositionEnd);
       input.removeEventListener("blur", onBlur);
       input.removeEventListener("invalid", onInvalid);
       owner.removeEventListener("submit", onSubmit, true);
@@ -254,7 +270,7 @@ export function enhanceTextField(
     },
   };
 
-  update();
+  update(options);
   controllers.set(root, controller);
   return controller;
 }

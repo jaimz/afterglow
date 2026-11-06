@@ -1,3 +1,7 @@
+import { assertMarkup } from "./markup";
+
+import { resolveCSSLength } from "./css-length";
+
 /**
  * Turn a native text input into a multi-value field backed by a fixed catalogue.
  * Use .ag-token-field.ag-text-field with a direct .ag-text-field__control child
@@ -34,6 +38,7 @@ export interface TokenFieldOptions {
 }
 
 export interface TokenFieldController {
+  update(options?: Partial<TokenFieldOptions>): void;
   /** A copy of the selected values, in chip order. */
   readonly values: string[];
   /** A copy of the selected catalogue entries. */
@@ -57,13 +62,17 @@ export interface TokenFieldController {
 const controllers = new WeakMap<HTMLElement, TokenFieldController>();
 let nextId = 0;
 
-/** Enhance one field; repeated calls return its existing controller and options. */
+/** Enhance one field; repeated calls return its existing controller and apply supplied options. */
 export function enhanceTokenField(
   root: HTMLElement,
   options: TokenFieldOptions
 ): TokenFieldController {
+  assertMarkup(root);
   const existing = controllers.get(root);
-  if (existing) return existing;
+  if (existing) {
+    existing.update(options);
+    return existing;
+  }
   const control = root.querySelector<HTMLElement>(
     ":scope > .ag-text-field__control"
   );
@@ -105,8 +114,8 @@ export function enhanceTokenField(
   let insertion = selected.length;
   const doc = root.ownerDocument;
   const win = doc.defaultView!;
-  const fieldName = options.name ?? input.name;
-  const required = options.required ?? input.required;
+  let fieldName = options.name ?? input.name;
+  let required = options.required ?? input.required;
   const originalValidity = input.validity.customError
     ? input.validationMessage
     : "";
@@ -202,10 +211,7 @@ export function enhanceTokenField(
     const top = (viewport?.offsetTop ?? 0) + 8;
     const right = left + (viewport?.width ?? win.innerWidth) - 16;
     const bottom = top + (viewport?.height ?? win.innerHeight) - 16;
-    const gap =
-      parseFloat(
-        getComputedStyle(popup).getPropertyValue("--popup-menu-gap")
-      ) || 8;
+    const gap = resolveCSSLength(popup, "--popup-menu-gap", 8);
     const below = bottom - rect.bottom - gap,
       above = rect.top - top - gap;
     const height = Math.min(popup.scrollHeight + 2, 288);
@@ -664,6 +670,27 @@ export function enhanceTokenField(
   doc.addEventListener("reset", reset, true);
 
   const controller: TokenFieldController = {
+    update(next = {}) {
+      if (destroyed) return;
+      const nextEntries = next.items ? catalogue(next.items) : entries;
+      const values =
+        next.values ?? selected.filter((value) => nextEntries.has(value));
+      if (
+        new Set(values).size !== values.length ||
+        values.some((value) => !nextEntries.has(value))
+      )
+        throw new Error(
+          "TokenField selection must contain unique catalogue values."
+        );
+      entries = nextEntries;
+      selected = [...values];
+      insertion = Math.min(insertion, selected.length);
+      fieldName = next.name ?? fieldName;
+      required = next.required ?? required;
+      write("aria-required", String(required));
+      render();
+      controller.refresh();
+    },
     get values() {
       return [...selected];
     },

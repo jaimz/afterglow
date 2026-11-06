@@ -4,24 +4,24 @@
 // Card content, with content-driven height and native action buttons.
 @mixin content {
   display: grid;
-  gap: t.$frame-gridType;
+  gap: t.$grid-type;
   box-sizing: border-box;
   min-inline-size: 0;
   text-shadow: none;
-  font-family: t.$bodyFontStack;
-  color: t.$onSurface;
-  padding-block: t.$frame-gridY;
+  font-family: t.$body-font-stack;
+  color: t.$on-surface;
+  padding-block: t.$grid-y;
   overflow-wrap: anywhere;
 
   > :is(.ag-card-content__overline, .ag-card-content__main) {
     margin: 0;
-    padding-inline: calc(#{t.$frame-gridX} * 2);
+    padding-inline: calc(#{t.$grid-x} * 2);
     min-inline-size: 0;
   }
   > .ag-card-content__overline {
-    font-size: t.$captionTextSize;
+    font-size: t.$caption-text-size;
     line-height: normal;
-    color: color-mix(in srgb, #{t.$onSurface} 50%, transparent);
+    color: color-mix(in srgb, #{t.$on-surface} 50%, transparent);
   }
   // Title and body form one section, with spacing supplied by the body's margins.
   > .ag-card-content__main {
@@ -35,10 +35,10 @@
     }
     > .ag-card-content__body {
       margin: 6px 0;
-      font-size: t.$bodyTextSize;
+      font-size: t.$body-text-size;
       line-height: normal;
       > p {
-        margin-block: 0 t.$frame-gridY;
+        margin-block: 0 t.$grid-y;
       }
       > :last-child {
         margin-block-end: 0;
@@ -52,13 +52,13 @@
     justify-content: end;
     min-inline-size: 0;
     margin: 0;
-    padding-inline-end: calc(#{t.$frame-gridX} * 2);
-    font-size: t.$body2TextSize;
+    padding-inline-end: calc(#{t.$grid-x} * 2);
+    font-size: t.$body2-text-size;
     font-weight: 700;
     > .ag-button {
       font: inherit;
       line-height: normal;
-      padding: 10px calc(#{t.$frame-gridX} * 2);
+      padding: 10px calc(#{t.$grid-x} * 2);
       max-inline-size: 100%;
       white-space: normal;
       // Flat actions need no transparent border around their padding.

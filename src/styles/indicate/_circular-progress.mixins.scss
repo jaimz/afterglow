@@ -11,10 +11,10 @@
   max-inline-size: 100%;
   min-inline-size: 0;
   vertical-align: middle;
-  color: t.$ctrlTextDesat;
+  color: t.$ctrl-text-desat;
 
   &:where([data-variant="backdrop"]) {
-    color: t.$onBackdrop;
+    color: t.$on-backdrop;
   }
 
   &[data-error] {
@@ -22,7 +22,7 @@
   }
 
   &:where([data-variant="backdrop"])[data-error] {
-    color: t.$onError;
+    color: t.$on-error;
   }
 
   &[hidden] {
@@ -77,10 +77,10 @@
 @mixin title {
   display: block;
   max-inline-size: 100%;
-  font-family: t.$bodyFontStack;
-  font-size: t.$smallCaptionTextSize;
+  font-family: t.$body-font-stack;
+  font-size: t.$small-caption-text-size;
   font-weight: 400;
-  line-height: t.$lineHeight;
+  line-height: t.$line-height;
   text-align: center;
   overflow-wrap: anywhere;
 
@@ -107,7 +107,7 @@
   // Backdrop controls use a solid keyline for their unfilled outline.
   .ag-circular-progress:where([data-variant="backdrop"])
     > .ag-circular-progress__ring::before {
-    border-color: t.$backdropKeyline;
+    border-color: t.$backdrop-keyline;
     opacity: 1;
   }
 

@@ -8,31 +8,31 @@
   justify-content: center;
   box-sizing: border-box;
   inline-size: t.token("tab-width");
-  padding: calc(#{t.$frame-gridY} * 2) calc(#{t.$frame-gridX} * 2);
+  padding: calc(#{t.$grid-y} * 2) calc(#{t.$grid-x} * 2);
   border: 0;
   border-block-end: 2px solid transparent;
   background: transparent;
-  color: t.$onSurface;
-  font-family: t.$bodyFontStack;
+  color: t.$on-surface;
+  font-family: t.$body-font-stack;
   font-size: t.token("tab-text-size");
   font-weight: 400;
-  line-height: t.$lineHeight;
+  line-height: t.$line-height;
   text-align: center;
   text-shadow: none;
   overflow-wrap: anywhere;
   cursor: pointer;
   &[aria-selected="true"] {
-    border-block-end-color: t.$ctrlText;
+    border-block-end-color: t.$ctrl-text;
   }
   &:hover:not(:disabled):not([aria-disabled="true"]) {
     background: t.token("selection-fill");
   }
   &:focus-visible {
-    outline: 2px solid t.$ctrlText;
+    outline: 2px solid t.$ctrl-text;
     outline-offset: -4px;
   }
   &:is(:disabled, [aria-disabled="true"]) {
-    opacity: t.$disabledOpacity;
+    opacity: t.$disabled-opacity;
     cursor: default;
   }
   &[hidden] {

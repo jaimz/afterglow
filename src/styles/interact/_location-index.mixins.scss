@@ -4,9 +4,9 @@
 @mixin index {
   display: grid;
   align-content: start;
-  gap: calc(#{t.$frame-gridY} * 2);
+  gap: calc(#{t.$grid-y} * 2);
   min-inline-size: 0;
-  font-family: t.$bodyFontStack;
+  font-family: t.$body-font-stack;
 }
 
 // Menu-item styling applied to real links. The caller owns aria-current.
@@ -15,11 +15,11 @@
   align-items: center;
   gap: 10px;
   box-sizing: border-box;
-  padding: 10px calc(#{t.$frame-gridX} * 2);
-  border-radius: calc(#{t.$frame-gridType} * 2);
-  color: t.$onSurface;
-  font-size: t.$body2TextSize;
-  line-height: t.$lineHeight;
+  padding: 10px calc(#{t.$grid-x} * 2);
+  border-radius: calc(#{t.$grid-type} * 2);
+  color: t.$on-surface;
+  font-size: t.$body2-text-size;
+  line-height: t.$line-height;
   text-decoration: none;
   overflow-wrap: anywhere;
   &:hover {
@@ -27,12 +27,12 @@
   }
   &[aria-current]:not([aria-current="false"]) {
     background: t.token("selection-fill");
-    border-radius: t.$frame-gridType;
-    color: t.$ctrlText;
+    border-radius: t.$grid-type;
+    color: t.$ctrl-text;
     line-height: normal;
   }
   &:focus-visible {
-    outline: 2px solid t.$ctrlText;
+    outline: 2px solid t.$ctrl-text;
     outline-offset: 2px;
   }
   @media (forced-colors: active) {
@@ -48,17 +48,17 @@
   }
   .ag-location-index__list {
     display: grid;
-    gap: t.$frame-gridType;
+    gap: t.$grid-type;
     margin: 0;
     padding: 0;
     list-style: none;
   }
   .ag-location-index__title {
-    margin: 0 0 t.$frame-gridY;
-    padding-inline: calc(#{t.$frame-gridX} * 2);
-    color: t.$onSurfaceAlt;
-    font-size: t.$captionTextSize;
-    line-height: t.$lineHeight;
+    margin: 0 0 t.$grid-y;
+    padding-inline: calc(#{t.$grid-x} * 2);
+    color: t.$on-surface-alt;
+    font-size: t.$caption-text-size;
+    line-height: t.$line-height;
     font-weight: 400;
   }
   .ag-location-index__link {

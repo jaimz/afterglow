@@ -56,7 +56,7 @@ it("keeps one labelled native progress element and a decorative ring", () => {
   expect(ring.getBoundingClientRect().width).to.equal(24);
   expect(ring.getBoundingClientRect().height).to.equal(24);
   expect(style(component).gap).to.equal("4px");
-  expect(parseFloat(style(title).fontSize)).to.be.closeTo(16 / 1.2 ** 3, 0.01);
+  expect(parseFloat(style(title).fontSize)).to.be.closeTo(14 / 1.2 ** 2, 0.01);
 });
 
 it("derives all four states and recovers from an error without losing the amount", () => {
@@ -82,14 +82,14 @@ it("derives all four states and recovers from an error without losing the amount
   controller.update({ value: 38, error: true });
   expect(controller.state).to.equal("error");
   expect(controller.value).to.equal(38);
-  expect(style(component).color).to.equal("rgb(207, 53, 88)");
+  expect(style(component).color).to.equal("rgb(191, 43, 77)");
   expect(style(ring, "::after").maskImage).to.include("alert-circle.svg");
   expect(progress.getAttribute("aria-valuetext")).to.equal("Error: 38%");
 
   controller.error = false;
   expect(controller.state).to.equal("in-progress");
   expect(controller.value).to.equal(38);
-  expect(style(component).color).to.equal("rgb(94, 140, 151)");
+  expect(style(component).color).to.equal("rgb(76, 114, 125)");
 });
 
 it("observes native property, attribute, title and error updates", async () => {
@@ -212,7 +212,7 @@ it("inherits theme overrides, keeps a circle in RTL and wraps long titles", () =
   root.className = "ag-theme";
   root.dir = "rtl";
   root.style.cssText =
-    "width:80px;--circular-progress-size:40px;--circular-progress-title-gap:8px;--ctrlTextDesat:rgb(10,20,30)";
+    "width:80px;--circular-progress-size:40px;--circular-progress-title-gap:8px;--ctrl-text-desat:rgb(10,20,30)";
   const { component, ring, title } = fixture({
     value: 25,
     title: "Averylongfilenamethatneedstowrap.zip",
@@ -252,7 +252,9 @@ it("keeps ring and state glyphs visible in forced colours", async function () {
     if (!matchMedia("(forced-colors: active)").matches) this.skip();
     const { ring } = fixture({ value: 25 });
     if (CSS.supports("forced-color-adjust", "none"))
-      expect(style(ring).getPropertyValue("forced-color-adjust")).to.equal("none");
+      expect(style(ring).getPropertyValue("forced-color-adjust")).to.equal(
+        "none"
+      );
     expect(style(ring, "::after").backgroundImage).not.to.equal("none");
     controller.value = 100;
     expect(style(ring, "::after").maskImage).to.include("check.svg");

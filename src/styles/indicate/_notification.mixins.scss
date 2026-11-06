@@ -10,44 +10,44 @@
     --ag-notification-icon-width: 20px;
     display: flex;
     align-items: center;
-    gap: t.$notificationGap;
+    gap: t.$notification-gap;
     box-sizing: border-box;
     width: max-content;
     max-width: 100%;
-    padding: t.$notificationPaddingBlock t.$notificationPaddingInline;
+    padding: t.$notification-padding-block t.$notification-padding-inline;
     border: 0;
     border-radius: 0;
     margin: 0;
-    background: t.$onPanelAlt;
-    color: t.$onCtrlFillSolid;
-    font-family: t.$bodyFontStack;
-    font-size: t.$bodyTextSize;
+    background: t.$on-panel-alt;
+    color: t.$on-ctrl-fill-solid;
+    font-family: t.$body-font-stack;
+    font-size: t.$body-text-size;
     font-weight: 400;
-    line-height: t.$lineHeight;
+    line-height: t.$line-height;
     text-align: start;
     overflow-wrap: anywhere;
     text-shadow: 0 0 1px rgba(0, 0, 0, 0.2);
 
     &[data-variant="alert"] {
       background: t.$error;
-      color: t.$onError;
+      color: t.$on-error;
     }
     &[data-variant="success"] {
       --ag-notification-icon-width: 16px;
       background: t.$success;
-      color: t.$onSuccess;
+      color: t.$on-success;
     }
     &[data-variant="caution"] {
       background: t.$caution;
-      color: t.$onPanel;
+      color: t.$on-caution;
     }
   }
 
   .ag-notification__message {
     flex: 1 1 auto;
     width: max-content;
-    min-width: t.$notificationMessageMinWidth;
-    max-width: t.$notificationMessageMaxWidth;
+    min-width: t.$notification-message-min-width;
+    max-width: t.$notification-message-max-width;
     margin: 0;
   }
   .ag-notification__icon {
@@ -119,7 +119,7 @@
       0px,
       calc(
         100vw - var(--ag-notification-view-left, 0px) -
-          var(--ag-notification-view-right, 0px) - #{t.$notificationOffset} * 2
+          var(--ag-notification-view-right, 0px) - #{t.$notification-offset} * 2
       )
     );
     position: fixed;
@@ -130,7 +130,7 @@
       0px,
       calc(
         100vh - var(--ag-notification-view-top, 0px) -
-          var(--ag-notification-view-bottom, 0px) - #{t.$notificationOffset} * 2
+          var(--ag-notification-view-bottom, 0px) - #{t.$notification-offset} * 2
       )
     );
     overflow: auto;
@@ -138,12 +138,12 @@
     .ag-notification__message {
       // Let a narrow view take precedence over the preferred text minimum.
       min-width: min(
-        #{t.$notificationMessageMinWidth},
+        #{t.$notification-message-min-width},
         max(
           0px,
           calc(
-            var(--ag-notification-available-width) - #{t.$notificationPaddingInline} *
-              2 - var(--ag-notification-icon-width) - 12px - #{t.$notificationGap} *
+            var(--ag-notification-available-width) - #{t.$notification-padding-inline} *
+              2 - var(--ag-notification-icon-width) - 12px - #{t.$notification-gap} *
               2
           )
         )
@@ -160,23 +160,23 @@
     &:not([data-position]),
     &[data-position^="top-"] {
       top: calc(
-        var(--ag-notification-view-top, 0px) + #{t.$notificationOffset} + var(--ag-notification-stack-offset, 0px)
+        var(--ag-notification-view-top, 0px) + #{t.$notification-offset} + var(--ag-notification-stack-offset, 0px)
       );
     }
     &[data-position^="bottom-"] {
       bottom: calc(
-        var(--ag-notification-view-bottom, 0px) + #{t.$notificationOffset} + var(--ag-notification-stack-offset, 0px)
+        var(--ag-notification-view-bottom, 0px) + #{t.$notification-offset} + var(--ag-notification-stack-offset, 0px)
       );
     }
     &[data-position$="-left"] {
       left: calc(
-        var(--ag-notification-view-left, 0px) + #{t.$notificationOffset}
+        var(--ag-notification-view-left, 0px) + #{t.$notification-offset}
       );
     }
     &:not([data-position]),
     &[data-position$="-right"] {
       right: calc(
-        var(--ag-notification-view-right, 0px) + #{t.$notificationOffset}
+        var(--ag-notification-view-right, 0px) + #{t.$notification-offset}
       );
     }
     &[data-position$="-center"] {

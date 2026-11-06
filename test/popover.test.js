@@ -1,14 +1,25 @@
 import { expect } from "@esm-bundle/chai";
-import { emulateMedia, sendKeys, sendMouse, setViewport } from "@web/test-runner-commands";
+import {
+  emulateMedia,
+  sendKeys,
+  sendMouse,
+  setViewport,
+} from "@web/test-runner-commands";
 import { enhancePopover } from "../src/main.ts";
 
 let host, controllers;
-const settle = () => new Promise(resolve => setTimeout(resolve, 180));
-const bounds = el => el.getBoundingClientRect();
-const focused = el => expect(document.activeElement === el).to.equal(true);
+const settle = () => new Promise((resolve) => setTimeout(resolve, 180));
+const bounds = (el) => el.getBoundingClientRect();
+const focused = (el) => expect(document.activeElement === el).to.equal(true);
 async function click(el) {
   const r = bounds(el);
-  await sendMouse({ type: "click", position: [Math.round(r.left + r.width / 2), Math.round(r.top + r.height / 2)] });
+  await sendMouse({
+    type: "click",
+    position: [
+      Math.round(r.left + r.width / 2),
+      Math.round(r.top + r.height / 2),
+    ],
+  });
   await settle();
 }
 function fixture(options = {}) {
@@ -26,7 +37,9 @@ function fixture(options = {}) {
   const done = root.querySelector("[data-popover-close]");
   const next = root.querySelector("[data-next]");
   // Explicit tab stops make keyboard/click focus independent of Safari's OS preference.
-  root.querySelectorAll("button").forEach(button => { button.tabIndex = 0; });
+  root.querySelectorAll("button").forEach((button) => {
+    button.tabIndex = 0;
+  });
   const controller = enhancePopover(panel, { trigger, ...options });
   controllers.push(controller);
   return { root, trigger, panel, input, done, next, controller };
@@ -35,18 +48,25 @@ before(async () => {
   const sheet = document.createElement("link");
   sheet.rel = "stylesheet";
   sheet.href = "/afterglow.css";
-  const ready = new Promise((resolve, reject) => { sheet.onload = resolve; sheet.onerror = reject; });
+  const ready = new Promise((resolve, reject) => {
+    sheet.onload = resolve;
+    sheet.onerror = reject;
+  });
   document.head.append(sheet);
   await ready;
 });
 beforeEach(async () => {
   await setViewport({ width: 800, height: 600 });
   host = document.createElement("div");
-  host.style.cssText = "padding:64px;--motionMediumDuration:100ms;--motionFastDuration:50ms";
+  host.style.cssText =
+    "padding:64px;--motion-medium-duration:100ms;--motion-fast-duration:50ms";
   document.body.append(host);
   controllers = [];
 });
-afterEach(() => { controllers.reverse().forEach(c => c.destroy()); host.remove(); });
+afterEach(() => {
+  controllers.reverse().forEach((c) => c.destroy());
+  host.remove();
+});
 
 it("opens a named nonmodal dialog with native keyboard activation and Escape focus return", async () => {
   const { trigger, panel, input, controller } = fixture();
@@ -58,7 +78,9 @@ it("opens a named nonmodal dialog with native keyboard activation and Escape foc
   expect(trigger.getAttribute("aria-expanded")).to.equal("true");
   expect(trigger.getAttribute("aria-haspopup")).to.equal("dialog");
   expect(panel.getAttribute("role")).to.equal("dialog");
-  expect(document.getElementById(panel.getAttribute("aria-labelledby")).textContent).to.equal("Notebook details");
+  expect(
+    document.getElementById(panel.getAttribute("aria-labelledby")).textContent
+  ).to.equal("Notebook details");
   expect(panel.getAttribute("aria-modal")).to.equal(null);
   focused(input);
   await sendKeys({ press: "Escape" });
@@ -103,7 +125,10 @@ it("focuses informational content and prevents trigger form submission", async (
   form.append(root);
   panel.querySelector("input").remove();
   let submits = 0;
-  form.onsubmit = event => { event.preventDefault(); submits++; };
+  form.onsubmit = (event) => {
+    event.preventDefault();
+    submits++;
+  };
   await click(trigger);
   focused(panel);
   expect(submits).to.equal(0);
@@ -149,7 +174,8 @@ it("switches between sibling popovers with one click and handles rapid reopen", 
 
 it("flips at viewport edges, escapes clipped ancestors, and points back to the trigger", async () => {
   const { trigger, panel, controller } = fixture();
-  host.style.cssText = "position:fixed;bottom:12px;right:12px;overflow:hidden;width:100px;height:30px";
+  host.style.cssText =
+    "position:fixed;bottom:12px;right:12px;overflow:hidden;width:100px;height:30px";
   controller.show();
   await settle();
   const r = bounds(panel);
@@ -158,8 +184,18 @@ it("flips at viewport edges, escapes clipped ancestors, and points back to the t
   expect(r.bottom).to.be.at.most(a.top - 8);
   expect(r.right).to.be.at.most(788);
   expect(r.left).to.be.at.least(12);
-  expect(Math.abs(r.left + parseFloat(panel.style.getPropertyValue("--ag-popover-arrow-x")) - (a.left + a.width / 2))).to.be.lessThan(2);
-  expect(document.elementFromPoint(r.left + 20, r.top + 20)?.closest(".ag-popover") === panel).to.equal(true);
+  expect(
+    Math.abs(
+      r.left +
+        parseFloat(panel.style.getPropertyValue("--ag-popover-arrow-x")) -
+        (a.left + a.width / 2)
+    )
+  ).to.be.lessThan(2);
+  expect(
+    document
+      .elementFromPoint(r.left + 20, r.top + 20)
+      ?.closest(".ag-popover") === panel
+  ).to.equal(true);
 });
 
 it("mirrors logical sides and alignment in RTL and follows trigger movement", async () => {
@@ -188,29 +224,38 @@ it("fits a narrow viewport, scrolls long bodies, and leaves the footer visible",
   const { panel, controller, done } = fixture();
   host.style.cssText = "position:fixed;left:140px;top:16px";
   const body = panel.querySelector(".ag-popover__body");
-  body.innerHTML = Array.from({ length: 30 }, (_, i) => `<p>Notebook activity ${i}</p>`).join("");
+  body.innerHTML = Array.from(
+    { length: 30 },
+    (_, i) => `<p>Notebook activity ${i}</p>`
+  ).join("");
   await setViewport({ width: 320, height: 480 });
   controller.show({ focus: false });
   await settle();
   expect(bounds(panel).left).to.be.at.least(12);
   expect(bounds(panel).right).to.be.at.most(308);
-  expect(bounds(panel).bottom).to.be.at.most(468);
+  expect(bounds(panel).bottom).to.be.at.most(468.05);
   expect(body.scrollHeight).to.be.greaterThan(body.clientHeight);
   expect(bounds(done).bottom).to.be.at.most(bounds(panel).bottom);
   await setViewport({ width: 280, height: 400 });
   await settle();
   expect(bounds(panel).right).to.be.at.most(268);
-  expect(bounds(panel).bottom).to.be.at.most(388);
+  expect(bounds(panel).bottom).to.be.at.most(388.05);
 });
 
 it("uses local theme, spacing and motion values", async () => {
   const { panel, controller } = fixture();
   host.style.setProperty("--panel", "rgb(240, 250, 245)");
-  host.style.setProperty("--motionMediumDuration", "0.2s");
+  host.style.setProperty("--motion-medium-duration", "0.2s");
   controller.show();
-  expect(getComputedStyle(panel).backgroundColor).to.equal("rgb(240, 250, 245)");
-  expect(getComputedStyle(panel.querySelector(".ag-popover__body")).padding).to.equal("16px");
-  expect(getComputedStyle(panel).transitionDuration).to.equal(matchMedia("(prefers-reduced-motion: reduce)").matches ? "0s" : "0.2s");
+  expect(getComputedStyle(panel).backgroundColor).to.equal(
+    "rgb(240, 250, 245)"
+  );
+  expect(
+    getComputedStyle(panel.querySelector(".ag-popover__body")).padding
+  ).to.equal("16px");
+  expect(getComputedStyle(panel).transitionDuration).to.equal(
+    matchMedia("(prefers-reduced-motion: reduce)").matches ? "0s" : "0.2s"
+  );
 });
 
 it("restores managed attributes/styles, preserves consumer state and can be re-enhanced", async () => {

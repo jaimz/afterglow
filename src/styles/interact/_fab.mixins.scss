@@ -15,8 +15,8 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: color-mix(in srgb, #{t.$ctrlFillSolid} 60%, transparent);
-  color: t.$onCtrlFillSolid;
+  background: color-mix(in srgb, #{t.$ctrl-fill-solid} 60%, transparent);
+  color: t.$on-ctrl-fill-solid;
   box-shadow: 0 2px 4px rgb(0 0 0 / 30%),
     inset 0 1px 3px t.token("fab-inner-glow");
   backdrop-filter: blur(#{t.token("fab-blur")});
@@ -33,17 +33,17 @@
     pointer-events: none;
   }
   &:hover:not(:disabled) {
-    background: color-mix(in srgb, #{t.$ctrlFillSolidHi} 60%, transparent);
+    background: color-mix(in srgb, #{t.$ctrl-fill-solid-hi} 60%, transparent);
   }
   &:active:not(:disabled) {
-    background: color-mix(in srgb, #{t.$ctrlFillSolidLo} 60%, transparent);
+    background: color-mix(in srgb, #{t.$ctrl-fill-solid-lo} 60%, transparent);
   }
   &:focus-visible {
-    outline: 2px solid t.$ctrlText;
+    outline: 2px solid t.$ctrl-text;
     outline-offset: 3px;
   }
   &:disabled {
-    opacity: t.$disabledOpacity;
+    opacity: t.$disabled-opacity;
     cursor: not-allowed;
   }
   @media (forced-colors: active) {
