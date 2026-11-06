@@ -20,7 +20,7 @@ src/styles/
   foundation/
     _primitives.scss              Shared default values and derived type formulas
     _tokens.scss                  Pure registry, token(), theme(), Sass aliases
-    _theme.scss                   Default :root and local .ag-theme declarations
+    _theme.scss                   Primitive :root defaults and bundled fonts
     _typography.mixins.scss        Pure composition tools
     _typography.classes.scss      Ready-made typography classes
     _layout.mixins.scss            Generic layout helpers
@@ -33,12 +33,13 @@ src/styles/
   present/
   _assets.scss                    Shared relative asset URLs
   assets/                         Exact exported icons and provenance notes
-  _tokens.scss, _frames.scss, ...  Compatibility entries
+  _tokens.scss, _typography.scss  Pure convenience entries
+  _theme.scss                     Explicit theme/font emission
 ```
 
-Each category owns a pure `_tokens.scss` map. `foundation/_tokens.scss` combines these with the shared primitives, rejects duplicate names and exposes `token($name)` and `theme($overrides)`. Existing CSS token spellings and Sass aliases remain stable. Recipe mixins depend on this pure registry; they never import emitted class modules.
+Each category owns a pure `_tokens.scss` map. `foundation/_tokens.scss` combines these with the shared primitives, rejects duplicate names and exposes `token($name)` and `theme($overrides)`. CSS token spellings and Sass aliases follow the same dashed convention. Recipe mixins depend on this pure registry; they never import emitted class modules.
 
-`foundation/_theme.scss` is the only module that emits defaults. It declares all tokens on `:where(:root)` and recalculates derived typography at `:where(.ag-theme)`. A local theme inherits base colours and sizes instead of resetting them. The `theme()` mixin performs the same local calculation with validated overrides. A consumer's future theme file can supply these overrides without changing component recipes.
+`foundation/_theme.scss` emits primitive defaults and fonts. All public token names and Sass aliases use lower-case dashed spelling. Grid values are lengths; scales and ratios remain numbers. Derived typography defaults are expanded recursively by `token()` into CSS fallback expressions at each use site. The size overrides themselves are not declared on ancestors, so local base-size/scale changes take effect naturally and explicit size overrides inherit normally. `theme()` applies only validated overrides; `ag-theme` is no longer required.
 
 `*.mixins.scss` files emit no CSS merely by being imported. Simple mixins provide declarations for a consumer's own selector. More involved recipes expose `styles`, which emits the complete documented `.ag-*` recipe, including its state selectors. Include that mixin at the root or inside an application scope; it does not rename required child classes or helper hooks.
 
@@ -46,7 +47,7 @@ Each category owns a pure `_tokens.scss` map. `foundation/_tokens.scss` combines
 
 The pure `mixins` barrels prefix names to avoid collisions. Examples are `foundation.type-body`, `foundation.layout-flex-row`, `frame.surface-panel`, `frame.layout-master-detail`, `interact.button-styles` and `present.article-article`. Direct recipe-module imports provide shorter names such as `surface.panel` or `article.article`.
 
-Generic layout mixins use logical dimensions and honour their gap arguments. Motion mixins are opt-in, honour reduced motion and do not add persistent `will-change` hints. Existing dialog and notification animations retain their current behaviour.
+Generic layout mixins use logical dimensions and honour their gap arguments. Motion mixins are opt-in, honour reduced motion and do not add persistent `will-change` hints. Dialog and notification animations use the same phase/speed/delay utility as newer components.
 
 Asset URLs remain in the root `_assets.scss` module so both Vite's source import and the standalone CSS build can resolve the same exported files. The build copies `assets/` beside `afterglow.css`; do not move the CSS away from that directory when serving it directly.
 
@@ -60,11 +61,11 @@ The `indicate/circular-progress` recipe also retains a native `progress` element
 
 The `indicate/staged-progress` recipe composes those circular controls inside an ordered list. CSS owns horizontal/vertical layout, RTL, scrolling and decorative connections. `enhanceStagedProgress` exposes the child controllers in DOM order, reconciles list changes and cleans up the circles it created. Each subtask retains independent progress and failure state; scheduling, retry policy and aggregate status belong to the application. Connections brighten after the preceding stage completes. Selective class imports include the circular recipe through Sass module deduplication.
 
-The `interact/chip` recipe composes native text, an optional leading icon or a circular `present/avatar`, and an optional native remove button. Icon presence is independent of the filled, outlined and backdrop appearances; omit the icon element for text alone. Application handlers own removal and focus placement. It has no component runtime; automatic initials and image fallback reuse `enhanceAvatar`. The icon and avatar styles remain in `present`, so consumers loading individual categories include both categories when using those elements.
+The `interact/chip` recipe composes native text, an optional leading icon or a circular `present/avatar`, and an optional native remove button. Icon presence is independent of the filled, outlined and backdrop appearances; omit the icon element for text alone. Application handlers own removal and focus placement. It has no component runtime; automatic initials and image fallback reuse `enhanceAvatar`. Chip class imports include the avatar recipe; optional icon elements additionally need the icon recipe.
 
 The `interact/slider` recipe uses one native range input for a single value, or two inputs with `data-range` for an interval. `enhanceSlider` owns the fill, unnumbered marks and temporary value bubbles. Native inputs retain values, submission, keyboard focus and thumb dragging; the helper coordinates shared bounds, prevents crossing and handles track clicks for the pair. Keep each handle's accessible name distinct and preserve its DOM order.
 
-The `interact/text-field` recipe retains native input editing, types, validation and form participation. CSS owns standard/backdrop treatments, an independent `data-compact` size flag, placeholder-style labels, optional icon slots and status glyphs. Every variant has a full border and shows its label inside the empty input, preserving the accessible name when populated. `enhanceTextField` optionally adds inline native/custom validation, persistent application errors and reset/cleanup handling; it does not replace native values or events. The helper owns its generated error description and restores externally supplied validation on cleanup.
+The `interact/text-field` recipe retains native input editing, types, validation and form participation. CSS owns standard/backdrop treatments, an independent `data-compact` size flag, native placeholders, optional icon slots and status glyphs. Every variant has a full border. Consumers own label markup and layout, associating their label with the native input through `for`/`id` or supplying `aria-labelledby` directly on the input. Placeholder text is independent of the accessible name. `enhanceTextField` optionally adds inline native/custom validation, persistent application errors and reset/cleanup handling; it does not replace native values or events. The helper owns its generated error description and restores externally supplied validation on cleanup.
 
 The `present/image` recipe composes a native image and optional caption. `enhanceImage` synchronizes an inaccessible decorative copy with the successfully loaded `currentSrc`, avoiding canvas sampling and retaining native responsive source selection. Image URLs remain native `src` values, and title/overline presence is determined by supplied text. The backlight is opt-in through `data-backlight`.
 
@@ -80,7 +81,7 @@ Card content groups its title and body inside `ag-card-content__main`, between t
 
 Slider endpoint-label markup (`ag-slider__labels` and `ag-slider__label`) has been replaced by transient value tooltips. Remove that old decorative markup when updating consumers.
 
-The complete `ag/css` and `ag/scss` entry points, existing `.ag-*` classes, data attributes, helper exports and CSS custom properties remain available. Previous flat Sass modules forward their original public members and retain their previous CSS side effects. New consumers can use category entries or pure modules as documented in [Usage.md](Usage.md#scss-mixins).
+The complete `ag/css` and `ag/scss` entry points, existing `.ag-*` classes, data attributes and helper exports remain available. CSS tokens now use dashed names; see [Migration.md](Migration.md). Ambiguous flat component Sass imports are removed. The public tokens/typography aliases are pure. New consumers can use category entries or pure modules as documented in [Usage.md](Usage.md#scss-mixins).
 
 The application grid is opt-in through `ag-appframe[data-layout="application"]`. Plain `ag-appframe` is unchanged. New article and card-content typography is scoped to their recipes; existing heading utility classes keep their prior declarations. Layouts compose existing surface classes rather than introducing a new default theme.
 
@@ -131,3 +132,11 @@ The `frame/popover` recipe is an Afterglow interpretation of [Apple's popover gu
 5. Add Storybook examples under the same category, including native states and composition with existing recipes.
 6. Update [Usage.md](Usage.md) with complete HTML, class/attribute contracts, theming and helper requirements.
 7. Run `bun run test:styles`, the relevant browser tests, and the library/Storybook builds. Check keyboard interaction, narrow layouts, theme inheritance and exported assets when they apply.
+
+## Consumer contracts
+
+All controllers implement `refresh()` and `destroy()`. Configurable controllers implement partial `update(options)`; repeated enhancement applies options rather than dropping them. A trigger is a structural identity and requires destroy/re-enhance when replaced. Native property writes do not emit events; framework integrations use typed update methods or explicitly refresh after direct writes. Tab structure/availability is automatically reconciled.
+
+Read-only controls share saved attributes across scopes. Sliders acquire an independent control scope and release only their own ownership. Hand-authored composite control markup is validated before enhancement, with the same `validateMarkup` diagnostics available to consumer applications/tests.
+
+`npm pack` builds and checks documentation before packaging. The installed-package smoke test builds a separate application from a tarball, checks public JS/CSS/Sass exports and exported fonts/icons, and exercises local typography, keyboard dismissal and composed controls. `scripts/sync-docs.mjs` generates/checks the usage contents so new sections cannot disappear from its index.

@@ -53,7 +53,7 @@ test("category entries emit their own recipes with one shared default theme", ()
   }
   const css = compile('@use "afterglow";');
   assert.equal(css.match(/:where\(:root\)/g)?.length, 1);
-  assert.equal(css.match(/:where\(\.ag-theme\)/g)?.length, 1);
+  assert.ok(!css.includes(":where(.ag-theme)"));
 });
 
 test("pure mixins compose consumer classes without emitting Afterglow recipes", () => {
@@ -119,15 +119,10 @@ test("theme boundaries inherit base tokens and validate overrides", () => {
   );
   assert.ok(css.includes("--body-text-size: 20px"));
   assert.ok(
-    css.includes(
-      "--h1-text-size: calc(var(--h2-text-size) * var(--text-scale))"
-    )
+    !css.includes("--h1-text-size:"),
+    "derived defaults are not frozen on the ancestor"
   );
-  assert.equal(
-    css.match(/--h5-text-size:/g)?.length,
-    2,
-    "explicit size follows derived formula"
-  );
+  assert.equal(css.match(/--h5-text-size:/g)?.length, 1);
   assert.ok(
     !css.includes("--panel:"),
     "partial theme does not reset inherited colours"
@@ -146,30 +141,27 @@ test("theme boundaries inherit base tokens and validate overrides", () => {
   );
 });
 
-test("legacy Sass entry points retain CSS emission and exported mixins", () => {
-  const legacy = compile(`
-    @use "tokens" as t; @use "frames" as frame; @use "typography" as type;
-    @use "button"; @use "checkable"; @use "slider"; @use "dialog"; @use "notification";
-    .custom { @include frame.panel; @include type.body; color: t.$ctrlText; }
-  `);
-  for (const selector of [
-    ".ag-panel",
-    ".ag-button",
-    ".ag-checkbox",
-    ".ag-slider",
-    ".ag-dialog",
-    ".ag-notification",
-    ".custom",
-  ]) {
-    assert.match(
-      legacy,
-      new RegExp(`${selector.replace(".", "\\.")}\\s*[,\\{]`)
-    );
-  }
-  assert.equal(legacy.match(/:where\(:root\)/g)?.length, 1);
+test("short token and typography imports are pure; theme emission is explicit", () => {
+  assert.equal(compile('@use "tokens"; @use "typography";'), "");
+  const css = compile('@use "theme";');
+  assert.equal(css.match(/:where\(:root\)/g)?.length, 1);
+  assert.ok(css.includes("@font-face"));
 });
 
-test("package exports resolve full, category, pure and compatibility imports", () => {
+test("all emitted custom property names are lower-case dashed and grid defaults are lengths", () => {
+  const css = compile('@use "afterglow";');
+  for (const name of css.matchAll(/--([\w-]+)\s*:/g))
+    assert.match(name[1], /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/);
+  assert.match(css, /--grid-x: 8px/);
+  assert.match(css, /--grid-y: 8px/);
+  assert.match(css, /--grid-type: 4px/);
+});
+
+test("documentation contents are synchronized", () => {
+  execFileSync(process.execPath, ["scripts/sync-docs.mjs", "--check"]);
+});
+
+test("package exports resolve full, category and pure imports", () => {
   const consumer = mkdtempSync(resolve(tmpdir(), "afterglow-sass-consumer-"));
   mkdirSync(`${consumer}/node_modules`);
   symlinkSync(process.cwd(), `${consumer}/node_modules/ag`, "dir");
@@ -180,8 +172,8 @@ test("package exports resolve full, category, pure and compatibility imports", (
     @use "pkg:ag/scss/interact";
     @use "pkg:ag/scss/foundation/tokens" as t;
     @use "pkg:ag/scss/frame/surface.mixins" as frame;
-    @use "pkg:ag/scss/frames" as legacy;
-    .custom { @include frame.panel; color: t.$ctrlText; }
+    @use "pkg:ag/scss/tokens" as short;
+    .custom { @include frame.panel; color: t.$ctrl-text; }
     `,
       { importers: [new NodePackageImporter(consumer)] }
     ).css;

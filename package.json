@@ -16,7 +16,11 @@
     "test:watch": "web-test-runner --config web-test-runner.config.mjs --watch",
     "build:css": "node scripts/build-styles.mjs",
     "build:icons": "node scripts/build-icons.mjs",
-    "test:browsers": "WTR_BROWSERS=chromium,firefox,webkit web-test-runner --config web-test-runner.config.mjs"
+    "test:browsers": "WTR_BROWSERS=chromium,firefox,webkit web-test-runner --config web-test-runner.config.mjs",
+    "prepack": "npm run build && npm run docs:check",
+    "docs:sync": "node scripts/sync-docs.mjs",
+    "docs:check": "node scripts/sync-docs.mjs --check",
+    "test:consumer": "npm run build && node scripts/check-consumer.mjs"
   },
   "devDependencies": {
     "@babel/core": "^7.18.2",
@@ -35,6 +39,7 @@
     "@web/test-runner-playwright": "^1.0.0",
     "babel-loader": "^8.2.5",
     "glob": "^7.2.3",
+    "playwright": "^1.53.0",
     "prettier": "^2.6.2",
     "sass": "^1.104.0",
     "typescript": "^5.9.3",
@@ -47,13 +52,25 @@
     },
     "./css": "./dist/afterglow.css",
     "./scss": "./src/styles/afterglow.scss",
-    "./scss/*": "./src/styles/*"
+    "./scss/*": "./src/styles/*",
+    "./scss/tokens": "./src/styles/_tokens.scss",
+    "./scss/theme": "./src/styles/_theme.scss",
+    "./scss/typography": "./src/styles/_typography.scss",
+    "./scss/button": null,
+    "./scss/checkable": null,
+    "./scss/dialog": null,
+    "./scss/frames": null,
+    "./scss/notification": null,
+    "./scss/slider": null
   },
   "files": [
     "dist",
     "src/styles",
     "Usage.md",
-    "Architecture.md"
+    "Architecture.md",
+    "Migration.md",
+    "docs/token-migration.json",
+    "examples/consumer"
   ],
   "sideEffects": [
     "**/*.css",

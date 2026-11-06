@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="text-scale" content="scale" />
+    <title>Afterglow consumer example</title>
+    <link rel="stylesheet" href="./node_modules/ag/dist/afterglow.css" />
+    <script type="importmap">
+      { "imports": { "ag": "./node_modules/ag/dist/afterglow.mjs" } }
+    </script>
+    <style>
+      body {
+        margin: 0;
+      }
+      main {
+        max-width: 40rem;
+        margin: 3rem auto;
+        padding: calc(var(--grid-x) * 3);
+      }
+      .local-theme {
+        --body-text-size: 18px;
+        --text-scale: 1.25;
+      }
+    </style>
+  </head>
+  <body class="ag-body">
+    <main class="ag-panel local-theme">
+      <h1 class="ag-h3">Field notes</h1>
+      <p>Native controls with a local theme.</p>
+      <button id="details" class="ag-button" type="button">
+        <span
+          class="ag-icon ag-button__start"
+          data-icon="info"
+          aria-hidden="true"
+        ></span
+        >Notebook details
+      </button>
+      <div id="panel" class="ag-popover" popover="auto">
+        <header class="ag-popover__header">
+          <h2 class="ag-popover__title">Notebook details</h2>
+        </header>
+        <div class="ag-popover__body">
+          <p>24 observations, collected along the coast.</p>
+        </div>
+        <footer class="ag-popover__footer">
+          <button class="ag-button" type="button" data-popover-close>
+            Done
+          </button>
+        </footer>
+      </div>
+      <div class="ag-slider" id="volume" style="margin-block-start: 24px">
+        <div class="ag-slider__control">
+          <input
+            class="ag-slider__input"
+            type="range"
+            aria-label="Preview size"
+            min="0"
+            max="100"
+            value="40"
+            data-readonly
+          />
+          <div class="ag-slider__track" aria-hidden="true">
+            <div class="ag-slider__fill"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

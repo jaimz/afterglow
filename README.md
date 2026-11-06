@@ -6,9 +6,11 @@ Use HTML and CSS first. Add the optional TypeScript helpers for avatar initials 
 
 ## Using Afterglow
 
+Install dependencies and run `npm pack` to create an installable tarball; its prepack hook builds the package. In a consumer project, run `npm install /absolute/path/to/ag-0.0.0.tgz`, then import `ag/css`. See [examples/consumer](examples/consumer) for a complete application and run `npm run test:consumer` to verify an actual packed installation. See [Migration.md](Migration.md) when upgrading older consumers.
+
 See [Usage.md](Usage.md) for HTML recipes, CSS classes and variants, theming, optional JavaScript helpers, framework integration and the usage documentation expected for future Web Components.
 
-Styles are organised into **foundation**, **frame**, **indicate**, **interact** and **present**. Each category separates token definitions, pure Sass mixins and emitted classes. See [Architecture.md](Architecture.md) for the structure, compatibility entry points and design sources.
+Styles are organised into **foundation**, **frame**, **indicate**, **interact** and **present**. Each category separates token definitions, pure Sass mixins and emitted classes. See [Architecture.md](Architecture.md) for the structure, import contracts and design sources.
 
 ## Development
 
@@ -42,7 +44,7 @@ The build produces independent assets:
 
 To update the Feather catalogue, add or remove SVGs in `src/styles/assets/feather/` and run `bun run build:icons`. The assets stay unchanged; this regenerates the Sass URL map. The style tests check that the catalogue matches the files.
 
-The package exports these as `ag/css`, `ag` and `ag/scss`. The stylesheet includes default CSS token declarations; use `ag-theme` or the Sass `tokens.theme()` mixin for a local typography theme. See [the theming guide](Usage.md#themes-and-scss). You can also copy the compiled CSS into a project without adopting Sass or a JavaScript framework.
+The package exports these as `ag/css`, `ag` and `ag/scss`. The stylesheet includes primitive CSS token declarations. Override them on any ancestor for local themes; derived typography resolves where used, with no theme class required. See [the theming guide](Usage.md#themes-and-scss). You can also copy the compiled CSS into a project without adopting Sass or a JavaScript framework.
 
 The build also includes the HTML-only example as `dist/index.html`. Run `bun run build` followed by `bun run preview`, then open [http://127.0.0.1:4173](http://127.0.0.1:4173). Preview uses a fixed loopback address and port to avoid conflicts with macOS AirPlay on port 5000; it reports an error if port 4173 is already occupied.
 
@@ -57,9 +59,9 @@ The build also includes the HTML-only example as `dist/index.html`. Run `bun run
 | `ag-slider`, `ag-slider-label`               | Native range with track/label markup; `enhanceSlider`                         |
 | `ag-dialog.show()` / `.hide()`               | `enhanceDialog(dialog).show()` / `.hide()`                                    |
 | `variant`, `dangerous`, `orientation`        | Corresponding `data-*` attributes on recipe containers                        |
-| `readonly` on a checkable/range              | `data-readonly` plus `enhanceControls`                                        |
+| `readonly` on a checkable/range              | `data-readonly`; sliders include behaviour, checkables use `enhanceControls`                                        |
 | Slots and `::part()`                         | Ordinary children and documented `.ag-*__*` classes                           |
-| `updateComplete`                             | Native state is synchronous; call `slider.update()` after direct value writes |
+| `updateComplete`                             | Native state is synchronous; call `slider.refresh()` after direct value writes |
 | `provideAGDesignSystem`, component factories | Removed; import CSS and optional helpers                                      |
 | Lit token exports                            | SCSS token variables/mixins and the same public CSS properties                |
 
@@ -70,6 +72,8 @@ This is an intentional markup/API migration. Existing custom tags no longer rend
 ```sh
 bunx playwright install chromium firefox webkit
 bun run test:styles
+bun run docs:check
+bun run test:consumer
 bun run test
 bun run test:browsers
 ```
@@ -81,4 +85,4 @@ WTR_BROWSER_CHANNEL=chrome bun run test
 WTR_BROWSER_CHANNEL=chrome bun run test:browsers
 ```
 
-The Sass tests verify import purity, category boundaries, theme validation, package paths and compatibility imports. Web Test Runner compiles SCSS in memory and tests native forms, labels, keyboard input, theme inheritance, read-only states, range bounds/marks/RTL/vertical behaviour, dialog/notification lifecycle and responsive layouts across Chromium, Firefox and WebKit. WebKit is the automated engine check; it does not replace testing Safari/iOS with real touch and assistive technology. The compiled library and Storybook builds are separate checks.
+The Sass tests verify import purity, category boundaries, theme validation and package paths. Web Test Runner compiles SCSS in memory and tests native forms, labels, keyboard input, theme inheritance, read-only states, range bounds/marks/RTL/vertical behaviour, dialog/notification lifecycle and responsive layouts across Chromium, Firefox and WebKit. WebKit is the automated engine check; it does not replace testing Safari/iOS with real touch and assistive technology. The compiled library and Storybook builds are separate checks.

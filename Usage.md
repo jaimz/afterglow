@@ -27,15 +27,25 @@ This guide describes the current consumer API. New components and changes to exi
 - [Switches](#switches)
 - [Sliders](#sliders)
 - [Progress bars](#progress-bars)
+- [Circular progress](#circular-progress)
+- [Staged progress](#staged-progress)
 - [Notifications](#notifications)
+- [Popovers](#popovers)
 - [Dialogs](#dialogs)
 - [Forms and optional control behaviour](#forms-and-optional-control-behaviour)
+- [Paginator](#paginator)
+- [Shared motion](#shared-motion)
 - [Themes and SCSS](#themes-and-scss)
 - [Using a UI framework](#using-a-ui-framework)
 - [Future Web Components](#future-web-components)
 - [Keeping this guide current](#keeping-this-guide-current)
+- [Accessibility and browser support](#accessibility-and-browser-support)
 
 ## How to use the API
+
+For the current private package, run `npm pack` in an Afterglow checkout after installing its development dependencies. The prepack hook builds the library and checks the documentation index. Install the resulting tarball in the application with `npm install /absolute/path/to/ag-0.0.0.tgz`. A published registry release is not yet configured.
+
+The packaged CSS, ES module, declarations, fonts and icons are tested together by `npm run test:consumer`, using the application in `examples/consumer`. Start with `import "ag/css"` in a bundler, and import helpers from `ag` only where needed.
 
 Load Afterglow's compiled stylesheet once, before your application's overrides. The examples below assume it is already loaded. With a bundler, the stylesheet import is `import "ag/css"`; a plain HTML page can link to a served copy of `afterglow.css`. When serving compiled files directly, keep the accompanying `dist/assets/` folder beside the CSS file so icons and the Avatar font resolve. Bundlers process these relative asset URLs when importing the stylesheet.
 
@@ -273,9 +283,9 @@ Initial selection uses `selectedPanelId`, then an enabled tab marked `aria-selec
 
 Arrow Left/Right move between available tabs and wrap, reversing in RTL; Home/End focus the first/last available tab. In the default automatic mode, this also changes the panel. Manual mode moves focus only until Enter, Space or click activates the tab. Tab leaves the strip for the active panel, which is keyboard-focusable by default. A consumer-supplied panel `tabindex` is preserved.
 
-`ag-tab-change` bubbles from the view after a selection changes, with `{ panelId, previousPanelId }`. Initial setup and selecting the already-active panel do not emit it. `refresh()` synchronously reconciles DOM changes, retaining the current tab where possible or selecting the first available tab. If none are available, all panels are hidden and `selectedPanelId` is `null`. Changes are not automatically observed; call `refresh()` after updating the tab structure or availability. `destroy()` restores the attributes the helper managed, removes its listeners and allows re-enhancement; it does not reset child content. Repeated enhancement returns the existing controller and retains its original options.
+`ag-tab-change` bubbles from the view after a selection changes, with `{ panelId, previousPanelId }`. Initial setup and selecting the already-active panel do not emit it. `refresh()` synchronously reconciles DOM changes, retaining the current tab where possible or selecting the first available tab. If none are available, all panels are hidden and `selectedPanelId` is `null`. Tab structure and availability changes are observed automatically; call `refresh()` when synchronous reconciliation is needed. `destroy()` restores the attributes the helper managed, removes its listeners and allows re-enhancement; it does not reset child content. Repeated enhancement returns the existing controller and applies supplied options through `update()`.
 
-The view uses the existing panel and paper colours with a surface shadow. The design defaults are `--tab-width: 150px`, `--tab-text-size: 16px`, `--tab-strip-gap: 15px`, and `--tabbed-view-shadow: 0 4px 16px rgba(0, 0, 0, 0.25)`. Tabs have a 2px selection underline and 16px padding. The strip centres tabs when they fit and scrolls horizontally when they do not. Long labels wrap within the tab width. The view takes its available width and grows with content; set a height in your application's CSS if panels should scroll internally. The frame adds no panel padding, so child components retain control of their layout.
+The view uses the existing panel and paper colours with a surface shadow. The design defaults are `--tab-width: 150px`, `--tab-text-size: 1rem`, `--tab-strip-gap: 15px`, and `--tabbed-view-shadow: 0 4px 16px rgba(0, 0, 0, 0.25)`. Tabs have a 2px selection underline and 16px padding. The strip centres tabs when they fit and scrolls horizontally when they do not. Long labels wrap within the tab width. The view takes its available width and grows with content; set a height in your application's CSS if panels should scroll internally. The frame adds no panel padding, so child components retain control of their layout.
 
 Import `frame` for the view, `interact` for the strip and tabs, and any categories needed by panel content. Without enhancement, panels remain ordinary visible HTML unless you author `hidden` yourself; the helper is needed for tab switching and keyboard semantics. If your framework manages tab behaviour, it can use these same classes and supply the ARIA, focus and hidden states itself. **Frame / Tabbed View** includes editable labels, manual activation, disabled tabs, narrow/RTL layouts, nested views and programmatic selection. **Interact / Tab** and **Interact / Tab Strip** demonstrate the constituent controls.
 
@@ -516,7 +526,7 @@ Use `data-initial-count="1"` to centre a single initial, or `data-initial-layout
 
 The helper uses the full name as the accessible label, with `"Unknown user"` for an empty name. Override this through `label` when a different or translated label is needed. Set `decorative: true`, or initialise an element with `aria-hidden="true"`, when adjacent text already identifies the person. For an interactive avatar, put a decorative avatar inside a labelled native button or link; the Avatar itself does not introduce focus or interaction.
 
-`update(options)` accepts the same `name`, `imageUrl`, `initials`, `locale`, `decorative` and `label` options as initialisation. `destroy()` removes observers, image listeners and pending fitting work, leaving the rendered avatar as static HTML. Repeated enhancement returns the existing controller; use `update()` to change its options. No custom events are emitted.
+`update(options)` accepts the same `name`, `imageUrl`, `initials`, `locale`, `decorative` and `label` options as initialisation. `destroy()` removes observers, image listeners and pending fitting work, leaving the rendered avatar as static HTML. Repeated enhancement returns the existing controller and applies the supplied options. No custom events are emitted.
 
 Size tokens are `--avatar-size`, `--avatar-header-size` and `--avatar-large-size`; matching type tokens are `--avatar-initials-size`, `--avatar-header-initials-size` and `--avatar-large-initials-size`. `--avatar-font-stack`, `--avatar-shade` and `--avatar-shadow` control the font, gradient endpoint and shadow. Colours reuse existing paper, panel, backdrop and control tokens. Properties beginning `--ag-avatar-` are internal fitting/layout values.
 
@@ -631,7 +641,7 @@ Read filter values with `new FormData(form).getAll("category")`. Tag creation, r
 
 Tags are at least `24px` high and `64px` wide, grow with their text and stay within their container. The `ag-tag__label` child truncates long labels with an ellipsis without removing their accessible text. Lay out collections with wrapping flex/grid and a gap. RTL, keyboard focus, native button disabled/hidden and forced-colour states are supported. No icon, close button or Web Component is required.
 
-Size tokens are `--tag-height`, `--tag-min-width`, `--tag-padding-inline` and `--tag-radius`. Typography uses the body font and caption size. Default colours use `--ctrl-fill-solid` and `--on-ctrl-fill-solid`; backdrop colours use `--onBackdrop` and `--onSurface`. Load `present/tag.classes` for this recipe alone, or compose the pure `tag`/`styles` mixins from `present/tag.mixins` with the shared theme. A composed text field also needs the `interact` styles.
+Size tokens are `--tag-height`, `--tag-min-width`, `--tag-padding-inline` and `--tag-radius`. Typography uses the body font and caption size. Default colours use `--ctrl-fill-solid` and `--on-ctrl-fill-solid`; backdrop colours use `--on-backdrop` and `--on-surface`. Load `present/tag.classes` for this recipe alone, or compose the pure `tag`/`styles` mixins from `present/tag.mixins` with the shared theme. A composed text field also needs the `interact` styles.
 
 ## Buttons
 
@@ -647,7 +657,7 @@ Size tokens are `--tag-height`, `--tag-min-width`, `--tag-padding-inline` and `-
 <a href="/settings" class="ag-button">Settings</a>
 ```
 
-`data-variant` accepts `default` (also used when omitted), `primary`, `outline` or `flat`. Add `data-dangerous` for destructive actions; remove the attribute to turn it off. `data-dangerous="false"` still has the attribute and therefore still applies the style. In Storybook, the boolean control is `dangerous`. For native HTML rendered from a boolean, use `button.toggleAttribute("data-dangerous", dangerous)`. Default, flat and outlined buttons use danger-coloured text; primary buttons use a danger background with contrasting text. The `--danger` token initially matches error red (`#cf3558`) but can be themed independently; `--on-danger` controls text on a dangerous primary button. Disabled buttons retain the danger treatment with reduced opacity.
+`data-variant` accepts `default` (also used when omitted), `primary`, `outline` or `flat`. Add `data-dangerous` for destructive actions; remove the attribute to turn it off. `data-dangerous="false"` still has the attribute and therefore still applies the style. In Storybook, the boolean control is `dangerous`. For native HTML rendered from a boolean, use `button.toggleAttribute("data-dangerous", dangerous)`. Default, flat and outlined buttons use danger-coloured text; primary buttons use a danger background with contrasting text. The `--danger` token initially matches error red (`#bf2b4d`) but can be themed independently; `--on-danger` controls text on a dangerous primary button. Disabled buttons retain the danger treatment with reduced opacity.
 
 Use explicit button types: `button` for application actions, `submit` for form submission and `reset` for native reset. Use an anchor with `href` for navigation. The native `disabled` attribute applies to buttons, not anchors; `aria-disabled` alone does not disable a link.
 
@@ -762,7 +772,7 @@ chip.querySelector(".ag-chip__remove").addEventListener("click", () => {
 
 Give each remove button a translated accessible label identifying the item. Keep `type="button"` so removal never submits a surrounding form. Use native `disabled` on the remove button to disable it and dim the chip. Omit the button, or set its `hidden` property, for a chip that cannot be removed. The whole chip supports native `hidden` too. A chip itself has no form value or selection state; if it represents submitted data, maintain that data in your form or application.
 
-The label has an 8px start margin and a 16px end margin, set with logical properties on `.ag-chip__label`. Text-only chips without a visible close button use 8px for both margins. The `chip-icon-size` and `chip-avatar-size` theme tokens control leading content size. `chip-remove-size` controls the close button independently in non-avatar variants; avatar variants use `chip-avatar-size` for both the avatar and close button. Colours and typography reuse the existing surface, backdrop and body tokens. With category-only Sass imports, include both `interact` and `present` for chips composed with icons or avatars. The pure `interact/chip.mixins` module offers `chip` for container declarations and `styles` for the complete recipe, including child and state selectors.
+The label has an 8px start margin and a 16px end margin, set with logical properties on `.ag-chip__label`. Text-only chips without a visible close button use 8px for both margins. The `chip-icon-size` and `chip-avatar-size` theme tokens control leading content size. `chip-remove-size` controls the close button independently in non-avatar variants; avatar variants use `chip-avatar-size` for both the avatar and close button. Colours and typography reuse the existing surface, backdrop and body tokens. The chip class entry includes its avatar dependency; include `present/icon.classes` for optional Feather icons alongside `interact` for chips composed with icons or avatars. The pure `interact/chip.mixins` module offers `chip` for container declarations and `styles` for the complete recipe, including child and state selectors.
 
 ## Textareas
 
@@ -801,18 +811,24 @@ The textarea fills its container and can be resized vertically. `--textarea-min-
 Text fields belong to **Interact** and use native `input` elements. The standard and backdrop treatments, each with an optional compact size, need only HTML and CSS. Use native `type="text"`, `search`, `password`, `email`, `url`, `tel` or `number` for the appropriate editing behaviour. Password masking, search clearing where supported, numeric controls, autocomplete, selection, keyboard input, form submission and reset remain browser features.
 
 ```html
+<label for="email">Email address</label>
 <div id="email-field" class="ag-text-field">
   <div class="ag-text-field__control">
     <input class="ag-text-field__input" id="email" name="email"
-           type="email" autocomplete="off" required placeholder=" "
+           type="email" autocomplete="off" required placeholder="you@example.com"
            aria-describedby="email-hint">
-    <label class="ag-text-field__label" for="email">Email address</label>
   </div>
   <p class="ag-text-field__hint" id="email-hint">Use an address you can receive mail at.</p>
 </div>
 ```
 
-Keep the real label, a unique input ID and its matching `for`. The single-space placeholder enables CSS to detect an empty value; it is not the accessible name. In every variant, the label appears inside the empty input like a placeholder, including while focused. It disappears visually when a value is entered and returns when the input is cleared or reset, retaining its accessible name throughout. The label never moves above the input or adds to its height. Hints appear below while the field is focused or populated, and wrap to the available width. The input's `aria-describedby` keeps its authored hint associated even while that hint is visually hidden.
+Consumers own the label and its layout. Give the native input a unique `id` and point your own `<label for="…">` at that ID, anywhere in the same document. Clicking the label focuses the input without a helper. Afterglow does not generate, position or hide the label, and no special label class is required.
+
+Set optional example or prompt text directly with the native `placeholder` attribute. It disappears while the input has a value and returns when cleared or reset to empty. Omit it when no placeholder is wanted; a single-space placeholder is no longer needed. The placeholder is independent of the field's accessible name.
+
+If your application already has a naming element, the input also accepts native `aria-labelledby="existing-label-id"` (or a space-separated list of IDs). Prefer a real label with `for`/`id` for native click-to-focus behaviour; `aria-labelledby` alone supplies a name, not label activation. Apply these attributes to the input, not the wrapper. The optional validation helper preserves them.
+
+Hints appear below while an input with a placeholder is focused or populated, and wrap to the available width. Without a placeholder, hints remain visible. The input's `aria-describedby` keeps its authored hint associated even while that hint is visually hidden.
 
 Use `autocomplete="off"` by default, as in the Storybook examples. Consumers can opt in with `autocomplete="on"` or an appropriate token such as `email` or `name`. Set this on the native input; CSS and the optional validation helper do not control autocomplete.
 
@@ -825,14 +841,14 @@ Set `data-variant` on `ag-text-field`:
 | `default` or omitted | `48px` | Paper fill, inset shadow and a full keyline |
 | `backdrop` | `40px` | Translucent fill, light foreground and a full light border; place it on a backdrop surface |
 
-All variants use a border on all four sides and the same placeholder-style label behaviour. Size is independent of the visual variant: set the Storybook `compact` boolean to `true`, or add `data-compact` to the wrapper in native HTML, for a `32px` input with `16px` icons. Compact is off by default and works with either variant.
+All variants use a border on all four sides and native placeholder behaviour. Size is independent of the visual variant: set the Storybook `compact` boolean to `true`, or add `data-compact` to the wrapper in native HTML, for a `32px` input with `16px` icons. Compact is off by default and works with either variant.
 
 ```html
+<label for="compact-name">Name</label>
 <div class="ag-text-field" data-compact>
   <div class="ag-text-field__control">
     <input class="ag-text-field__input" id="compact-name" name="name"
-           type="text" autocomplete="off" placeholder=" ">
-    <label class="ag-text-field__label" for="compact-name">Name</label>
+           type="text" autocomplete="off" placeholder="e.g. James">
   </div>
 </div>
 ```
@@ -847,7 +863,7 @@ For a leading search icon, insert this before the input inside `ag-text-field__c
 </span>
 ```
 
-Use `ag-text-field__trailing` after the label for a trailing decoration. Omit the wrapper entirely when no icon is needed. These icon wrappers are decorative; an action requires a native button with its own accessible name and handler. When loading separate categories, include the `present/icon` recipe for `ag-icon`.
+Use `ag-text-field__trailing` after the input for a trailing decoration. Omit the wrapper entirely when no icon is needed. These icon wrappers are decorative; an action requires a native button with its own accessible name and handler. When loading separate categories, include the `present/icon` recipe for `ag-icon`.
 
 Add `<span class="ag-text-field__status" aria-hidden="true"></span>` inside the control to opt into the validation glyph. It is hidden in the neutral state and uses the existing Feather check and alert-circle assets. Glyphs are 24px normally and 16px when compact, in either variant. Status glyph styling is included with the text-field recipe itself.
 
@@ -893,7 +909,8 @@ For asynchronous server checks, your application owns the request and ignores st
 | ------ | ------- |
 | `input` | The native `HTMLInputElement` |
 | `validate()` | Recheck constraints/callback, reveal feedback and return validity |
-| `update()` | Recheck a programmatic value change, preserving whether feedback has been revealed |
+| `update(options?)` | Apply `value`/`validation` changes and reconcile, preserving whether feedback has been revealed |
+| `refresh()` | Reconcile current input state immediately |
 | `setError(message)` | Set a persistent server/application error; pass `null` to clear it |
 | `reset()` | Clear interaction feedback and server errors without changing the input's value |
 | `destroy()` | Remove owned messages, listeners and custom validity; retain entered data |
@@ -983,7 +1000,7 @@ Backspace at the start of the query immediately removes the preceding token; Del
 
 **Forms:** The input's original `name` (or `options.name`) becomes the name of repeated generated hidden inputs containing selected values. Read them with `new FormData(form).getAll("recipients")`. Uncommitted query text is not submitted. `required` means at least one selected entry, regardless of query text; the helper manages the input's custom validity. Native `disabled` excludes generated values from submission; `readonly` retains them but prevents additions/removals. Set these states on the input. Native form reset restores the initial selected values still present in the current catalogue and restores the input's default query. A canceled reset makes no change. The field name and required setting are captured at enhancement time.
 
-**Composition:** Import both `interact` and `present` styles, or the complete stylesheet. The selective `interact/token-field.classes` entry includes text-field, chip, menu-item and popup styles; also load `present/avatar.classes` and `present/icon.classes`. The pure `interact/token-field.mixins` module provides `styles` for the composition only; include its constituent recipes when using pure mixins. Provide the native input's accessible name with a real label or ARIA label. The input must be a direct child of the direct `ag-text-field__control` inside the root; the helper arranges generated chips before and after it to reflect the editing position. It manages the input's `size` attribute for a compact editing space between tokens and restores the authored attribute on cleanup. Use an external label rather than the text-field's overlaid placeholder label.
+**Composition:** Import both `interact` and `present` styles, or the complete stylesheet. The selective `interact/token-field.classes` entry includes text-field, chip, menu-item and popup styles; also load `present/avatar.classes` and `present/icon.classes`. The pure `interact/token-field.mixins` module provides `styles` for the composition only; include its constituent recipes when using pure mixins. Provide the native input's accessible name with a real label or ARIA label. The input must be a direct child of the direct `ag-text-field__control` inside the root; the helper arranges generated chips before and after it to reflect the editing position. It manages the input's `size` attribute for a compact editing space between tokens and restores the authored attribute on cleanup. Use an external label associated with the input by `for`/`id`, as with a standard text field.
 
 The shared field has 4px corners and grows to wrap chips. It uses the standard text-field width token; override the root width for a wider recipient field. `data-variant="backdrop"` and `data-compact` are supported; compact fields retain enough height for the existing 28px circular avatars. Suggestions follow the whole field's width, use native CSS anchor placement where supported, and have measured placement otherwise. The list uses the browser's top layer so it can extend beyond a clipped container. Native Popover API support is required.
 
@@ -1035,7 +1052,7 @@ For application-controlled submenus, use a button with `aria-expanded` and `aria
 
 This recipe does not introduce `role="menu"` or `role="menuitem"`. Ordinary action lists and navigation can use native elements. If a containing widget uses ARIA menu roles, it must also supply the corresponding focus management and keyboard interactions. The recipe supports `aria-checked="true"` styling for such widgets, but does not implement those behaviours.
 
-Import `interact` for the item and `present` for its shared icons. The optional pure Sass entry is `interact/menu-item.mixins`: `item` styles a custom element selector, and `styles` emits the complete recipe with its content slots. Theme hooks include `--menu-item-text-size`, `--menu-item-min-height`, `--menu-item-padding-block`, `--menu-item-icon-size` and `--menu-item-submenu-icon-size`, alongside the existing grid, `--selection-fill`, `--ctrlText` and `--onSurface` tokens. **Interact / Menu Item** demonstrates editable content, selection, disabled actions, native navigation, working submenus, long labels and RTL.
+Import `interact` for the item and `present` for its shared icons. The optional pure Sass entry is `interact/menu-item.mixins`: `item` styles a custom element selector, and `styles` emits the complete recipe with its content slots. Theme hooks include `--menu-item-text-size`, `--menu-item-min-height`, `--menu-item-padding-block`, `--menu-item-icon-size` and `--menu-item-submenu-icon-size`, alongside the existing grid, `--selection-fill`, `--ctrl-text` and `--on-surface` tokens. **Interact / Menu Item** demonstrates editable content, selection, disabled actions, native navigation, working submenus, long labels and RTL.
 
 ## Pop-up menus
 
@@ -1085,7 +1102,7 @@ popup.destroy();     // When disposing the containing UI.
 
 Each menu has one native button trigger and a unique document-wide ID. The helper can generate missing menu/trigger IDs and set `popovertarget`. It assigns menu/menuitem roles and names an unlabelled menu from its trigger; provide `aria-label` or `aria-labelledby` to override that name. Actions remain native buttons and destinations remain links. There is no Web Component and no duplication of item content. Use ordinary `click` handlers or `ag-menu-select` for application actions; the helper does not execute actions or change checkbox/radio state for you.
 
-**Keyboard:** Enter/Space activates the trigger and focuses the first item. Down/Up on a top-level trigger opens at the first/last item. Within a menu, Up/Down wrap, Home/End jump, and typing a label prefix moves focus. Enter/Space activate an item. Escape uses native popover dismissal and focus return. Tab/Shift+Tab close the menu chain and continue outside it from the root trigger. Native `disabled` items are skipped; `aria-disabled="true"` items remain discoverable with arrow keys but cannot activate. Empty menus focus their labelled container.
+**Keyboard:** Enter/Space activates the trigger and focuses the first item. Down/Up on a top-level trigger opens at the first/last item. Within a menu, Up/Down wrap, Home/End jump, and typing a label prefix moves focus. Enter/Space activate an item. Escape closes the current menu and returns focus to its trigger, including when the platform did not focus the trigger on click. Tab/Shift+Tab close the menu chain and continue outside it from the root trigger. Native `disabled` items are skipped; `aria-disabled="true"` items remain discoverable with arrow keys but cannot activate. Empty menus focus their labelled container.
 
 By default an item selection closes its whole menu chain and returns focus to the root trigger, unless the action has already moved focus elsewhere, for example into a dialog. The bubbling, cancelable `ag-menu-select` event has `detail: { item }`. Cancel it to keep that selection open, or set `closeOnSelect: false` for persistent choices. Native links still navigate; cancel their native `click` event if your application owns navigation. For checkbox/radio choices, supply `role="menuitemcheckbox"` or `role="menuitemradio"`, manage `aria-checked` in your application handler, and manage radio exclusivity yourself. Those states use the existing menu-item selection styling. Keep inputs, sliders and other composite controls outside an action menu.
 
@@ -1142,7 +1159,7 @@ const breadcrumb = enhanceBreadcrumb(document.querySelector<HTMLElement>(".ag-br
 
 Labels longer than 24 characters display the first 12, an ellipsis (`…`), and the last 11. Grapheme-aware counting keeps emoji and combining characters intact. The full name remains available to screen readers and in the native hover tooltip. Use plain text in `.ag-breadcrumb__label`; changing its text or adding/removing crumbs is observed automatically. `refresh()` applies changes immediately. `destroy()` restores full text and original titles and stops observation. Repeated enhancement returns the existing controller. Overflowing paths become keyboard-focusable for scrolling. Without the helper, full names remain on one line.
 
-The defaults are `--breadcrumb-text-size: 13.33px`, `--breadcrumb-icon-size: 16px`, `--breadcrumb-separator-size: 18px` and `--breadcrumb-icon-gap: 6px`. The chevron and breadcrumb `star` glyph use the unmodified SVG exports from the [AFMaster sketch](https://www.figma.com/design/7Hz5rGL1JRLfouCckw8FIq/AFMaster?node-id=87-13); other icon names use the shared Feather catalogue. The default row is 36px high, including 8px vertical padding on each side. Vertical padding and spacing between crumbs use the shared grid tokens. Foreground colours use `--onSurfaceAlt` and `--onBackdrop`. For selective styles, import `interact` for the breadcrumb and `present` for icons. **Interact / Breadcrumb** includes editable items, text-only and icon examples, backdrop styling, a single crumb, shortened labels, narrow containers and right-to-left layouts.
+The defaults are `--breadcrumb-text-size: 0.833125rem`, `--breadcrumb-icon-size: 16px`, `--breadcrumb-separator-size: 18px` and `--breadcrumb-icon-gap: 6px`. The chevron and breadcrumb `star` glyph use the unmodified SVG exports from the [AFMaster sketch](https://www.figma.com/design/7Hz5rGL1JRLfouCckw8FIq/AFMaster?node-id=87-13); other icon names use the shared Feather catalogue. The default row is 36px high, including 8px vertical padding on each side. Vertical padding and spacing between crumbs use the shared grid tokens. Foreground colours use `--on-surface-alt` and `--on-backdrop`. For selective styles, import `interact` for the breadcrumb and `present` for icons. **Interact / Breadcrumb** includes editable items, text-only and icon examples, backdrop styling, a single crumb, shortened labels, narrow containers and right-to-left layouts.
 
 Code Connect templates live beside the Breadcrumb and Icon stories as `.figma.ts` files. They render native HTML using `ag/css`, resolve each label and optional icon from the Figma instances, and leave application route URLs to the consumer. `figma.config.json` identifies the templates; the Code Connect development dependency supplies their types and is not part of the runtime bundle.
 
@@ -1494,7 +1511,7 @@ The default width is `142px`, constrained by the available space. Set `--progres
 
 This omits the visible caption while retaining an accessible name. You can also connect an external label using `label[for]` and the progress element's `id`, or use `aria-labelledby`. A progress bar does not accept input and should not be placed inside a button or made focusable.
 
-`--progress-width`, `--progress-height` and `--progress-label-gap` control width, fill thickness and space below the visible bar. Colours reuse `--ctrlTextDesat`, `--error` and `--caution`; caption typography uses `--body-font-stack` and `--caption-text-size`. Use local theme overrides to change these values. Forced-colour mode uses system colours. Native `hidden` works on the wrapper, bar and caption.
+`--progress-width`, `--progress-height` and `--progress-label-gap` control width, fill thickness and space below the visible bar. Colours reuse `--ctrl-text-desat`, `--error` and `--caution-foreground`; caption typography uses `--body-font-stack` and `--caption-text-size`. Use local theme overrides to change these values. Forced-colour mode uses system colours. Native `hidden` works on the wrapper, bar and caption.
 
 For selective Sass, use `indicate/progress.classes`, or include the complete `progress.styles` mixin from `indicate/progress.mixins` together with the shared theme. The complete mixin includes the required selectors and indeterminate keyframes.
 
@@ -1591,7 +1608,7 @@ Accessible state descriptions use `aria-valuetext`. Translate them with, for exa
 | `--circular-progress-stroke-width` | `2px` | Progress arc and complete ring |
 | `--circular-progress-title-gap` | `4px` | Space between the ring and title |
 
-Colours reuse `--ctrlTextDesat` and `--error`; titles use `--body-font-stack`, `--small-caption-text-size` and `--line-height`. Long titles wrap within the available width. Rings advance clockwise in both LTR and RTL layouts, and forced-colour mode uses system colours. Keep the bundled Feather assets alongside the stylesheet for the check and error glyphs.
+Colours reuse `--ctrl-text-desat` and `--error`; titles use `--body-font-stack`, `--small-caption-text-size` and `--line-height`. Long titles wrap within the available width. Rings advance clockwise in both LTR and RTL layouts, and forced-colour mode uses system colours. Keep the bundled Feather assets alongside the stylesheet for the check and error glyphs.
 
 For dark backdrop surfaces, add `data-variant="backdrop"` to the component wrapper:
 
@@ -1604,7 +1621,7 @@ For dark backdrop surfaces, add `data-variant="backdrop"` to the component wrapp
 </div>
 ```
 
-Initialise `enhanceCircularProgress` on the label as usual. This is a CSS variant: it uses `--onBackdrop` for the arc, completion icon and title, with `--backdropKeyline` for the empty track. In the error state, the circle has an `--error` fill and the icon and title use `--on-error`, matching the notification palette. Changing the variant does not change the progress value or behaviour. The variant selects the foreground treatment; the containing surface supplies its own backdrop.
+Initialise `enhanceCircularProgress` on the label as usual. This is a CSS variant: it uses `--on-backdrop` for the arc, completion icon and title, with `--backdrop-keyline` for the empty track. In the error state, the circle has an `--error` fill and the icon and title use `--on-error`, matching the notification palette. Changing the variant does not change the progress value or behaviour. The variant selects the foreground treatment; the containing surface supplies its own backdrop.
 
 For selective Sass, use `indicate/circular-progress.classes`, or the pure `circular-progress.styles` mixin from `indicate/circular-progress.mixins` with the shared theme. The `indicate` category includes its glyph styles without requiring the full `present` category.
 
@@ -1772,7 +1789,7 @@ notification.destroy();
 
 `timeout` is in milliseconds and defaults to **0**, requiring a close-button or programmatic dismissal. A positive timeout begins after entry animation. It pauses while the notification is hovered, contains keyboard focus, or the document is hidden, then resumes with the remaining time. Showing an already-open notification resets its timeout and announces the current message.
 
-`show()` and `hide()` resolve after their animations finish; `open` reports native visibility, including during exit. The helper honours reduced motion and does not focus the notification when showing it. If dismissal removes the focused close button, it restores the focus captured when opening.
+`show()` and `hide()` resolve after their animations finish (a deferred `show()` resolves after queuing); `open` reports native visibility, including during exit. The helper honours reduced motion and does not focus the notification when showing it. If dismissal removes the focused close button, it restores the focus captured when opening.
 
 The helper emits a bubbling `close` event after dismissal. `event.detail.reason` is `close-button`, `timeout`, `programmatic` or `native`. This is a completion event, not a cancellable dismissal request. Native `hidePopover()` closes immediately and is reported as `native`; use the helper's `hide()` for animated closing.
 
@@ -1791,6 +1808,10 @@ The helper follows resizing and scrolling. `container: null` uses the viewport. 
 
 ### Announcements and styling
 
+Place notifications related to a modal **inside that dialog in the DOM**. Their live region is placed inside the active modal so it remains accessible, and their close button remains reachable. Setting `container` only controls geometry; it does not establish modal ownership.
+
+Notifications outside the active modal, inside a closed dialog, or within inert content are deferred. A visible notification is suspended without emitting `close` when its scope becomes blocked. When the scope becomes available, it is shown and announced again, and its full timeout starts after entry. Repeated `show()` calls replace the pending request. `hide()` cancels a deferred request and emits `close`; `destroy()` discards it and removes all observers without reopening it.
+
 The helper announces only message text through a persistent polite live region. Set `announcement: "assertive"` for an urgent interruption, or `"off"` when the application already announces the same status. The visual `alert` variant does not automatically make the announcement assertive. Keep notifications with essential actions open using `timeout: 0`.
 
 The HTML-only example provides visibility and dismissal; use the helper when announcing dynamic application status. `destroy()` removes the helper's live region, observers and listeners. Application listeners remain your responsibility.
@@ -1804,7 +1825,7 @@ The HTML-only example provides visibility and dismissal; use the helper when ann
 | `--notification-padding-block`     | `18px`  | Top and bottom padding                               |
 | `--notification-padding-inline`    | `16px`  | Left and right padding                               |
 
-Backgrounds reuse `--onPanelAlt`, `--error`, `--success` and `--caution`. Message text uses `--on-ctrl-fill-solid`, `--on-error`, `--on-success` and `--onPanel`, respectively. Alert/success icons use `--panel`; other icons and close buttons follow the text colour. Typography uses `--body-font-stack`, `--body2-text-size` and `--line-height`; animation uses the existing motion tokens.
+Backgrounds reuse `--on-panel-alt`, `--error`, `--success` and `--caution`. Message text uses `--on-ctrl-fill-solid`, `--on-error`, `--on-success` and `--on-caution`, respectively. Alert/success icons use `--panel`; other icons and close buttons follow the text colour. Typography uses `--body-font-stack`, `--body-text-size` and `--line-height`; animation uses the existing motion tokens.
 
 **Indicate / Notification** in Storybook includes the variant gallery, configurable example, six positions within a view, timed stacking and the native HTML example.
 
@@ -1856,10 +1877,10 @@ Placement flips to an available side and clamps within the visual viewport, keep
 | --- | --- | --- |
 | `--popover-width` | `320px` | Preferred panel width; constrained to available space |
 | `--popover-radius` | `12px` | Panel corner radius |
-| `--popover-gap` | `12px` | Trigger-to-panel distance in pixels (minimum 8px for the pointer) |
+| `--popover-gap` | `12px` | Trigger-to-panel CSS length (minimum 8px for the pointer); relative units and `calc()` supported |
 | `--popover-shadow` | Two soft shadow layers | Elevation above surrounding content |
 
-Colours inherit `--panel`, `--onPanel` and `--keyline`; spacing uses `--grid-x` and `--grid-y`. The pointer uses the same panel surface. Fade/scale motion follows shared medium entry and fast exit tokens, including curves/delays, and disables for reduced motion. Browsers supporting discrete `display`/`overlay` transitions retain the panel in the top layer for exit; others dismiss immediately. Do not override the helper-owned `--ag-popover-*` positioning values or `data-side`.
+Colours inherit `--panel`, `--on-panel` and `--keyline`; spacing uses `--grid-x` and `--grid-y`. The pointer uses the same panel surface. Fade/scale motion follows shared medium entry and fast exit tokens, including curves/delays, and disables for reduced motion. Browsers supporting discrete `display`/`overlay` transitions retain the panel in the top layer for exit; others dismiss immediately. Do not override the helper-owned `--ag-popover-*` positioning values or `data-side`.
 
 The pure Sass entry exposes `frame.popover-popover` and `frame.popover-styles`. **Frame / Popover** in Storybook includes information, persistent settings, editing, four placements, viewport edges, long content, narrow screens, RTL and a local theme.
 
@@ -1914,7 +1935,6 @@ const options = { signal: events.signal };
 
 openButton.addEventListener("click", () => void modal.show(), options);
 closeButton.addEventListener("click", () => void modal.hide(), options);
-dialog.addEventListener("dismiss", () => void modal.hide(), options);
 
 // Call when the owning view is disposed.
 function disposeSettings() {
@@ -1923,9 +1943,9 @@ function disposeSettings() {
 }
 ```
 
-Escape and backdrop interaction emit a `dismiss` request. **The consumer decides whether to close and calls `hide()`**, as the example does. This lets an application check for unsaved changes before closing.
+Escape and backdrop interaction close the dialog by default after its exit motion. To keep it open, cancel the `dismiss` event synchronously with `event.preventDefault()`. This lets an application check for unsaved changes; asynchronous decisions should first cancel dismissal, then call `hide()` if approved.
 
-`show()` returns a promise after opening and starting its entry animation. `hide(returnValue?)` returns a promise after its exit animation and close; modal focus containment remains in place during that exit. The native `close` event remains available and does not bubble. `dismiss()` emits `dismiss` and `cancel` requests; it does not itself hide the dialog. Calling native `close()` or submitting a dialog-method form closes immediately, so use `hide()` when the exit animation matters.
+`show()` returns a promise after opening and starting its entry animation. `hide(returnValue?)` returns a promise after its exit animation and close; modal focus containment remains in place during that exit. The native `close` event remains available and does not bubble. `dismiss()` emits cancelable `dismiss` and `cancel` events, then hides the dialog if neither was prevented. Calling native `close()` or submitting a dialog-method form closes immediately, so use `hide()` when the exit animation matters.
 
 `enhanceDialog(dialog, { modal: false, trapFocus: false })` sets defaults for a non-modal dialog with native focus behaviour. `show({ modal: false, trapFocus: false })` overrides options for one opening. Both options default to `true`; modal dialogs always use the browser's native focus containment.
 
@@ -1991,7 +2011,7 @@ controls.destroy();
 
 The helper sets `aria-readonly` and temporarily suspends `required` on read-only inputs, restoring the previous state when read-only is removed or the helper is destroyed. It does not replace application validation. `data-readonly` alone is not sufficient to prevent all changes. Use native `disabled` when the control should be unavailable and excluded from submission.
 
-`enhanceControls` also supplies radio-group Home/End and directional shortcuts and clears checkbox mixed state after an uncancelled form reset. Ordinary checkbox, radio and switch interaction does not need it. For read-only decorated sliders, initialise both `enhanceControls` and `enhanceSlider`.
+`enhanceControls` also supplies radio-group Home/End and directional shortcuts and clears checkbox mixed state after an uncancelled form reset. Ordinary checkbox, radio and switch interaction does not need it. `enhanceSlider` includes read-only control behaviour automatically. It safely shares read-only state with a surrounding `enhanceControls` scope; either can be destroyed without disabling the other.
 
 ## Paginator
 
@@ -2024,7 +2044,7 @@ The helper creates native buttons with standard Tab/Enter/Space behaviour, an or
 
 CSS-only consumers can use `ag-paginator__list`, `ag-paginator__item` on real links, `aria-current="page"` on the current link, and noninteractive `ag-paginator__ellipsis` list items with `aria-hidden="true"`. The enhancement helper generates buttons for client-side paging; omit it for server-rendered links.
 
-The defaults are `--paginator-width: 347px`, `--paginator-text-size: 13.33px` and `--paginator-padding-block: 6px`. The local unmodified selected-page SVG retains the sketch's 20px circle and shadow at its native 28px export size. Current numbers longer than two digits reduce their type size to fit that circle. The layout wraps in narrow containers and keeps space for the shadow and focus indicator. Import the `interact` category or the pure `interact/paginator.mixins` recipe; no icon category is required. **Interact / Paginator** includes both Figma variants, boundary and empty states, large counts, RTL/narrow layouts, and working content pagination.
+The defaults are `--paginator-width: 347px`, `--paginator-text-size: 0.833125rem` and `--paginator-padding-block: 6px`. The local unmodified selected-page SVG retains the sketch's 20px circle and shadow at its native 28px export size with default text settings, growing with the text at larger settings. Current numbers longer than two digits reduce their type size to fit that circle. The layout wraps in narrow containers and keeps space for the shadow and focus indicator. Import the `interact` category or the pure `interact/paginator.mixins` recipe; no icon category is required. **Interact / Paginator** includes both Figma variants, boundary and empty states, large counts, RTL/narrow layouts, and working content pagination.
 
 ## Shared motion
 
@@ -2032,15 +2052,15 @@ Motion values live in `src/styles/foundation/_primitives.scss` and are exposed t
 
 | Setting | Token | Default |
 | --- | --- | --- |
-| Fast | `--motionFastDuration` | 50ms |
-| Medium | `--motionMediumDuration` | 125ms |
-| Slow | `--motionSlowDuration` | 250ms |
-| Very slow | `--motionVerySlowDuration` | 1000ms |
-| Entry curve | `--motionEntryCurve` | ease-in |
-| Exit curve | `--motionExitCurve` | ease-out |
-| Entry delay | `--motionEntryDelay` | 0ms |
-| Exit delay | `--motionExitDelay` | 0ms |
-| Stagger interval | `--motionStaggerDelay` | 50ms |
+| Fast | `--motion-fast-duration` | 50ms |
+| Medium | `--motion-medium-duration` | 125ms |
+| Slow | `--motion-slow-duration` | 250ms |
+| Very slow | `--motion-very-slow-duration` | 1000ms |
+| Entry curve | `--motion-entry-curve` | ease-in |
+| Exit curve | `--motion-exit-curve` | ease-out |
+| Entry delay | `--motion-entry-delay` | 0ms |
+| Exit delay | `--motion-exit-delay` | 0ms |
+| Stagger interval | `--motion-stagger-delay` | 50ms |
 
 Use the same named speed for both phases; exit steps down one speed (`very-slow` → `slow`, `slow` → `medium`, `medium` → `fast`, `fast` → `fast`). Theme overrides may use milliseconds or fractional seconds. Both helpers disable duration and delays for reduced motion. Timings are resolved on the animated element, so local themes work.
 
@@ -2059,48 +2079,37 @@ element.animate(keyframes, {
 .example[data-exiting] { @include foundation.motion-transition(exit, slow, (opacity, transform)); }
 ```
 
-The shorthand `motion-entry($properties...)` and `motion-exit($properties...)` use medium speed. Motion consumers own visibility and lifecycle; the shared helper only supplies timing, easing and delay. Use `--motionPush` for short offset effects; a full panel slide travels its own size.
+The shorthand `motion-entry($properties...)` and `motion-exit($properties...)` use medium speed. Motion consumers own visibility and lifecycle; the shared helper only supplies timing, easing and delay. Use `--motion-push` for short offset effects; a full panel slide travels its own size.
 
 ## Themes and SCSS
 
-The stylesheet declares all public design tokens on `:root`, including colours, typography, spacing and motion. The registry in [`foundation/_tokens.scss`](src/styles/foundation/_tokens.scss) combines foundation primitives and category token maps. Component styles reference the declared variables, and your own CSS can use them without repeating fallback values:
-
-```css
-.summary {
-  background: var(--panel);
-  color: var(--onPanel);
-  font-size: var(--h3-text-size);
-}
-```
-
-Override public CSS custom properties on `:root` for an application theme or on an ancestor for a local theme. When changing typography inputs locally, add `ag-theme` to that ancestor so the derived type sizes recalculate there:
+The stylesheet declares primitive tokens on `:root`: colours, base typography, spacing, dimensions and motion. Override them on any ancestor or component to establish a local theme. All names use lower-case dashed spelling. Grid tokens are lengths (`--grid-x: 8px`); scales, opacity and line-height are unitless ratios.
 
 ```html
-<section class="ag-theme ag-panel ag-body preferences">
+<section class="ag-panel ag-body preferences">
   <h2 class="ag-h2">Preferences</h2>
-  <p class="ag-caption">This caption uses the local type scale.</p>
+  <p class="ag-caption">This caption follows the local size and scale.</p>
 </section>
 ```
 
 ```css
 .preferences {
   --panel: #fffdf6;
-  --onPanel: #53534a;
-  --ctrlText: #006779;
+  --on-panel: #53534a;
+  --ctrl-text: #006779;
   --ctrl-fill-solid: #006779;
   --on-ctrl-fill-solid: #ffffff;
   --body-text-size: 18px;
-  --text-scale: 1.2;
+  --text-scale: 1.25;
+  padding: calc(var(--grid-x) * 2);
 }
 ```
 
-Use the exact token spelling: some names are camelCase and others are hyphenated. Grid tokens `--gridX`, `--gridY` and `--gridType` are unitless; `--grid-x`, `--grid-y` and `--grid-type` represent lengths.
+Heading and caption defaults are calculated where used, so changes to base size or scale work through nested containers without `ag-theme`. Explicit derived-size overrides, such as `--h5-text-size: 24px`, inherit normally and remain effective until overridden or reset with `initial`.
 
-`ag-theme` recalculates the eight derived type tokens: heading sizes 1–5, body2, caption and small caption. It inherits base tokens, such as colours, body size and scale, from the surrounding theme. Nested `ag-theme` containers can override just the inputs they need. Explicit derived overrides, such as `--h5-text-size: 24px`, belong on that same theme container and inherit through its descendants. A nested theme starts a fresh calculation of derived sizes.
+Derived-size tokens (`--h1-text-size` through `--h5-text-size`, `--body2-text-size`, `--caption-text-size`, and `--small-caption-text-size`) are **optional overrides**, not root declarations. Use the typography classes/mixins or Sass `tokens.token("h3-text-size")` to obtain the full fallback expression in custom styles. Plain CSS can use primitive tokens directly. Heading defaults multiply by `--text-scale` per level; body2 and caption divide the body size once, and small caption divides it twice. This preserves the default type ramp while allowing local inheritance to work naturally.
 
-This boundary is necessary because CSS resolves variable references where a custom property is declared, before inheritance. Changing `--body-text-size` on an arbitrary descendant changes body text there, but does not recalculate an inherited heading or caption token; add `ag-theme` at that point. Colour overrides do not need the class, and root overrides recalculate the root's derived tokens automatically. See the [CSS variable inheritance rules](https://www.w3.org/TR/css-variables-1/#cycles).
-
-Load Afterglow before application overrides and keep resets from overriding recipe descendants unintentionally. Styles apply through ordinary CSS; there is no Shadow DOM boundary or global reset. Preserve visible keyboard focus and accessible colour contrast when theming. Afterglow includes forced-colour rules and reduced-motion handling.
+Load Afterglow before application overrides. Styles use ordinary CSS; preserve visible focus, accessible contrast, forced-colour behaviour and reduced motion when theming. Component tokens that represent CSS lengths accept relative units and expressions; measured popup gaps use CSS layout to resolve them.
 
 ### SCSS mixins
 
@@ -2138,7 +2147,7 @@ For your own classes, import pure token and mixin modules. They produce no CSS u
 
 These package imports use Dart Sass's [Node package importer](https://sass-lang.com/documentation/cli/dart-sass/#pkg-importernode). Bundlers with a package-aware Sass resolver can use their equivalent import paths. Keep exported icons available to your CSS pipeline when composing recipes that reference assets.
 
-`tokens.theme()` is the Sass equivalent of an `ag-theme` boundary: it emits the derived expressions and then any supplied overrides. Map keys use the CSS token name without `--`; unknown names produce a Sass error. With this mixin, the example needs only `class="preferences"` to establish its local theme. You can also use `tokens.theme()` with no arguments and declare overrides in the same rule yourself.
+`tokens.theme()` applies validated overrides only. Unknown names produce a Sass error. It does not reset inherited values or freeze derived typography calculations. Its keys match CSS variable names without `--`; no theme class is needed.
 
 Surface mixins are `background`, `surface`, `panel` and `paper`; typography mixins are `body`, `caption` and `headline($level)`. Each category also has a pure `mixins` barrel with prefixed names, such as `frame.surface-panel` and `foundation.layout-flex-row(12px)`.
 
@@ -2153,17 +2162,31 @@ Complex native recipes expose a `styles` mixin which emits the complete document
 }
 ```
 
-The existing imports `pkg:ag/scss/tokens`, `frames`, `typography`, `button`, `checkable`, `slider`, `dialog` and `notification` remain compatibility entry points. They retain their previous CSS emission and exported Sass members. Prefer the explicit category modules for new code. See [Architecture.md](Architecture.md) for module ownership and the conventions for adding recipes.
+`pkg:ag/scss/tokens` and `pkg:ag/scss/typography` are pure aliases for the foundation token and typography-mixin modules. `pkg:ag/scss/theme` explicitly emits the default theme/fonts. Category entries and `*.classes` emit styles; `*.mixins` and `*/mixins` are pure. The old flat button/checkable/dialog/frames/notification/slider package imports are removed; use category `*.classes` or `*.mixins` entries instead. See [Migration.md](Migration.md) for the complete breaking-change guide.
+
+Recipe class entries include required structural dependencies: for example, token field includes text field, chip, avatar and popup menu; staged progress includes circular progress. Optional content, such as buttons or icons placed in a panel, still needs its own styles. The complete `ag/css` import includes all of them and is the recommended starting point.
 
 ## Using a UI framework
 
 Render the same native elements in your framework's templates. In React, translate `class` to `className` and SVG attributes to their JSX equivalents. Use the framework's normal checked/value bindings and event handlers; no custom-element adapter is needed.
 
-Initialise helpers with real element references after the view mounts, and call each controller's `destroy()` during unmount or effect cleanup. If a framework writes a range value as a property, call `slider.update()` after that write, or use `slider.setValue()` when the application owns the input directly. Set checkbox mixed state through an element reference's `indeterminate` property.
+Initialise helpers with real element references after mounting, and call `destroy()` during unmount/effect cleanup. Run helpers only in the browser; native HTML/CSS can be server-rendered. Application state and event handlers remain application-owned.
 
-Server-render the HTML and CSS normally; run helper initialisation only in the browser. Let the slider helper own generated `ag-slider__marks` children, `ag-slider__tooltip` elements and inline decoration positions. Keep application state in sync through the input's events. The library provides behaviour helpers, not framework component wrappers.
+Every controller provides `refresh()` to reconcile its current DOM state immediately and `destroy()` to release its behaviour. Configurable helpers provide `update(options)` to apply partial options and values. Re-enhancing the same root returns its controller and applies supplied options; it never silently discards them. Root/trigger identity is structural: changing a trigger requires destroying and re-enhancing, with an explicit error if attempted through `update()`.
 
-All helpers return the existing controller when called again with the same root element. Assign one lifecycle owner to each controller, avoid overlapping `enhanceControls` roots, and remember that destroying a controller removes its own listeners, not listeners attached by your application. For avatars, initialise `enhanceAvatar` after mounting and assign `controller.name` when the person's name changes, or render static initials with `getAvatarInitials`.
+Use `slider.update({ value })`, `slider.update({ values: [lower, upper] })`, or `field.update({ value, validation })` when applying framework state. For other components, use their typed update options or existing value setters. These updates do not manufacture native input events. Browser property writes such as `input.value = ...` do not emit events and cannot be observed with MutationObserver; call `refresh()` if writing directly. Attribute/structure changes are observed where documented, and `refresh()` is always available for synchronous reconciliation.
+
+```ts
+// React effect example (the same lifecycle applies to other frameworks):
+useEffect(() => {
+  const controller = enhanceSlider(ref.current!);
+  slider.current = controller;
+  return () => { controller.destroy(); slider.current = null; };
+}, []);
+useEffect(() => { slider.current?.update({ value }); }, [value]);
+```
+
+Let helpers own their generated subtrees (such as token-field chips or slider decorations); render only their documented inputs and containers. Sliders manage read-only behaviour automatically, and overlapping control scopes safely share temporary read-only state. Use `validateMarkup(container)` in development or application tests to obtain actionable structural diagnostics. Control, slider, text-field and token-field enhancement validates their recipes before mutating them.
 
 ## Future Web Components
 
@@ -2194,5 +2217,21 @@ For each new component or public API change:
 5. Add the matching Storybook example and note any browser-specific dependency.
 6. For a Web Component, include the registration, content, event and styling details listed above.
 7. Update migration guidance if consumers need to change their imports or markup.
+8. Run `npm run docs:sync` after changing section headings; `npm run docs:check` checks the generated contents.
 
 Keep consumer recipes here; link to them from the README instead of maintaining duplicate copies.
+
+
+## Accessibility and browser support
+
+Afterglow uses native inputs, dialogs and popovers. Its supported browser targets must provide native Dialog and Popover APIs, CSS `:has()`, and container queries; floating menus retain measured positioning when CSS anchor positioning is absent. The automated suite runs in Chromium, Firefox and WebKit. Test the actual Safari/iOS and assistive-technology combinations your application supports as well.
+
+Typography defaults use `rem`: body text is `0.875rem`, tabs are `1rem`, and compact navigation text is `0.833125rem`. These preserve the original body/navigation sizes with a 16px browser default while following user text preferences. Text inputs and textareas use at least `1rem` to avoid undersized entry text and focus-triggered zoom on mobile. Keep consumer typography overrides relative too. Do not fix the root font size. Applications can opt into operating-system text scaling in supporting browsers with `<meta name="text-scale" content="scale">` in their document head; unsupported browsers ignore it. The library does not modify the consumer's document head.
+
+Caution progress captions and bars use `--caution-foreground` (dark amber); notification fills continue to use `--caution` with `--on-caution` text.
+
+Default field placeholders, notification text and primary-button states meet 4.5:1 text contrast in their intended default colour pairings. Input boundaries use an opaque keyline. The rose backdrop palette and dark translucent input fill also provide readable foreground contrast across the default backdrop gradient. Check contrast again when overriding foreground/background tokens, including hover and status states. Forced-colour styling preserves native system colours and focus outlines.
+
+Modal panels and their backdrops contain scroll chaining without altering the root document's overflow or scrollbar. Containment on non-overflowing containers is progressive enhancement: browsers that do not enforce it can still scroll the background over the backdrop or a short dialog. Scrollable dialogs retain containment where the browser supports it.
+
+Popup menus close when focus moves outside their menu hierarchy without pulling focus back. Hover-open submenus allow bounded diagonal pointer travel toward either side of the submenu, with listeners removed when the pointer arrives, leaves the corridor or the menu closes. Nested enhanced dialogs handle their own dismissal events, so Escape closes only the innermost dialog. Dialog openings clear stale `returnValue` results; closing preserves focus explicitly moved by application code.
